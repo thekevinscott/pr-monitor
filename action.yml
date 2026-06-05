@@ -23,9 +23,9 @@ inputs:
     required: false
     default: '10'
   minimum-checks:
-    description: 'Minimum number of non-excluded check runs that must appear before declaring success. Default 0 preserves docs-only-PR pass-through; set to 1+ to fail if no other workflows actually ran.'
+    description: 'Minimum number of non-excluded check runs that must appear before declaring success. Default 1 prevents the gate from passing before any other workflows register; set to 0 to allow docs-only PRs (with no other workflows) to pass.'
     required: false
-    default: '0'
+    default: '1'
   github-token:
     description: 'GitHub token for API access'
     required: false
@@ -138,7 +138,7 @@ runs:
           if (nonPassingFound.length) {
             core.setFailed(`Non-passing checks: ${JSON.stringify(nonPassingFound)}`);
           } else if (relevantCount === 0) {
-            console.log('No other workflows to monitor - treating as docs-only PR (set minimum-checks to require checks)');
+            console.log('No other workflows to monitor (minimum-checks is 0) - treating as docs-only PR');
           } else {
             console.log(`All ${relevantCount} checks completed successfully`);
           }

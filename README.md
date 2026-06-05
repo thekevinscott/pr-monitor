@@ -9,8 +9,8 @@ Instead of maintaining a list of required checks that needs updating every time 
 - Wait for all other workflows to complete
 - Fail if any workflow fails, is cancelled, or times out
 - Pass only if all workflows finish with `success` or `skipped` conclusions
-- Handle docs-only PRs gracefully (no other workflows = pass, by default)
-- Optionally require a minimum number of checks to have actually run, to catch races where the gate runs before other workflows register
+- Require at least N non-excluded checks to have appeared (default `1`) so the gate can't pass before other workflows register
+- Set `minimum-checks: 0` to allow docs-only PRs (no other workflows) to pass through
 
 ## Usage
 
@@ -46,7 +46,7 @@ Then set "Check All Workflows" as your only required check in branch protection.
 | `pre-sleep` | Seconds to wait before checking | No | `10` |
 | `check-interval` | Seconds between status checks | No | `5` |
 | `timeout` | Maximum minutes to wait | No | `10` |
-| `minimum-checks` | Minimum non-excluded check runs that must appear before declaring success. `0` allows docs-only PRs to pass; set `1+` to require checks actually ran | No | `0` |
+| `minimum-checks` | Minimum non-excluded check runs that must appear before declaring success. Default `1` prevents the gate from passing before other workflows register; set `0` to allow docs-only PRs (no other workflows) to pass | No | `1` |
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
 
 ## Example with exclusions
