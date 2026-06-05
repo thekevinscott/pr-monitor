@@ -77,6 +77,19 @@ jobs:
 
 The `job-name` input **must exactly match** the `name:` field of the job running this action. This is required because composite actions cannot automatically detect their parent job name.
 
+## Development
+
+Source lives in `src/monitor.ts`; the action loads compiled output from `dist/monitor.js` (committed).
+
+```sh
+npm install
+npm run verify   # typecheck + lint + tests (100% coverage required) + build
+```
+
+Individual scripts: `npm run typecheck`, `npm run lint`, `npm run test:coverage`, `npm run build`.
+
+CI enforces all four on every PR, plus a check that `dist/` is in sync with `src/`.
+
 ## License
 
 MIT

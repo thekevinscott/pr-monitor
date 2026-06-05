@@ -46,7 +46,7 @@ runs:
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          const monitor = require(`${{ github.action_path }}/monitor.js`);
+          const { monitor } = require(`${{ github.action_path }}/dist/monitor.js`);
           await monitor({ github, context, core });
 
 branding:
