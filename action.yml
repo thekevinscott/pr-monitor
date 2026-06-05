@@ -22,6 +22,10 @@ inputs:
     description: 'Maximum time in minutes to wait for all checks'
     required: false
     default: '10'
+  minimum-checks:
+    description: 'Minimum number of non-excluded check runs that must appear before declaring success. Default 0 preserves docs-only-PR pass-through; set to 1+ to fail if no other workflows actually ran.'
+    required: false
+    default: '0'
   github-token:
     description: 'GitHub token for API access'
     required: false
@@ -38,12 +42,14 @@ runs:
         PRE_SLEEP: ${{ inputs.pre-sleep }}
         CHECK_INTERVAL: ${{ inputs.check-interval }}
         TIMEOUT: ${{ inputs.timeout }}
+        MINIMUM_CHECKS: ${{ inputs.minimum-checks }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
           const PRE_SLEEP = parseInt(process.env.PRE_SLEEP) * 1000;
           const CHECK_INTERVAL = parseInt(process.env.CHECK_INTERVAL) * 1000;
           const MAX_DURATION = parseInt(process.env.TIMEOUT) * 60 * 1000;
+          const MINIMUM_CHECKS = parseInt(process.env.MINIMUM_CHECKS) || 0;
 
           // Build exclusion list from job name and any additional excluded jobs
           const jobName = process.env.JOB_NAME;
@@ -81,15 +87,6 @@ runs:
           let checkRuns = await fetchCheckRuns();
           console.log('Found check runs:', checkRuns.map(r => r.name));
 
-          // Filter to non-excluded jobs
-          const relevantRuns = checkRuns.filter(run => !EXCLUDED_JOBS.includes(run.name));
-
-          // It's OK if no other workflows run (e.g., docs-only PR)
-          if (relevantRuns.length === 0) {
-            console.log('No other workflows to monitor - this is OK for docs-only PRs');
-            return;
-          }
-
           // Only these conclusions count as passing. Anything else completed
           // (failure, cancelled, timed_out, action_required, stale, neutral)
           // means the check did NOT pass and must fail the gate.
@@ -97,13 +94,16 @@ runs:
 
           let inProgressFound = [];
           let nonPassingFound = [];
+          let relevantCount = 0;
 
-          do {
+          while (true) {
             inProgressFound = [];
             nonPassingFound = [];
+            relevantCount = 0;
 
             for (const { name, status, conclusion } of checkRuns) {
               if (EXCLUDED_JOBS.includes(name)) continue;
+              relevantCount++;
 
               if (status !== 'completed') {
                 inProgressFound.push(name);
@@ -112,22 +112,35 @@ runs:
               }
             }
 
-            if (inProgressFound.length) {
-              if (performance.now() - start > MAX_DURATION) {
-                core.setFailed(`Timeout after ${Math.round(MAX_DURATION / 1000 / 60)} minutes. Still in progress: ${JSON.stringify(inProgressFound)}`);
-                return;
+            const needsMore = relevantCount < MINIMUM_CHECKS;
+            if (!inProgressFound.length && !needsMore) break;
+
+            if (performance.now() - start > MAX_DURATION) {
+              const mins = Math.round(MAX_DURATION / 1000 / 60);
+              if (needsMore) {
+                core.setFailed(`Timeout after ${mins} minutes. Only ${relevantCount}/${MINIMUM_CHECKS} required checks appeared.`);
+              } else {
+                core.setFailed(`Timeout after ${mins} minutes. Still in progress: ${JSON.stringify(inProgressFound)}`);
               }
-              const duration = Math.round((performance.now() - start) / 1000);
-              console.log(`In progress: ${JSON.stringify(inProgressFound)} | elapsed: ${duration}s`);
-              await sleep(CHECK_INTERVAL);
-              checkRuns = await fetchCheckRuns();
+              return;
             }
-          } while (inProgressFound.length);
+
+            const duration = Math.round((performance.now() - start) / 1000);
+            const parts = [];
+            if (needsMore) parts.push(`waiting for checks: ${relevantCount}/${MINIMUM_CHECKS}`);
+            if (inProgressFound.length) parts.push(`in progress: ${JSON.stringify(inProgressFound)}`);
+            console.log(`${parts.join(' | ')} | elapsed: ${duration}s`);
+
+            await sleep(CHECK_INTERVAL);
+            checkRuns = await fetchCheckRuns();
+          }
 
           if (nonPassingFound.length) {
             core.setFailed(`Non-passing checks: ${JSON.stringify(nonPassingFound)}`);
+          } else if (relevantCount === 0) {
+            console.log('No other workflows to monitor - treating as docs-only PR (set minimum-checks to require checks)');
           } else {
-            console.log('All checks completed successfully');
+            console.log(`All ${relevantCount} checks completed successfully`);
           }
 
 branding:
