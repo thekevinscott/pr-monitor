@@ -90,28 +90,32 @@ runs:
             return;
           }
 
+          // Only these conclusions count as passing. Anything else completed
+          // (failure, cancelled, timed_out, action_required, stale, neutral)
+          // means the check did NOT pass and must fail the gate.
+          const PASSING_CONCLUSIONS = new Set(['success', 'skipped']);
+
           let inProgressFound = [];
-          let failureFound = [];
+          let nonPassingFound = [];
 
           do {
             inProgressFound = [];
-            failureFound = [];
+            nonPassingFound = [];
 
             for (const { name, status, conclusion } of checkRuns) {
-              if (!EXCLUDED_JOBS.includes(name)) {
-                if (status === 'in_progress' || status === 'queued' || status === 'pending') {
-                  inProgressFound.push(name);
-                }
-                if (conclusion === 'failure') {
-                  failureFound.push(name);
-                }
+              if (EXCLUDED_JOBS.includes(name)) continue;
+
+              if (status !== 'completed') {
+                inProgressFound.push(name);
+              } else if (!PASSING_CONCLUSIONS.has(conclusion)) {
+                nonPassingFound.push(`${name} (${conclusion})`);
               }
             }
 
             if (inProgressFound.length) {
               if (performance.now() - start > MAX_DURATION) {
-                core.setFailed(`Exceeded max duration of ${Math.round(MAX_DURATION / 1000 / 60)} minutes`);
-                break;
+                core.setFailed(`Timeout after ${Math.round(MAX_DURATION / 1000 / 60)} minutes. Still in progress: ${JSON.stringify(inProgressFound)}`);
+                return;
               }
               const duration = Math.round((performance.now() - start) / 1000);
               console.log(`In progress: ${JSON.stringify(inProgressFound)} | elapsed: ${duration}s`);
@@ -120,8 +124,8 @@ runs:
             }
           } while (inProgressFound.length);
 
-          if (failureFound.length) {
-            core.setFailed(`Failed checks: ${JSON.stringify(failureFound)}`);
+          if (nonPassingFound.length) {
+            core.setFailed(`Non-passing checks: ${JSON.stringify(nonPassingFound)}`);
           } else {
             console.log('All checks completed successfully');
           }
