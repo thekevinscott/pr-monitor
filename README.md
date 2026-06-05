@@ -79,16 +79,16 @@ The `job-name` input **must exactly match** the `name:` field of the job running
 
 ## Development
 
-Source lives in `src/monitor.ts`; the action loads compiled output from `dist/monitor.js` (committed).
+Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS directly via `tsx` (registered as a CommonJS hook at action invocation time) — no committed build artifact. Setup time (Node + `npm ci`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
 
 ```sh
 npm install
-npm run verify   # typecheck + lint + tests (100% coverage required) + build
+npm run verify   # typecheck + lint + tests (100% coverage required)
 ```
 
-Individual scripts: `npm run typecheck`, `npm run lint`, `npm run test:coverage`, `npm run build`.
+Individual scripts: `npm run typecheck`, `npm run lint`, `npm run test:coverage`.
 
-CI enforces all four on every PR, plus a check that `dist/` is in sync with `src/`.
+CI enforces all three on every PR.
 
 ## License
 
