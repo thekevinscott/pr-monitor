@@ -1,20 +1,17 @@
 import type { MonitorParams } from './types';
-import { sleep } from './sleep';
-import { readConfig } from './readConfig';
-import { resolveCommitSha } from './resolveCommitSha';
-import { fetchCheckRuns } from './fetchCheckRuns';
-import { classifyCheckRuns } from './classifyCheckRuns';
-import { formatProgressLog } from './formatProgressLog';
-import { formatTimeoutFailure } from './formatTimeoutFailure';
-import { reportFinalResult } from './reportFinalResult';
-import { computeRemainingPreSleep } from './computeRemainingPreSleep';
+import { envInt } from './env';
+import { sleep, computeRemainingPreSleep } from './timing';
+import { readConfig } from './config';
+import { resolveCommitSha, fetchCheckRuns } from './github';
+import { classifyCheckRuns } from './checks';
+import { formatProgressLog, formatTimeoutFailure, reportFinalResult } from './messages';
 
 export async function monitor({ github, context, core }: MonitorParams): Promise<void> {
   const config = readConfig();
   const { owner, repo } = context.repo;
   const sha = resolveCommitSha(context);
 
-  const actionStartMs = parseInt(process.env.ACTION_START_MS ?? '0', 10);
+  const actionStartMs = envInt('ACTION_START_MS', 0);
   const remainingPreSleep = computeRemainingPreSleep(config.preSleepMs, actionStartMs, Date.now());
   console.log(`Sleeping ${Math.round(remainingPreSleep / 1000)}s to allow other workflows to start`);
   await sleep(remainingPreSleep);

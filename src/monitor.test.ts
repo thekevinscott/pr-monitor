@@ -124,30 +124,48 @@ describe('end-to-end', () => {
 });
 
 describe('pre-sleep absorption of setup time', () => {
-  test('ACTION_START_MS in the past → pre-sleep is reduced', async () => {
+  function mockSetTimeoutImmediate() {
+    return vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
+      cb();
+      return 0;
+    }) as unknown as typeof setTimeout);
+  }
+
+  test('ACTION_START_MS in the past → pre-sleep is reduced to 0 when setup exceeded it', async () => {
     setEnv({ PRE_SLEEP: '10', ACTION_START_MS: String(Date.now() - 12_000) });
-    const sleepSpy = vi.spyOn(global, 'setTimeout');
-    const core = makeCore();
+    const setTimeoutSpy = mockSetTimeoutImmediate();
     await monitor({
       github: makeGithub([[gate, { name: 'T', status: 'completed', conclusion: 'success' }]]),
       context: makeContext(),
-      core,
+      core: makeCore(),
     });
-    const firstSleep = sleepSpy.mock.calls[0]?.[1] as number;
-    expect(firstSleep).toBe(0);
-    sleepSpy.mockRestore();
+    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(0);
+    setTimeoutSpy.mockRestore();
+  });
+
+  test('ACTION_START_MS recent → pre-sleep reduced by elapsed setup time', async () => {
+    setEnv({ PRE_SLEEP: '10', ACTION_START_MS: String(Date.now() - 3_000) });
+    const setTimeoutSpy = mockSetTimeoutImmediate();
+    await monitor({
+      github: makeGithub([[gate, { name: 'T', status: 'completed', conclusion: 'success' }]]),
+      context: makeContext(),
+      core: makeCore(),
+    });
+    const slept = setTimeoutSpy.mock.calls[0]?.[1] as number;
+    expect(slept).toBeGreaterThanOrEqual(6_900);
+    expect(slept).toBeLessThanOrEqual(7_000);
+    setTimeoutSpy.mockRestore();
   });
 
   test('no ACTION_START_MS → full pre-sleep is used', async () => {
-    setEnv({ PRE_SLEEP: '0' });
-    const sleepSpy = vi.spyOn(global, 'setTimeout');
-    const core = makeCore();
+    setEnv({ PRE_SLEEP: '7' });
+    const setTimeoutSpy = mockSetTimeoutImmediate();
     await monitor({
       github: makeGithub([[gate, { name: 'T', status: 'completed', conclusion: 'success' }]]),
       context: makeContext(),
-      core,
+      core: makeCore(),
     });
-    expect(sleepSpy.mock.calls[0]?.[1]).toBe(0);
-    sleepSpy.mockRestore();
+    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(7_000);
+    setTimeoutSpy.mockRestore();
   });
 });

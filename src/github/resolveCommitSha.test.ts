@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { resolveCommitSha } from './resolveCommitSha';
-import type { GitHubContextType } from './types';
+import type { GitHubContextType } from '../types';
 
 function ctx(payload: Record<string, unknown>, sha: string): GitHubContextType {
   return { payload, sha, repo: { owner: 'o', repo: 'r' } } as unknown as GitHubContextType;

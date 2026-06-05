@@ -1,6 +1,5 @@
-import type { Config } from './types';
-import { envInt } from './envInt';
-import { envList } from './envList';
+import type { Config } from '../types';
+import { envInt, envList } from '../env';
 import { buildExcludedJobs } from './buildExcludedJobs';
 
 export function readConfig(): Config {

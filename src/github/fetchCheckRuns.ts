@@ -1,4 +1,4 @@
-import type { CheckRunSummary, Octokit } from './types';
+import type { CheckRunSummary, Octokit } from '../types';
 
 export async function fetchCheckRuns(
   github: Octokit,

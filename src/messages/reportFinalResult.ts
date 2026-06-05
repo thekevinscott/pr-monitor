@@ -1,4 +1,4 @@
-import type { Classification } from './types';
+import type { Classification } from '../types';
 
 export interface ResultEffects {
   log: (msg: string) => void;

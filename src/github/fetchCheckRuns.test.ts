@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import { fetchCheckRuns } from './fetchCheckRuns';
-import type { Octokit } from './types';
+import type { Octokit } from '../types';
 
 test('calls listForRef with correct args and returns check_runs', async () => {
   const listForRef = vi.fn().mockResolvedValue({

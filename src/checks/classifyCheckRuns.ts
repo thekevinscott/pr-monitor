@@ -1,4 +1,4 @@
-import type { CheckRunSummary, Classification } from './types';
+import type { CheckRunSummary, Classification } from '../types';
 import { isPassingConclusion } from './isPassingConclusion';
 
 export function classifyCheckRuns(
