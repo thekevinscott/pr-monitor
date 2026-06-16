@@ -2,14 +2,15 @@ import type { MonitorParams } from './types';
 import { envInt } from './env';
 import { sleep, computeRemainingPreSleep } from './timing';
 import { readConfig } from './config';
-import { resolveCommitSha, fetchCheckRuns } from './github';
-import { classifyCheckRuns } from './checks';
+import { resolveCommitSha, fetchWorkflowRuns } from './github';
+import { classifyWorkflowRuns } from './checks';
 import { formatProgressLog, formatTimeoutFailure, reportFinalResult } from './messages';
 
 export async function monitor({ github, context, core }: MonitorParams): Promise<void> {
   const config = readConfig();
   const { owner, repo } = context.repo;
   const sha = resolveCommitSha(context);
+  const selfRunId = context.runId;
 
   const actionStartMs = envInt('ACTION_START_MS', 0);
   const remainingPreSleep = computeRemainingPreSleep(config.preSleepMs, actionStartMs, Date.now());
@@ -17,13 +18,17 @@ export async function monitor({ github, context, core }: MonitorParams): Promise
   await sleep(remainingPreSleep);
   const startMs = performance.now();
 
-  console.log(`Monitoring checks for commit: ${sha}`);
-  console.log(`Excluded jobs: ${JSON.stringify(config.excludedJobs)}`);
+  console.log(`Monitoring workflow runs for commit: ${sha}`);
+  console.log(`Excluded workflows: ${JSON.stringify(config.excludedJobs)}`);
 
-  let runs = await fetchCheckRuns(github, owner, repo, sha);
-  console.log('Found check runs:', runs.map((r) => r.name));
+  // Exclude this gate's own run; everything else on the SHA must finish.
+  const fetch = async () =>
+    (await fetchWorkflowRuns(github, owner, repo, sha)).filter((r) => r.id !== selfRunId);
 
-  let classification = classifyCheckRuns(runs, config.excludedJobs);
+  let runs = await fetch();
+  console.log('Found workflow runs:', runs.map((r) => r.name));
+
+  let classification = classifyWorkflowRuns(runs, config.excludedJobs);
 
   while (true) {
     const needsMore = classification.relevantCount < config.minimumChecks;
@@ -53,8 +58,8 @@ export async function monitor({ github, context, core }: MonitorParams): Promise
     );
 
     await sleep(config.checkIntervalMs);
-    runs = await fetchCheckRuns(github, owner, repo, sha);
-    classification = classifyCheckRuns(runs, config.excludedJobs);
+    runs = await fetch();
+    classification = classifyWorkflowRuns(runs, config.excludedJobs);
   }
 
   reportFinalResult(classification, {

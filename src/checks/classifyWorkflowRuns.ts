@@ -1,8 +1,8 @@
-import type { CheckRunSummary, Classification } from '../types';
+import type { WorkflowRunSummary, Classification } from '../types';
 import { isPassingConclusion } from './isPassingConclusion';
 
-export function classifyCheckRuns(
-  runs: ReadonlyArray<CheckRunSummary>,
+export function classifyWorkflowRuns(
+  runs: ReadonlyArray<WorkflowRunSummary>,
   excludedNames: ReadonlyArray<string>,
 ): Classification {
   const inProgress: string[] = [];
