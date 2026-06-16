@@ -12,7 +12,8 @@ export interface MonitorParams {
   core: CoreModule;
 }
 
-export interface CheckRunSummary {
+export interface WorkflowRunSummary {
+  id: number;
   name: string;
   status: string;
   conclusion: string | null;

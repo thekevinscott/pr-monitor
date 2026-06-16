@@ -1,6 +1,6 @@
 {
   "name": "pr-monitor",
-  "version": "0.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "GitHub Action that gates on aggregate PR check status",
   "scripts": {

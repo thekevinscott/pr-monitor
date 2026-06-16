@@ -6,11 +6,11 @@ A GitHub Action that waits for all other workflow checks to complete and reports
 
 Instead of maintaining a list of required checks that needs updating every time you add a workflow, use PR Monitor as your single required check. It will:
 
-- Wait for all other workflows to complete
-- Fail if any workflow fails, is cancelled, or times out
-- Pass only if all workflows finish with `success` or `skipped` conclusions
-- Require at least N non-excluded checks to have appeared (default `1`) so the gate can't pass before other workflows register
-- Set `minimum-checks: 0` to allow docs-only PRs (no other workflows) to pass through
+- Wait for all other workflow runs on the PR's head commit to complete
+- Fail if any workflow run fails, is cancelled, or times out
+- Pass only if every other workflow run finishes with a `success`, `skipped`, `neutral`, or `stale` conclusion
+- Require at least N non-excluded workflow runs to have appeared (default `1`) so the gate can't pass before other workflows register
+- Set `minimum-checks: 0` to allow docs-only PRs (no other workflow runs) to pass through
 
 ## Usage
 
@@ -31,22 +31,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: clankerbot/pr-monitor@v1
-        with:
-          job-name: 'Check All Workflows'
 ```
 
-Then set "Check All Workflows" as your only required check in branch protection.
+Then set "Check All Workflows" as your only required check in branch protection. Keep this in its own workflow with no other jobs — the action excludes its own *workflow run*, so any sibling jobs in the same workflow would be skipped from monitoring.
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `job-name` | Name of the job running this action (must match exactly) | **Yes** | - |
-| `excluded-jobs` | Comma-separated additional job names to exclude | No | `''` |
+| `job-name` | Deprecated and optional. The action now excludes its own run via the run ID, so this is no longer needed. Retained for backward compatibility | No | `''` |
+| `excluded-jobs` | Comma-separated workflow run names to exclude from monitoring | No | `''` |
 | `pre-sleep` | Seconds to wait before checking | No | `10` |
 | `check-interval` | Seconds between status checks | No | `5` |
 | `timeout` | Maximum minutes to wait | No | `10` |
-| `minimum-checks` | Minimum non-excluded check runs that must appear before declaring success. Default `1` prevents the gate from passing before other workflows register; set `0` to allow docs-only PRs (no other workflows) to pass | No | `1` |
+| `minimum-checks` | Minimum non-excluded workflow runs that must appear before declaring success. Default `1` prevents the gate from passing before other workflows register; set `0` to allow docs-only PRs (no other workflow runs) to pass | No | `1` |
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
 
 ## Example with exclusions
@@ -59,23 +57,33 @@ jobs:
     steps:
       - uses: clankerbot/pr-monitor@v1
         with:
-          job-name: 'PR Status'
-          excluded-jobs: 'deploy-preview,notify-slack'
+          excluded-jobs: 'Deploy Preview,Notify Slack'
           timeout: '15'
 ```
 
 ## How it works
 
-1. Waits `pre-sleep` seconds for other workflows to start
-2. Polls the GitHub Checks API every `check-interval` seconds
-3. Excludes itself (via `job-name`) and any jobs in `excluded-jobs`
-4. Fails immediately if any check fails
-5. Passes when all checks complete successfully
-6. Times out after `timeout` minutes if checks are still running
+1. Waits `pre-sleep` seconds for other workflows to register
+2. Polls the GitHub Actions API (`listWorkflowRunsForRepo`) for every workflow run on the PR's head commit, every `check-interval` seconds (paginating through all runs)
+3. Excludes its own run (by run ID) and any workflows named in `excluded-jobs`
+4. Waits until no workflow run is still queued or in progress
+5. Fails if any completed run did not conclude `success`, `skipped`, `neutral`, or `stale`
+6. Times out after `timeout` minutes if runs are still pending
 
-## Important
+## Why workflow runs, not check runs?
 
-The `job-name` input **must exactly match** the `name:` field of the job running this action. This is required because composite actions cannot automatically detect their parent job name.
+Earlier versions polled the **Checks API** and concluded the moment nothing was *currently* in progress. That races against the build: a `needs:`-gated job has no check run until its dependency finishes, and a fan-out larger than the runner pool registers its jobs in batches — so "nothing in progress right now" is not "everything has run," and the gate could go green before heavy jobs even started.
+
+This version polls **workflow runs** instead. GitHub creates every workflow run for a commit within seconds of the push, and a run stays non-terminal until *all* of its jobs finish — including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children. Waiting for "no run pending" therefore genuinely means "everything finished," with no transient gaps to race against, and it stays dynamic: a docs PR with one workflow waits for one run; a heavy PR waits for all of them.
+
+> **Known limitation:** workflows triggered by `workflow_run` (i.e. chained *after* another workflow completes) are created late and may not be in the initial run list. This is a rare topology and is not covered.
+
+## Migrating from v1
+
+- The action now monitors **workflow runs**, not individual check runs. Behaviour is the same in the common case (the gate goes green once everything else finishes) and strictly more correct under `needs:`-gated jobs and large fan-outs.
+- `job-name` is **no longer required** — the action excludes its own run by run ID. Existing configs that still pass it keep working.
+- `excluded-jobs` now matches **workflow run names** (the workflow's `name:`), not job names.
+- Excluding by run ID means the gate excludes its *entire* workflow run. Keep the gate in a dedicated workflow (as shown above); if you add other jobs to that same workflow, they won't be monitored.
 
 ## Development
 

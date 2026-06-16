@@ -10,7 +10,7 @@ test('needsMore → mentions required check count', () => {
       minimumChecks: 1,
       inProgress: [],
     }),
-  ).toBe('Timeout after 1 minutes. Only 0/1 required checks appeared.');
+  ).toBe('Timeout after 1 minutes. Only 0/1 required workflow runs appeared.');
 });
 
 test('!needsMore → mentions in-progress list', () => {

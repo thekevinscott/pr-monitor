@@ -1,2 +1,2 @@
-export { fetchCheckRuns } from './fetchCheckRuns';
+export { fetchWorkflowRuns } from './fetchWorkflowRuns';
 export { resolveCommitSha } from './resolveCommitSha';

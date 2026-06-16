@@ -7,12 +7,12 @@ export interface ResultEffects {
 
 export function reportFinalResult(classification: Classification, effects: ResultEffects): void {
   if (classification.nonPassing.length > 0) {
-    effects.setFailed(`Non-passing checks: ${JSON.stringify(classification.nonPassing)}`);
+    effects.setFailed(`Non-passing runs: ${JSON.stringify(classification.nonPassing)}`);
     return;
   }
   if (classification.relevantCount === 0) {
-    effects.log('No other workflows to monitor (minimum-checks is 0) - treating as docs-only PR');
+    effects.log('No other workflow runs to monitor (minimum-checks is 0) - treating as docs-only PR');
     return;
   }
-  effects.log(`All ${classification.relevantCount} checks completed successfully`);
+  effects.log(`All ${classification.relevantCount} workflow runs completed successfully`);
 }

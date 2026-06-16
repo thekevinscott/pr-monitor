@@ -1,13 +1,14 @@
 name: 'PR Monitor'
-description: 'Waits for all other workflow checks to complete and reports aggregate status'
+description: 'Waits for all other workflow runs to complete and reports aggregate status'
 author: 'thekevinscott'
 
 inputs:
   job-name:
-    description: 'Name of the job running this action (required to exclude itself)'
-    required: true
+    description: 'Deprecated and optional. The action now excludes its own workflow run automatically via the run ID, so this is no longer required. Retained for backward compatibility.'
+    required: false
+    default: ''
   excluded-jobs:
-    description: 'Comma-separated list of additional job names to exclude from monitoring'
+    description: 'Comma-separated list of workflow run names to exclude from monitoring'
     required: false
     default: ''
   pre-sleep:
@@ -23,7 +24,7 @@ inputs:
     required: false
     default: '10'
   minimum-checks:
-    description: 'Minimum number of non-excluded check runs that must appear before declaring success. Default 1 prevents the gate from passing before any other workflows register; set to 0 to allow docs-only PRs (with no other workflows) to pass.'
+    description: 'Minimum number of non-excluded workflow runs that must appear before declaring success. Default 1 prevents the gate from passing before any other workflows register; set to 0 to allow docs-only PRs (with no other workflow runs) to pass.'
     required: false
     default: '1'
   github-token:
