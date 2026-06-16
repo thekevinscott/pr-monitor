@@ -12,7 +12,7 @@ inputs:
     required: false
     default: ''
   pre-sleep:
-    description: 'Time in seconds to wait before checking (allows other workflows to start). Setup time (Node, npm install) is subtracted from this — if setup takes 8s and pre-sleep is 10s, the script sleeps 2s more.'
+    description: 'Time in seconds to wait before checking (allows other workflows to start). Setup time (Node, pnpm install) is subtracted from this — if setup takes 8s and pre-sleep is 10s, the script sleeps 2s more.'
     required: false
     default: '10'
   check-interval:
@@ -40,17 +40,22 @@ runs:
       shell: bash
       run: echo "ms=$(($(date +%s%N)/1000000))" >> "$GITHUB_OUTPUT"
 
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        package_json_file: ${{ github.action_path }}/package.json
+
     - name: Setup Node 24
       uses: actions/setup-node@v4
       with:
         node-version: '24'
-        cache: npm
-        cache-dependency-path: ${{ github.action_path }}/package-lock.json
+        cache: pnpm
+        cache-dependency-path: ${{ github.action_path }}/pnpm-lock.yaml
 
     - name: Install runtime dependencies
       shell: bash
       working-directory: ${{ github.action_path }}
-      run: npm ci --omit=dev --no-audit --no-fund --prefer-offline
+      run: pnpm install --prod --frozen-lockfile --prefer-offline
 
     - name: Run monitor
       shell: bash

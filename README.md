@@ -88,14 +88,16 @@ A recent `v1` release changed how the gate decides everything has finished: it n
 
 ## Development
 
-Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS directly via `tsx` (registered as a CommonJS hook at action invocation time) — no committed build artifact. Setup time (Node + `npm ci`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
+Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS directly via `tsx` (registered as a CommonJS hook at action invocation time) — no committed build artifact. Setup time (Node + `pnpm install`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
+
+This project uses [pnpm](https://pnpm.io). With [Corepack](https://nodejs.org/api/corepack.html) enabled (`corepack enable`), the pinned version in `package.json`'s `packageManager` field is used automatically.
 
 ```sh
-npm install
-npm run verify   # typecheck + lint + tests (100% coverage required)
+pnpm install
+pnpm run verify   # typecheck + lint + tests (100% coverage required)
 ```
 
-Individual scripts: `npm run typecheck`, `npm run lint`, `npm run test:coverage`.
+Individual scripts: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:coverage`.
 
 CI enforces all three on every PR.
 
