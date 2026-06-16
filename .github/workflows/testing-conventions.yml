@@ -1,0 +1,26 @@
+name: Testing Conventions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  conventions:
+    # thekevinscott/testing-conventions reusable workflow: enforces colocated unit
+    # tests and the unit-suite coverage floor (vitest v8) for the TypeScript sources
+    # under src/. Thresholds and exemptions live in testing-conventions.toml.
+    #
+    # Pinned to the main commit that ships the TypeScript coverage job (which
+    # installs deps with pnpm) and the `config` input. The `@v0` tag predates both
+    # — it only runs the older cargo-based location check — so it can't be used
+    # here. Bump this SHA (and `version` below) to pick up upstream changes.
+    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@1e1e2f67f59c4345fd4eeeb15d6883f9858c2214
+    with:
+      languages: '["typescript"]'
+      path: src
+      version: '0.0.13'
+      config: testing-conventions.toml
