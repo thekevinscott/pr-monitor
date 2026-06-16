@@ -30,7 +30,7 @@ jobs:
     name: 'Check All Workflows'
     runs-on: ubuntu-latest
     steps:
-      - uses: clankerbot/pr-monitor@v1
+      - uses: thekevinscott/pr-monitor@v1
 ```
 
 Then set "Check All Workflows" as your only required check in branch protection. Keep this in its own workflow with no other jobs — the action excludes its own *workflow run*, so any sibling jobs in the same workflow would be skipped from monitoring.
@@ -55,7 +55,7 @@ jobs:
     name: 'PR Status'
     runs-on: ubuntu-latest
     steps:
-      - uses: clankerbot/pr-monitor@v1
+      - uses: thekevinscott/pr-monitor@v1
         with:
           excluded-jobs: 'Deploy Preview,Notify Slack'
           timeout: '15'
@@ -78,9 +78,10 @@ This version polls **workflow runs** instead. GitHub creates every workflow run 
 
 > **Known limitation:** workflows triggered by `workflow_run` (i.e. chained *after* another workflow completes) are created late and may not be in the initial run list. This is a rare topology and is not covered.
 
-## Migrating from v1
+## Upgrading
 
-- The action now monitors **workflow runs**, not individual check runs. Behaviour is the same in the common case (the gate goes green once everything else finishes) and strictly more correct under `needs:`-gated jobs and large fan-outs.
+A recent `v1` release changed how the gate decides everything has finished: it now monitors **workflow runs** instead of individual check runs. If you pin `thekevinscott/pr-monitor@v1` you pick this up automatically — behaviour is the same in the common case (the gate goes green once everything else finishes) and strictly more correct under `needs:`-gated jobs and large fan-outs.
+
 - `job-name` is **no longer required** — the action excludes its own run by run ID. Existing configs that still pass it keep working.
 - `excluded-jobs` now matches **workflow run names** (the workflow's `name:`), not job names.
 - Excluding by run ID means the gate excludes its *entire* workflow run. Keep the gate in a dedicated workflow (as shown above); if you add other jobs to that same workflow, they won't be monitored.
