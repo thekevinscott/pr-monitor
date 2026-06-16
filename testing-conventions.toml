@@ -1,0 +1,57 @@
+# testing-conventions config — enforces the colocated-test and coverage rules on
+# the TypeScript unit suite under `src/`. See https://github.com/thekevinscott/testing-conventions
+#
+# Coverage floor for the unit suite (vitest v8 metrics). Test files and `*.d.ts`
+# are excluded automatically; the exemptions below are the only other omissions.
+[typescript]
+coverage = { lines = 100, branches = 100, functions = 100, statements = 100 }
+
+# Exemptions are explicit and reason-required. Paths are relative to the scanned
+# root (`src/`). Each entry lifts the named rules for one file and is a hard error
+# if its path stops pointing at a real file, so the list can't quietly rot.
+
+# Entry shim: wires the Action's environment to run() and reports failure. Its one
+# call is exercised at runtime, not by units — run()'s logic is covered by run.test.ts.
+[[typescript.exempt]]
+path = "entry.ts"
+rules = ["colocated-test", "coverage"]
+reason = "entry shim; delegates to run(), which is unit-tested in run.test.ts"
+
+# Type-only declarations (interfaces and aliases) that erase at runtime, so there
+# is no behavior to unit-test or measure.
+[[typescript.exempt]]
+path = "types.ts"
+rules = ["colocated-test", "coverage"]
+reason = "type-only declarations; no runtime code to test or cover"
+
+# Per-directory re-export barrels: no logic of their own; each forwarded symbol is
+# unit-tested in its own colocated file.
+[[typescript.exempt]]
+path = "checks/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "config/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "env/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "github/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "messages/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "timing/index.ts"
+rules = ["colocated-test", "coverage"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
