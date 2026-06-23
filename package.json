@@ -15,6 +15,7 @@
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.18.0",
+    "testing-conventions": "^0.0.41",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.20.0",
     "vitest": "^2.1.8"
