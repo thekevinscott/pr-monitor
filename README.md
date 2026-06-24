@@ -99,6 +99,8 @@ pnpm run verify   # typecheck + lint + tests (100% coverage required)
 
 Individual scripts: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:coverage`.
 
+This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `Check All Workflows` gate, waiting on the other workflow runs and reporting their aggregate status.
+
 CI enforces all three on every PR, plus a [testing-conventions](https://github.com/thekevinscott/testing-conventions) gate (colocated unit tests + 100% unit-suite coverage) run via its reusable workflow. The coverage floor and the reason-required exemptions (the entry shim, the type-only module, and the re-export barrels) live in `testing-conventions.toml`. Locally, `vitest.config.mts` extends the shared vitest config that `testing-conventions` publishes, so `pnpm run test:coverage` is held to the same floor.
 
 ## License
