@@ -88,7 +88,7 @@ A recent `v1` release changed how the gate decides everything has finished: it n
 
 ## Development
 
-Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS directly via `tsx` (registered as a CommonJS hook at action invocation time) — no committed build artifact. Setup time (Node + `pnpm install`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
+Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS entrypoint directly with the `tsx` CLI (`tsx src/entry.ts`) — no build step and no committed build artifact. Setup time (Node + `pnpm install`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
 
 This project uses [pnpm](https://pnpm.io). With [Corepack](https://nodejs.org/api/corepack.html) enabled (`corepack enable`), the pinned version in `package.json`'s `packageManager` field is used automatically.
 
@@ -99,7 +99,9 @@ pnpm run verify   # typecheck + lint + tests (100% coverage required)
 
 Individual scripts: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:coverage`.
 
-CI enforces all three on every PR, plus a [testing-conventions](https://github.com/thekevinscott/testing-conventions) gate (colocated unit tests + 100% unit-suite coverage) run via its reusable workflow. The coverage floor and the reason-required exemptions (the entry shim, the type-only module, and the re-export barrels) live in `testing-conventions.toml`.
+This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `Check All Workflows` gate, waiting on the other workflow runs and reporting their aggregate status.
+
+CI enforces all three on every PR, plus a [testing-conventions](https://github.com/thekevinscott/testing-conventions) gate (colocated unit tests + 100% unit-suite coverage) run via its reusable workflow. The coverage floor and the reason-required exemptions (the entry shim, the type-only module, and the re-export barrels) live in `testing-conventions.toml`. Locally, `vitest.config.mts` extends the shared vitest config that `testing-conventions` publishes, so `pnpm run test:coverage` is held to the same floor.
 
 ## License
 

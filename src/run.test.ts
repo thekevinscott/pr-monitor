@@ -1,17 +1,23 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-vi.mock('@actions/core', () => ({
-  setFailed: vi.fn(),
-}));
+vi.mock('@actions/core', async () => {
+  const actual = await vi.importActual<typeof import('@actions/core')>('@actions/core');
+  return { ...actual, setFailed: vi.fn() };
+});
 
-vi.mock('@actions/github', () => ({
-  getOctokit: vi.fn(() => ({ rest: { checks: { listForRef: vi.fn() } } })),
-  context: { repo: { owner: 'o', repo: 'r' }, sha: 'abc', payload: {} },
-}));
+vi.mock('@actions/github', async () => {
+  const actual = await vi.importActual<typeof import('@actions/github')>('@actions/github');
+  return {
+    ...actual,
+    getOctokit: vi.fn(() => ({ rest: { checks: { listForRef: vi.fn() } } })),
+    context: { repo: { owner: 'o', repo: 'r' }, sha: 'abc', payload: {} },
+  };
+});
 
-vi.mock('./monitor', () => ({
-  monitor: vi.fn(),
-}));
+vi.mock('./monitor', async () => {
+  const actual = await vi.importActual<typeof import('./monitor')>('./monitor');
+  return { ...actual, monitor: vi.fn() };
+});
 
 import * as core from '@actions/core';
 import { getOctokit } from '@actions/github';

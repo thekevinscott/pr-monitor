@@ -40,17 +40,31 @@ runs:
       shell: bash
       run: echo "ms=$(($(date +%s%N)/1000000))" >> "$GITHUB_OUTPUT"
 
+    - name: Resolve pnpm version
+      id: pnpm-version
+      shell: bash
+      # When the action is consumed locally (`uses: ./`, e.g. this repo dogfooding
+      # itself), `github.action_path` ends in `/.`, which breaks pnpm/action-setup's
+      # `package_json_file` read ("No pnpm version is specified"). Resolve the version
+      # via Node (which normalizes the path) and pass it explicitly instead.
+      run: |
+        pm=$(node -p "require('${{ github.action_path }}/package.json').packageManager")
+        v="${pm#pnpm@}"
+        echo "version=${v%%+*}" >> "$GITHUB_OUTPUT"
+
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
-        package_json_file: ${{ github.action_path }}/package.json
+        version: ${{ steps.pnpm-version.outputs.version }}
 
     - name: Setup Node 24
       uses: actions/setup-node@v4
       with:
         node-version: '24'
-        cache: pnpm
-        cache-dependency-path: ${{ github.action_path }}/pnpm-lock.yaml
+        # No pnpm store cache: setup-node's cache-dependency-path rejects the `/.`
+        # that `github.action_path` carries under local (`./`) use, and the action's
+        # lockfile lives outside the consumer's workspace anyway. Only 3 prod deps
+        # install, so the cache buys little.
 
     - name: Install runtime dependencies
       shell: bash

@@ -1,0 +1,22 @@
+name: PR Monitor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  monitor:
+    name: Check All Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Dogfood: run this repo's own action (`./`) as the aggregate gate. It
+      # excludes its own workflow run and waits on every other run (Tests,
+      # Testing Conventions) before reporting their combined status.
+      - uses: ./

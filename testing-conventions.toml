@@ -1,57 +1,68 @@
 # testing-conventions config — enforces the colocated-test and coverage rules on
 # the TypeScript unit suite under `src/`. See https://github.com/thekevinscott/testing-conventions
 #
-# Coverage floor for the unit suite (vitest v8 metrics). Test files and `*.d.ts`
-# are excluded automatically; the exemptions below are the only other omissions.
+# The coverage rule measures the whole `src/` tree against this floor — the CLI runs
+# Vitest itself, so `vitest.config.mts` only scopes the local developer report, not
+# what CI counts. Every runtime file is covered by a colocated test; type-only
+# modules and `*.d.ts` carry no runtime to measure.
 [typescript]
 coverage = { lines = 100, branches = 100, functions = 100, statements = 100 }
 
 # Exemptions are explicit and reason-required. Paths are relative to the scanned
 # root (`src/`). Each entry lifts the named rules for one file and is a hard error
-# if its path stops pointing at a real file, so the list can't quietly rot.
-
-# Entry shim: wires the Action's environment to run() and reports failure. Its one
-# call is exercised at runtime, not by units — run()'s logic is covered by run.test.ts.
-[[typescript.exempt]]
-path = "entry.ts"
-rules = ["colocated-test", "coverage"]
-reason = "entry shim; delegates to run(), which is unit-tested in run.test.ts"
+# if its path stops pointing at a real file, so the list can't quietly rot. These
+# lift only the colocated-test presence rule — the tool no longer permits whole-file
+# coverage exemptions, so files with runtime code are covered, not exempted.
 
 # Type-only declarations (interfaces and aliases) that erase at runtime, so there
-# is no behavior to unit-test or measure.
+# is no behavior to unit-test.
 [[typescript.exempt]]
 path = "types.ts"
-rules = ["colocated-test", "coverage"]
-reason = "type-only declarations; no runtime code to test or cover"
+rules = ["colocated-test"]
+reason = "type-only declarations; no runtime code to test"
 
 # Per-directory re-export barrels: no logic of their own; each forwarded symbol is
 # unit-tested in its own colocated file.
 [[typescript.exempt]]
 path = "checks/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "config/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "env/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "github/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "messages/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "timing/index.ts"
-rules = ["colocated-test", "coverage"]
+rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+# Unit tests that isolate by mocking a first-party collaborator — exactly what the
+# unit-lint rule requires. They are unit tests, not integration tests, so the
+# integration suite's no-first-party-mock rule is waived here (it scans the same
+# `*.test.ts` files).
+[[typescript.exempt]]
+path = "entry.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (run) it isolates, as unit lint requires"
+
+[[typescript.exempt]]
+path = "run.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (monitor) it isolates, as unit lint requires"
