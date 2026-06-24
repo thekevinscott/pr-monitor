@@ -52,3 +52,17 @@ reason = "re-export barrel; forwarded symbols are tested in their own files"
 path = "timing/index.ts"
 rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+# Unit tests that isolate by mocking a first-party collaborator — exactly what the
+# unit-lint rule requires. They are unit tests, not integration tests, so the
+# integration suite's no-first-party-mock rule is waived here (it scans the same
+# `*.test.ts` files).
+[[typescript.exempt]]
+path = "entry.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (run) it isolates, as unit lint requires"
+
+[[typescript.exempt]]
+path = "run.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (monitor) it isolates, as unit lint requires"
