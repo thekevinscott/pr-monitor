@@ -53,12 +53,12 @@ runs:
         echo "version=${v%%+*}" >> "$GITHUB_OUTPUT"
 
     - name: Setup pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
       with:
         version: ${{ steps.pnpm-version.outputs.version }}
 
     - name: Setup Node 24
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '24'
         # No pnpm store cache: setup-node's cache-dependency-path rejects the `/.`
