@@ -1,0 +1,30 @@
+name: Re-point v1 tag to main
+
+# Rolling release: this action is consumed by repos that pin `@v1` and expect to
+# track the latest `main` immediately (no per-consumer SHA bumps). On every push
+# to main we force-move the `v1` tag to the new HEAD. The action runs from source
+# (`tsx src/entry.ts`) at runtime, so moving the tag is sufficient — no dist build.
+#
+# Note: bugs auto-propagate and are fixed forward. For a *deliberate* breaking
+# change, either update consumers in lockstep or cut `v2` and migrate them.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: move-v1
+  cancel-in-progress: true
+
+jobs:
+  move-v1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Re-point v1 → main HEAD
+        run: |
+          git tag -f v1
+          git push origin -f v1
