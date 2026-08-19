@@ -15,6 +15,10 @@ export interface MonitorParams {
 export interface WorkflowRunSummary {
   id: number;
   name: string;
+  /** Workflow file path, e.g. `.github/workflows/test.yml` — the key willfire predicts on. */
+  path: string;
+  /** Triggering event; only `pull_request` runs are comparable to a PR prediction. */
+  event: string;
   status: string;
   conclusion: string | null;
 }
