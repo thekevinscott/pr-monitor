@@ -9,14 +9,19 @@ on:
 permissions:
   actions: read
   contents: read
+  # willfire reads the PR and its changed files to predict which workflows dispatch.
+  pull-requests: read
 
 jobs:
   monitor:
     name: Check All Workflows
     runs-on: ubuntu-latest
+    # The action has no timeout of its own — this is the backstop. If a predicted
+    # run never dispatches, the gate waits here until the job is killed.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       # Dogfood: run this repo's own action (`./`) as the aggregate gate. It
-      # excludes its own workflow run and waits on every other run (Tests,
-      # Testing Conventions) before reporting their combined status.
+      # predicts the runs this PR should produce (Tests, Testing Conventions),
+      # excludes its own workflow, and waits for exactly that set to finish.
       - uses: ./

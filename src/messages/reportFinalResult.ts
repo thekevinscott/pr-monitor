@@ -1,18 +1,14 @@
-import type { Classification } from '../types';
+import type { RunComparison } from '../types';
 
 export interface ResultEffects {
   log: (msg: string) => void;
   setFailed: (msg: string) => void;
 }
 
-export function reportFinalResult(classification: Classification, effects: ResultEffects): void {
-  if (classification.nonPassing.length > 0) {
-    effects.setFailed(`Non-passing runs: ${JSON.stringify(classification.nonPassing)}`);
+export function reportFinalResult(comparison: RunComparison, effects: ResultEffects): void {
+  if (comparison.nonPassing.length > 0) {
+    effects.setFailed(`Non-passing runs: ${JSON.stringify(comparison.nonPassing)}`);
     return;
   }
-  if (classification.relevantCount === 0) {
-    effects.log('No other workflow runs to monitor (minimum-checks is 0) - treating as docs-only PR');
-    return;
-  }
-  effects.log(`All ${classification.relevantCount} workflow runs completed successfully`);
+  effects.log(`${comparison.matched.length} predicted workflow runs completed successfully`);
 }

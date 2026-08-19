@@ -241,4 +241,26 @@ describe('predicted run set', () => {
     });
     expect(usedSha).toBe(HEAD_SHA);
   });
+
+  test('GITHUB_WORKFLOW_REF unset -> red rather than a bad comparison', async () => {
+    delete process.env.GITHUB_WORKFLOW_REF;
+    const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
+    expect(failures[0]).toMatch(/GITHUB_WORKFLOW_REF/);
+    expect(polls).toBe(0);
+  });
+
+  test('no pull_request payload -> red, since there is nothing to predict against', async () => {
+    const setFailed = vi.fn();
+    await monitor({
+      github: makeGithub({ polls: [[self, run(TESTS)]] }),
+      context: {
+        repo: { owner: 'o', repo: 'r' },
+        sha: 'merge-sha',
+        payload: {},
+        runId: SELF_RUN_ID,
+      } as unknown as MonitorParams['context'],
+      core: { setFailed } as unknown as MonitorParams['core'],
+    });
+    expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
+  });
 });

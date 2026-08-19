@@ -1,8 +1,13 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
-import type { GitHub } from '@actions/github/lib/utils';
+import type { Octokit as RestOctokit } from '@octokit/rest';
 
-export type Octokit = InstanceType<typeof GitHub>;
+/**
+ * willfire's `predict` takes an `@octokit/rest` client, and the workflow-runs
+ * endpoint is identical on it, so the action builds one client and uses it for
+ * both the prediction and the poll.
+ */
+export type Octokit = RestOctokit;
 export type GitHubContextType = typeof GitHubContext;
 export type CoreModule = typeof Core;
 
@@ -23,16 +28,20 @@ export interface WorkflowRunSummary {
   conclusion: string | null;
 }
 
-export interface Classification {
-  inProgress: string[];
-  nonPassing: string[];
-  relevantCount: number;
+/** The workflow files willfire says this PR will produce runs for. */
+export interface ExpectedWorkflows {
+  /** Must appear and must finish. */
+  required: string[];
+  /** May or may not appear; if one does, it still has to pass. */
+  tolerated: string[];
 }
 
-export interface Config {
-  preSleepMs: number;
-  checkIntervalMs: number;
-  maxDurationMs: number;
-  minimumChecks: number;
-  excludedJobs: string[];
+export interface RunComparison {
+  /** Observed runs no prediction accounts for — the gate cannot vouch for the set. */
+  unexpected: string[];
+  /** Required workflows with no run yet. */
+  missing: string[];
+  matched: string[];
+  inProgress: string[];
+  nonPassing: string[];
 }

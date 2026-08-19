@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
-import { context, getOctokit } from '@actions/github';
+import { context } from '@actions/github';
+import { Octokit } from '@octokit/rest';
 import { monitor } from './monitor';
 
 export async function run(): Promise<void> {
@@ -8,6 +9,5 @@ export async function run(): Promise<void> {
     core.setFailed('GITHUB_TOKEN env var is required');
     return;
   }
-  const github = getOctokit(token);
-  await monitor({ github, context, core });
+  await monitor({ github: new Octokit({ auth: token }), context, core });
 }

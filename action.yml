@@ -1,45 +1,18 @@
 name: 'PR Monitor'
-description: 'Waits for all other workflow runs to complete and reports aggregate status'
+description: 'Predicts the workflow runs a PR will produce and gates on that exact set completing'
 author: 'thekevinscott'
 
 inputs:
-  job-name:
-    description: 'Deprecated and optional. The action now excludes its own workflow run automatically via the run ID, so this is no longer required. Retained for backward compatibility.'
-    required: false
-    default: ''
-  excluded-jobs:
-    description: 'Comma-separated list of workflow run names to exclude from monitoring'
-    required: false
-    default: ''
-  pre-sleep:
-    description: 'Time in seconds to wait before checking (allows other workflows to start). Setup time (Node, pnpm install) is subtracted from this — if setup takes 8s and pre-sleep is 10s, the script sleeps 2s more.'
-    required: false
-    default: '10'
-  check-interval:
-    description: 'Time in seconds between status checks'
-    required: false
-    default: '5'
-  timeout:
-    description: 'Maximum time in minutes to wait for all checks'
-    required: false
-    default: '10'
-  minimum-checks:
-    description: 'Minimum number of non-excluded workflow runs that must appear before declaring success. Default 1 prevents the gate from passing before any other workflows register; set to 0 to allow docs-only PRs (with no other workflow runs) to pass.'
-    required: false
-    default: '1'
   github-token:
-    description: 'GitHub token for API access'
+    description: >-
+      GitHub token for API access. Needs `contents: read`, `actions: read`, and
+      `pull-requests: read`.
     required: false
     default: ${{ github.token }}
 
 runs:
   using: 'composite'
   steps:
-    - name: Record action start (for pre-sleep absorption)
-      id: timer
-      shell: bash
-      run: echo "ms=$(($(date +%s%N)/1000000))" >> "$GITHUB_OUTPUT"
-
     - name: Resolve pnpm version
       id: pnpm-version
       shell: bash
@@ -63,8 +36,7 @@ runs:
         node-version: '24'
         # No pnpm store cache: setup-node's cache-dependency-path rejects the `/.`
         # that `github.action_path` carries under local (`./`) use, and the action's
-        # lockfile lives outside the consumer's workspace anyway. Only 3 prod deps
-        # install, so the cache buys little.
+        # lockfile lives outside the consumer's workspace anyway.
 
     - name: Install runtime dependencies
       shell: bash
@@ -76,13 +48,6 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        JOB_NAME: ${{ inputs.job-name }}
-        EXCLUDED_JOBS: ${{ inputs.excluded-jobs }}
-        PRE_SLEEP: ${{ inputs.pre-sleep }}
-        CHECK_INTERVAL: ${{ inputs.check-interval }}
-        TIMEOUT: ${{ inputs.timeout }}
-        MINIMUM_CHECKS: ${{ inputs.minimum-checks }}
-        ACTION_START_MS: ${{ steps.timer.outputs.ms }}
       run: ./node_modules/.bin/tsx src/entry.ts
 
 branding:

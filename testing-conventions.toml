@@ -29,22 +29,17 @@ rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
-path = "config/index.ts"
-rules = ["colocated-test"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "env/index.ts"
-rules = ["colocated-test"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
 path = "github/index.ts"
 rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "messages/index.ts"
+rules = ["colocated-test"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "predict/index.ts"
 rules = ["colocated-test"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 

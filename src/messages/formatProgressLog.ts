@@ -1,17 +1,13 @@
-export interface ProgressContext {
-  inProgress: string[];
-  relevantCount: number;
-  minimumChecks: number;
-  durationSec: number;
-}
+import type { RunComparison } from '../types';
 
-export function formatProgressLog(ctx: ProgressContext): string {
+/** One line per poll, naming what the gate is still waiting on. */
+export function formatProgressLog(comparison: RunComparison): string {
   const parts: string[] = [];
-  if (ctx.relevantCount < ctx.minimumChecks) {
-    parts.push(`waiting for runs: ${ctx.relevantCount}/${ctx.minimumChecks}`);
+  if (comparison.missing.length > 0) {
+    parts.push(`not started: ${JSON.stringify(comparison.missing)}`);
   }
-  if (ctx.inProgress.length > 0) {
-    parts.push(`in progress: ${JSON.stringify(ctx.inProgress)}`);
+  if (comparison.inProgress.length > 0) {
+    parts.push(`in progress: ${JSON.stringify(comparison.inProgress)}`);
   }
-  return `${parts.join(' | ')} | elapsed: ${ctx.durationSec}s`;
+  return parts.join(' | ');
 }
