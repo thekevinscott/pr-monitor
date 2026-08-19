@@ -10,7 +10,10 @@ vi.mock('@actions/github', async () => {
   return { ...actual, context: { repo: { owner: 'o', repo: 'r' }, sha: 'abc', payload: {} } };
 });
 
-vi.mock('@octokit/rest', () => ({ Octokit: vi.fn(() => ({ rest: {} })) }));
+vi.mock('@octokit/rest', async () => {
+  const actual = await vi.importActual<typeof import('@octokit/rest')>('@octokit/rest');
+  return { ...actual, Octokit: vi.fn(() => ({ rest: {} })) };
+});
 
 vi.mock('./monitor', async () => {
   const actual = await vi.importActual<typeof import('./monitor')>('./monitor');
