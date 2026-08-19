@@ -21,3 +21,17 @@ jobs:
       languages: '["typescript"]'
       source: src
       config: testing-conventions.toml
+      # `@v0` is rolling, so new gates arrive on their own. Name the ones that apply
+      # here rather than take every gate the tool grows; each omission is a fact about
+      # this repo, not a waiver of a failing check. Diff-scoped variants ride along —
+      # colocated-test brings co-change, unit-coverage brings the changed-line job.
+      #
+      # Left out:
+      #   packaging — the action runs `tsx src/entry.ts` directly. There is no build
+      #     step and no built artifact to inspect, so the gate packs the source tree
+      #     and reports the 14 colocated `*.test.ts` files as shipped test files.
+      #   mutation  — needs `@stryker-mutator/core` and a runner plugin in the
+      #     package's own deps; this repo has neither. Worth adding on its own merits,
+      #     but that is a change to how the repo is tested, not part of this one.
+      #   e2e-verify — no attestation to keep fresh (already self-skips).
+      gates: '["colocated-test", "unit-lint", "unit-coverage", "integration-lint"]'
