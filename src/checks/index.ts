@@ -1,2 +1,2 @@
-export { classifyWorkflowRuns } from './classifyWorkflowRuns';
+export { compareRuns } from './compareRuns';
 export { isPassingConclusion } from './isPassingConclusion';

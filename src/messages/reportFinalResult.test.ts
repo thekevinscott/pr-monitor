@@ -1,5 +1,14 @@
 import { expect, test, vi } from 'vitest';
 import { reportFinalResult } from './reportFinalResult';
+import type { RunComparison } from '../types';
+
+const base: RunComparison = {
+  unexpected: [],
+  missing: [],
+  matched: [],
+  inProgress: [],
+  nonPassing: [],
+};
 
 function effects() {
   return { log: vi.fn(), setFailed: vi.fn() };
@@ -7,23 +16,21 @@ function effects() {
 
 test('non-passing → setFailed with list', () => {
   const e = effects();
-  reportFinalResult({ inProgress: [], nonPassing: ['Test (cancelled)'], relevantCount: 1 }, e);
-  expect(e.setFailed).toHaveBeenCalledWith('Non-passing runs: ["Test (cancelled)"]');
+  reportFinalResult({ ...base, nonPassing: ['test.yml (cancelled)'] }, e);
+  expect(e.setFailed).toHaveBeenCalledWith('Non-passing runs: ["test.yml (cancelled)"]');
   expect(e.log).not.toHaveBeenCalled();
 });
 
-test('zero relevant → docs-only log', () => {
+test('all passing → success log with the matched count', () => {
   const e = effects();
-  reportFinalResult({ inProgress: [], nonPassing: [], relevantCount: 0 }, e);
-  expect(e.log).toHaveBeenCalledWith(
-    'No other workflow runs to monitor (minimum-checks is 0) - treating as docs-only PR',
-  );
+  reportFinalResult({ ...base, matched: ['a.yml', 'b.yml', 'c.yml'] }, e);
+  expect(e.log).toHaveBeenCalledWith('3 predicted workflow runs completed successfully');
   expect(e.setFailed).not.toHaveBeenCalled();
 });
 
-test('all passing → success log with count', () => {
+test('nothing predicted → reports zero rather than failing', () => {
   const e = effects();
-  reportFinalResult({ inProgress: [], nonPassing: [], relevantCount: 3 }, e);
-  expect(e.log).toHaveBeenCalledWith('All 3 workflow runs completed successfully');
+  reportFinalResult(base, e);
+  expect(e.log).toHaveBeenCalledWith('0 predicted workflow runs completed successfully');
   expect(e.setFailed).not.toHaveBeenCalled();
 });

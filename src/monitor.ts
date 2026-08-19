@@ -1,69 +1,70 @@
+import { predict } from 'willfire';
 import type { MonitorParams } from './types';
-import { envInt } from './env';
-import { sleep, computeRemainingPreSleep } from './timing';
-import { readConfig } from './config';
-import { resolveCommitSha, fetchWorkflowRuns } from './github';
-import { classifyWorkflowRuns } from './checks';
-import { formatProgressLog, formatTimeoutFailure, reportFinalResult } from './messages';
+import { sleep } from './timing';
+import {
+  fetchWorkflowRuns,
+  resolveCommitSha,
+  resolvePullNumber,
+  resolveSelfWorkflowPath,
+} from './github';
+import { compareRuns } from './checks';
+import { expectedWorkflows } from './predict';
+import { formatProgressLog, formatUnexpectedFailure, reportFinalResult } from './messages';
 
+const POLL_INTERVAL_MS = 5_000;
+
+/**
+ * Gate on the set of workflow runs willfire says this PR will produce: stay
+ * yellow until every predicted run exists and has finished, red if the observed
+ * set is not the predicted one.
+ *
+ * There is no timeout — the backstop is the caller's own `timeout-minutes`.
+ */
 export async function monitor({ github, context, core }: MonitorParams): Promise<void> {
-  const config = readConfig();
   const { owner, repo } = context.repo;
+
+  const selfPath = resolveSelfWorkflowPath(process.env.GITHUB_WORKFLOW_REF);
+  if (selfPath === null) {
+    core.setFailed('GITHUB_WORKFLOW_REF is unset or malformed; cannot identify this workflow');
+    return;
+  }
+
+  const pullNumber = resolvePullNumber(context);
+  if (pullNumber === null) {
+    core.setFailed('pr-monitor gates a pull request; no pull_request payload on this event');
+    return;
+  }
+
+  const prediction = await predict(github, `${owner}/${repo}`, pullNumber);
+  const expected = expectedWorkflows(prediction, selfPath);
   const sha = resolveCommitSha(context);
-  const selfRunId = context.runId;
 
-  const actionStartMs = envInt('ACTION_START_MS', 0);
-  const remainingPreSleep = computeRemainingPreSleep(config.preSleepMs, actionStartMs, Date.now());
-  console.log(`Sleeping ${Math.round(remainingPreSleep / 1000)}s to allow other workflows to start`);
-  await sleep(remainingPreSleep);
-  const startMs = performance.now();
-
+  if (prediction.skip !== null) console.log(`Prediction: ${prediction.skip}`);
   console.log(`Monitoring workflow runs for commit: ${sha}`);
-  console.log(`Excluded workflows: ${JSON.stringify(config.excludedJobs)}`);
-
-  // Exclude this gate's own run; everything else on the SHA must finish.
-  const fetch = async () =>
-    (await fetchWorkflowRuns(github, owner, repo, sha)).filter((r) => r.id !== selfRunId);
-
-  let runs = await fetch();
-  console.log('Found workflow runs:', runs.map((r) => r.name));
-
-  let classification = classifyWorkflowRuns(runs, config.excludedJobs);
+  console.log(`Required: ${JSON.stringify(expected.required)}`);
+  console.log(`Tolerated (willfire could not settle): ${JSON.stringify(expected.tolerated)}`);
 
   while (true) {
-    const needsMore = classification.relevantCount < config.minimumChecks;
-    if (classification.inProgress.length === 0 && !needsMore) break;
+    // Only pull_request runs are comparable to a PR prediction, and this
+    // workflow is out of scope on both sides.
+    const runs = (await fetchWorkflowRuns(github, owner, repo, sha)).filter(
+      (r) => r.event === 'pull_request' && r.path !== selfPath,
+    );
+    const comparison = compareRuns(runs, expected);
 
-    if (performance.now() - startMs > config.maxDurationMs) {
-      core.setFailed(
-        formatTimeoutFailure({
-          maxDurationMs: config.maxDurationMs,
-          needsMore,
-          relevantCount: classification.relevantCount,
-          minimumChecks: config.minimumChecks,
-          inProgress: classification.inProgress,
-        }),
-      );
+    if (comparison.unexpected.length > 0) {
+      core.setFailed(formatUnexpectedFailure(comparison.unexpected));
+      return;
+    }
+    if (comparison.missing.length === 0 && comparison.inProgress.length === 0) {
+      reportFinalResult(comparison, {
+        log: (msg) => console.log(msg),
+        setFailed: (msg) => core.setFailed(msg),
+      });
       return;
     }
 
-    const durationSec = Math.round((performance.now() - startMs) / 1000);
-    console.log(
-      formatProgressLog({
-        inProgress: classification.inProgress,
-        relevantCount: classification.relevantCount,
-        minimumChecks: config.minimumChecks,
-        durationSec,
-      }),
-    );
-
-    await sleep(config.checkIntervalMs);
-    runs = await fetch();
-    classification = classifyWorkflowRuns(runs, config.excludedJobs);
+    console.log(formatProgressLog(comparison));
+    await sleep(POLL_INTERVAL_MS);
   }
-
-  reportFinalResult(classification, {
-    log: (msg) => console.log(msg),
-    setFailed: (msg) => core.setFailed(msg),
-  });
 }

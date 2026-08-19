@@ -1,16 +1,18 @@
 # PR Monitor
 
-A GitHub Action that waits for all other workflow checks to complete and reports aggregate status. Use this as a single required check in branch protection rules instead of listing every workflow.
+A GitHub Action that predicts which workflow runs a pull request will produce, then gates on exactly that set completing successfully. Use it as a single required check in branch protection instead of listing every workflow.
 
 ## Why?
 
-Instead of maintaining a list of required checks that needs updating every time you add a workflow, use PR Monitor as your single required check. It will:
+Instead of maintaining a list of required checks that needs updating every time you add a workflow, use PR Monitor as your single required check.
 
-- Wait for all other workflow runs on the PR's head commit to complete
-- Fail if any workflow run fails, is cancelled, or times out
-- Pass only if every other workflow run finishes with a `success`, `skipped`, `neutral`, or `stale` conclusion
-- Require at least N non-excluded workflow runs to have appeared (default `1`) so the gate can't pass before other workflows register
-- Set `minimum-checks: 0` to allow docs-only PRs (no other workflow runs) to pass through
+The hard part of that job is knowing when everything has run. GitHub's dispatch decision is server-side and unpublished — no API tells you which workflows will fire for a PR after branch, path, and type filters. Earlier versions of this action guessed: sleep a while, require at least *N* runs to have appeared, give up after a timeout.
+
+It no longer guesses. [willfire](https://github.com/thekevinscott/willfire) evaluates the repo's workflow files against the PR's base branch, changed files, and head commit, and returns the set of runs GitHub will create. The gate is then a set comparison:
+
+- Stay yellow until every predicted run exists and has finished
+- Go red if a predicted run finishes badly
+- Go red if a run appears that nothing predicted — the prediction and reality disagree, so the gate cannot vouch for the check set
 
 ## Usage
 
@@ -25,70 +27,76 @@ on:
     branches:
       - main
 
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
 jobs:
   monitor:
     name: 'Check All Workflows'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: thekevinscott/pr-monitor@v1
 ```
 
-Then set "Check All Workflows" as your only required check in branch protection. Keep this in its own workflow with no other jobs — the action excludes its own *workflow run*, so any sibling jobs in the same workflow would be skipped from monitoring.
+Then set "Check All Workflows" as your only required check in branch protection.
+
+Keep this in its own workflow with no other jobs — the action excludes its own *workflow file* from both sides of the comparison, so any sibling jobs in that workflow go unmonitored.
+
+**`permissions`** — if you set an explicit block, it needs all three of `actions: read`, `contents: read`, and `pull-requests: read`. The last one is new: willfire reads the PR and its changed files.
+
+**`timeout-minutes`** — the action has no timeout of its own. This is the backstop. If a predicted run never dispatches, the gate waits until the job is killed.
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `job-name` | Deprecated and optional. The action now excludes its own run via the run ID, so this is no longer needed. Retained for backward compatibility | No | `''` |
-| `excluded-jobs` | Comma-separated workflow run names to exclude from monitoring | No | `''` |
-| `pre-sleep` | Seconds to wait before checking | No | `10` |
-| `check-interval` | Seconds between status checks | No | `5` |
-| `timeout` | Maximum minutes to wait | No | `10` |
-| `minimum-checks` | Minimum non-excluded workflow runs that must appear before declaring success. Default `1` prevents the gate from passing before other workflows register; set `0` to allow docs-only PRs (no other workflow runs) to pass | No | `1` |
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
 
-## Example with exclusions
-
-```yaml
-jobs:
-  monitor:
-    name: 'PR Status'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: thekevinscott/pr-monitor@v1
-        with:
-          excluded-jobs: 'Deploy Preview,Notify Slack'
-          timeout: '15'
-```
+That is the whole surface. There is nothing to tune.
 
 ## How it works
 
-1. Waits `pre-sleep` seconds for other workflows to register
-2. Polls the GitHub Actions API (`listWorkflowRunsForRepo`) for every workflow run on the PR's head commit, every `check-interval` seconds (paginating through all runs)
-3. Excludes its own run (by run ID) and any workflows named in `excluded-jobs`
-4. Waits until no workflow run is still queued or in progress
-5. Fails if any completed run did not conclude `success`, `skipped`, `neutral`, or `stale`
-6. Times out after `timeout` minutes if runs are still pending
+1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself
+2. Calls willfire's `predict()` for the PR, producing the entries GitHub should create
+3. Reduces those entries to two sets of workflow files:
+   - **required** — will dispatch, so a run must appear and must finish
+   - **tolerated** — willfire could not settle whether the workflow dispatches at all (for example `branches` and `branches-ignore` both set). Not required, but accepted if it turns up, and still has to pass
+4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs
+5. Fails immediately on any run outside both sets
+6. Waits while any required run is missing or any run is unfinished
+7. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
 
-## Why workflow runs, not check runs?
+A `[skip ci]` commit predicts nothing, so nothing is required and the gate passes.
 
-Earlier versions polled the **Checks API** and concluded the moment nothing was *currently* in progress. That races against the build: a `needs:`-gated job has no check run until its dependency finishes, and a fan-out larger than the runner pool registers its jobs in batches — so "nothing in progress right now" is not "everything has run," and the gate could go green before heavy jobs even started.
+## Why compare workflow runs, not check runs?
 
-This version polls **workflow runs** instead. GitHub creates every workflow run for a commit within seconds of the push, and a run stays non-terminal until *all* of its jobs finish — including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children. Waiting for "no run pending" therefore genuinely means "everything finished," with no transient gaps to race against, and it stays dynamic: a docs PR with one workflow waits for one run; a heavy PR waits for all of them.
+willfire predicts at job granularity, but the gate compares at workflow-run granularity. A workflow run stays non-terminal until *all* of its jobs finish — including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children — so "the run finished" already means "every job finished," with no transient gaps to race against.
 
-> **Known limitation:** workflows triggered by `workflow_run` (i.e. chained *after* another workflow completes) are created late and may not be in the initial run list. This is a rare topology and is not covered.
+It also makes willfire's job-level `unknown` verdicts harmless. A matrix computed at runtime from another job's output cannot be expanded statically, but the run exists either way and still has to go green.
 
-## Upgrading
+## Limitations
 
-A recent `v1` release changed how the gate decides everything has finished: it now monitors **workflow runs** instead of individual check runs. If you pin `thekevinscott/pr-monitor@v1` you pick this up automatically — behaviour is the same in the common case (the gate goes green once everything else finishes) and strictly more correct under `needs:`-gated jobs and large fan-outs.
+- **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
+- **The event action is inferred.** willfire derives `opened` vs `synchronize` from the PR's commit count rather than the actual event ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)). If your workflows narrow `types:`, a wrong guess flips a dispatch verdict and reds a good build. Workflows with a bare `on: pull_request` are unaffected.
+- **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`.
 
-- `job-name` is **no longer required** — the action excludes its own run by run ID. Existing configs that still pass it keep working.
-- `excluded-jobs` now matches **workflow run names** (the workflow's `name:`), not job names.
-- Excluding by run ID means the gate excludes its *entire* workflow run. Keep the gate in a dedicated workflow (as shown above); if you add other jobs to that same workflow, they won't be monitored.
+## Upgrading from the check-count gate
+
+`v1` rolls to `main`, so this arrives on merge. The inputs `job-name`, `excluded-jobs`, `pre-sleep`, `check-interval`, `timeout`, and `minimum-checks` are **removed** — every one of them existed to compensate for not knowing the expected run set. Configs still passing them keep working; GitHub emits an "Unexpected input(s)" warning and ignores them.
+
+Two things to do:
+
+1. Add `pull-requests: read` to any explicit `permissions:` block
+2. Add `timeout-minutes` to the gate job, replacing the old `timeout` input
+
+`excluded-jobs` has no replacement. It existed to skip workflows the gate would otherwise wait on forever; the prediction now decides that, and excluding a workflow that genuinely dispatches would defeat the point of the gate.
 
 ## Development
 
-Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS entrypoint directly with the `tsx` CLI (`tsx src/entry.ts`) — no build step and no committed build artifact. Setup time (Node + `pnpm install`) is subtracted from the configured `pre-sleep`, so when setup ≤ pre-sleep the perceived overhead is zero.
+Source is TypeScript under `src/`, decomposed into one function per file. The action runs the TS entrypoint directly with the `tsx` CLI (`tsx src/entry.ts`) — no build step and no committed build artifact. The package is ESM; willfire is ESM-only.
 
 This project uses [pnpm](https://pnpm.io). With [Corepack](https://nodejs.org/api/corepack.html) enabled (`corepack enable`), the pinned version in `package.json`'s `packageManager` field is used automatically.
 
@@ -99,9 +107,15 @@ pnpm run verify   # typecheck + lint + tests (100% coverage required)
 
 Individual scripts: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:coverage`.
 
-This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `Check All Workflows` gate, waiting on the other workflow runs and reporting their aggregate status.
+This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `Check All Workflows` gate against its own PRs.
 
-CI enforces all three on every PR, plus a [testing-conventions](https://github.com/thekevinscott/testing-conventions) gate (colocated unit tests + 100% unit-suite coverage) run via its reusable workflow. The coverage floor and the reason-required exemptions (the entry shim, the type-only module, and the re-export barrels) live in `testing-conventions.toml`. Locally, `vitest.config.mts` extends the shared vitest config that `testing-conventions` publishes, so `pnpm run test:coverage` is held to the same floor.
+To check a prediction by hand:
+
+```sh
+GH_TOKEN=... pnpm dlx willfire --repo thekevinscott/pr-monitor --pr 11 --json
+```
+
+CI enforces typecheck, lint, and coverage on every PR, plus a [testing-conventions](https://github.com/thekevinscott/testing-conventions) gate (colocated unit tests + 100% unit-suite coverage) run via its reusable workflow. The coverage floor and the reason-required exemptions live in `testing-conventions.toml`. Locally, `vitest.config.mts` extends the shared vitest config that `testing-conventions` publishes, so `pnpm run test:coverage` is held to the same floor.
 
 ## License
 

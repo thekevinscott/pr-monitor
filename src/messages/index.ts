@@ -1,3 +1,3 @@
-export { formatProgressLog, type ProgressContext } from './formatProgressLog';
-export { formatTimeoutFailure, type TimeoutContext } from './formatTimeoutFailure';
+export { formatProgressLog } from './formatProgressLog';
+export { formatUnexpectedFailure } from './formatUnexpectedFailure';
 export { reportFinalResult, type ResultEffects } from './reportFinalResult';

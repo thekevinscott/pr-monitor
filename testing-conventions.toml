@@ -11,46 +11,43 @@ coverage = { lines = 100, branches = 100, functions = 100, statements = 100 }
 # Exemptions are explicit and reason-required. Paths are relative to the scanned
 # root (`src/`). Each entry lifts the named rules for one file and is a hard error
 # if its path stops pointing at a real file, so the list can't quietly rot. These
-# lift only the colocated-test presence rule — the tool no longer permits whole-file
-# coverage exemptions, so files with runtime code are covered, not exempted.
+# lift the colocated-test presence rule and its commit-scoped `co-change` sibling —
+# a file with no colocated test has none to co-change either, and the two rules are
+# exempted independently. The tool no longer permits whole-file coverage exemptions,
+# so files with runtime code are covered, not exempted.
 
 # Type-only declarations (interfaces and aliases) that erase at runtime, so there
 # is no behavior to unit-test.
 [[typescript.exempt]]
 path = "types.ts"
-rules = ["colocated-test"]
+rules = ["colocated-test", "co-change"]
 reason = "type-only declarations; no runtime code to test"
 
 # Per-directory re-export barrels: no logic of their own; each forwarded symbol is
 # unit-tested in its own colocated file.
 [[typescript.exempt]]
 path = "checks/index.ts"
-rules = ["colocated-test"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "config/index.ts"
-rules = ["colocated-test"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "env/index.ts"
-rules = ["colocated-test"]
+rules = ["colocated-test", "co-change"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "github/index.ts"
-rules = ["colocated-test"]
+rules = ["colocated-test", "co-change"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "messages/index.ts"
-rules = ["colocated-test"]
+rules = ["colocated-test", "co-change"]
+reason = "re-export barrel; forwarded symbols are tested in their own files"
+
+[[typescript.exempt]]
+path = "predict/index.ts"
+rules = ["colocated-test", "co-change"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 [[typescript.exempt]]
 path = "timing/index.ts"
-rules = ["colocated-test"]
+rules = ["colocated-test", "co-change"]
 reason = "re-export barrel; forwarded symbols are tested in their own files"
 
 # Unit tests that isolate by mocking a first-party collaborator — exactly what the

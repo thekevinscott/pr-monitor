@@ -7,11 +7,12 @@ vi.mock('@actions/core', async () => {
 
 vi.mock('@actions/github', async () => {
   const actual = await vi.importActual<typeof import('@actions/github')>('@actions/github');
-  return {
-    ...actual,
-    getOctokit: vi.fn(() => ({ rest: { checks: { listForRef: vi.fn() } } })),
-    context: { repo: { owner: 'o', repo: 'r' }, sha: 'abc', payload: {} },
-  };
+  return { ...actual, context: { repo: { owner: 'o', repo: 'r' }, sha: 'abc', payload: {} } };
+});
+
+vi.mock('@octokit/rest', async () => {
+  const actual = await vi.importActual<typeof import('@octokit/rest')>('@octokit/rest');
+  return { ...actual, Octokit: vi.fn(() => ({ rest: {} })) };
 });
 
 vi.mock('./monitor', async () => {
@@ -20,7 +21,7 @@ vi.mock('./monitor', async () => {
 });
 
 import * as core from '@actions/core';
-import { getOctokit } from '@actions/github';
+import { Octokit } from '@octokit/rest';
 import { monitor } from './monitor';
 import { run } from './run';
 
@@ -38,10 +39,10 @@ test('missing GITHUB_TOKEN → setFailed and does not call monitor', async () =>
   expect(monitor).not.toHaveBeenCalled();
 });
 
-test('with GITHUB_TOKEN → builds octokit and calls monitor', async () => {
+test('with GITHUB_TOKEN → builds an authenticated octokit and calls monitor', async () => {
   process.env.GITHUB_TOKEN = 'tok';
   await run();
-  expect(getOctokit).toHaveBeenCalledWith('tok');
+  expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
   expect(monitor).toHaveBeenCalledTimes(1);
   expect(core.setFailed).not.toHaveBeenCalled();
 });

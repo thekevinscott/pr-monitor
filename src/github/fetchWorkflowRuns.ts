@@ -26,6 +26,8 @@ export async function fetchWorkflowRuns(
       runs.push({
         id: r.id,
         name: r.name ?? '',
+        path: r.path ?? '',
+        event: r.event ?? '',
         status: r.status ?? '',
         conclusion: r.conclusion ?? null,
       });

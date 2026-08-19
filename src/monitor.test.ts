@@ -3,189 +3,264 @@ import { monitor } from './monitor';
 import type { WorkflowRunSummary, MonitorParams } from './types';
 
 const SELF_RUN_ID = 999;
+const SELF_PATH = '.github/workflows/pr-monitor.yml';
+const HEAD_SHA = 'head-sha';
 
-const DEFAULT_ENV: Record<string, string> = {
-  JOB_NAME: 'Gate',
-  EXCLUDED_JOBS: '',
-  PRE_SLEEP: '0',
-  CHECK_INTERVAL: '0',
-  TIMEOUT: '5',
-  MINIMUM_CHECKS: '1',
+// ------------------------------------------------------------------ fixtures
+
+const wf = (name: string, on = 'on: pull_request') =>
+  `name: ${name}\n${on}\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n`;
+
+const YAML: Record<string, string> = {
+  [SELF_PATH]: wf('PR Monitor'),
+  '.github/workflows/test.yml': wf('Tests'),
+  '.github/workflows/conventions.yml': wf('Conventions'),
+  // paths filter that no fixture PR touches → willfire predicts `no-dispatch`
+  '.github/workflows/docs.yml': wf('Docs', 'on:\n  pull_request:\n    paths:\n      - docs/**'),
+  // branches + branches-ignore together → willfire predicts a workflow-level `unknown`
+  '.github/workflows/murky.yml': wf(
+    'Murky',
+    'on:\n  pull_request:\n    branches: [main]\n    branches-ignore: [wip]',
+  ),
 };
 
-const ENV_KEYS = [...Object.keys(DEFAULT_ENV), 'ACTION_START_MS'] as const;
+const ALL_WORKFLOWS = Object.keys(YAML);
 
-function setEnv(overrides: Record<string, string | undefined> = {}) {
-  for (const k of ENV_KEYS) delete process.env[k];
-  for (const [k, v] of Object.entries({ ...DEFAULT_ENV, ...overrides })) {
-    if (v !== undefined) process.env[k] = v;
-  }
+interface Scenario {
+  /** Workflow files the repo exposes; defaults to the gate plus Tests. */
+  workflows?: string[];
+  /** Files the PR changes. */
+  files?: string[];
+  /** Head commit message — carries `[skip ci]` in the skip case. */
+  message?: string;
+  /** One entry per poll; the last entry repeats. */
+  polls: WorkflowRunSummary[][];
 }
 
-function makeContext(
-  payload: Record<string, unknown> = {},
-  sha = 'abc123',
-  runId = SELF_RUN_ID,
-): MonitorParams['context'] {
-  return { repo: { owner: 'o', repo: 'r' }, sha, payload, runId } as unknown as MonitorParams['context'];
-}
-
-function makeGithub(sequence: WorkflowRunSummary[][]): MonitorParams['github'] {
-  let i = 0;
+function run(
+  path: string,
+  over: Partial<WorkflowRunSummary> = {},
+): WorkflowRunSummary {
   return {
-    rest: {
-      actions: {
-        listWorkflowRunsForRepo: async () => {
-          const runs = sequence[Math.min(i, sequence.length - 1)];
-          i++;
-          return { data: { total_count: runs.length, workflow_runs: runs } };
-        },
+    id: ALL_WORKFLOWS.indexOf(path) + 1,
+    name: path,
+    path,
+    event: 'pull_request',
+    status: 'completed',
+    conclusion: 'success',
+    ...over,
+  };
+}
+
+/** The gate's own run — same workflow file the action is executing from. */
+const self = run(SELF_PATH, { id: SELF_RUN_ID, status: 'in_progress', conclusion: null });
+
+function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 }) {
+  const paths = scenario.workflows ?? [SELF_PATH, '.github/workflows/test.yml'];
+  const list = async () => {
+    const runs = scenario.polls[Math.min(counter.polls, scenario.polls.length - 1)];
+    counter.polls++;
+    return { data: { total_count: runs.length, workflow_runs: runs } };
+  };
+  const rest = {
+    pulls: {
+      get: async () => ({
+        data: { commits: 1, base: { ref: 'main' }, head: { sha: HEAD_SHA } },
+      }),
+      listFiles: async () => ({
+        data: (scenario.files ?? ['src/index.ts']).map((filename) => ({ filename })),
+      }),
+    },
+    repos: {
+      getCommit: async () => ({
+        data: { commit: { message: scenario.message ?? 'a normal commit' } },
+      }),
+      getContent: async ({ path }: { path: string }) => {
+        if (!(path in YAML)) throw new Error(`404 ${path}`);
+        return { data: YAML[path] };
       },
     },
+    actions: {
+      listRepoWorkflows: async () => ({
+        data: paths.map((path) => ({ path, state: 'active' })),
+      }),
+      listWorkflowRunsForRepo: list,
+    },
+  };
+  return {
+    rest,
+    paginate: async (fn: (p: unknown) => Promise<{ data: unknown }>, params: unknown) =>
+      (await fn(params)).data,
   } as unknown as MonitorParams['github'];
 }
 
-function makeCore() {
-  return { setFailed: vi.fn() } as unknown as MonitorParams['core'] & { setFailed: ReturnType<typeof vi.fn> };
+function makeContext(): MonitorParams['context'] {
+  return {
+    repo: { owner: 'o', repo: 'r' },
+    sha: 'merge-sha',
+    payload: { pull_request: { number: 5, head: { sha: HEAD_SHA } } },
+    runId: SELF_RUN_ID,
+  } as unknown as MonitorParams['context'];
 }
 
-// The gate's own run: its id matches context.runId so it is excluded by id.
-const gate: WorkflowRunSummary = { id: SELF_RUN_ID, name: 'Gate', status: 'in_progress', conclusion: null };
-
-async function run(
-  sequence: WorkflowRunSummary[][],
-  envOverrides: Record<string, string | undefined> = {},
-  context = makeContext(),
-) {
-  setEnv(envOverrides);
-  const core = makeCore();
-  await monitor({ github: makeGithub(sequence), context, core });
-  return core.setFailed.mock.calls.map((c) => c[0] as string);
+/** Run the gate; report what it failed on and how many times it polled. */
+async function gate(scenario: Scenario): Promise<{ failures: string[]; polls: number }> {
+  const setFailed = vi.fn();
+  const counter = { polls: 0 };
+  await monitor({
+    github: makeGithub(scenario, counter),
+    context: makeContext(),
+    core: { setFailed } as unknown as MonitorParams['core'],
+  });
+  return { failures: setFailed.mock.calls.map((c) => c[0] as string), polls: counter.polls };
 }
 
 beforeEach(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {});
+  // Collapse the poll interval so the loop runs at test speed.
+  vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
+    cb();
+    return 0;
+  }) as unknown as typeof setTimeout);
+  process.env.GITHUB_WORKFLOW_REF = `o/r/${SELF_PATH}@refs/pull/5/merge`;
 });
 
 afterEach(() => {
-  for (const k of ENV_KEYS) delete process.env[k];
+  vi.restoreAllMocks();
+  delete process.env.GITHUB_WORKFLOW_REF;
 });
 
-describe('end-to-end', () => {
-  test('all-success → no failures', async () => {
-    expect(await run([[gate, { id: 1, name: 'T', status: 'completed', conclusion: 'success' }]])).toEqual([]);
+describe('predicted run set', () => {
+  const TESTS = '.github/workflows/test.yml';
+  const CONVENTIONS = '.github/workflows/conventions.yml';
+  const DOCS = '.github/workflows/docs.yml';
+  const MURKY = '.github/workflows/murky.yml';
+
+  test('every predicted run present and green -> pass', async () => {
+    const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
   });
 
-  test('cancelled run (dirsql regression) → failure', async () => {
-    const failures = await run([[gate, { id: 1, name: 'Docs', status: 'completed', conclusion: 'cancelled' }]]);
-    expect(failures[0]).toMatch(/Docs \(cancelled\)/);
+  test('waits for a predicted run that has not registered yet', async () => {
+    // Poll 1 shows only the gate. The old minimum-checks heuristic settles green
+    // here; with a prediction in hand, Tests is known to be coming and is waited on.
+    const { failures, polls } = await gate({
+      polls: [[self], [self], [self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(3);
   });
 
-  test('own run is excluded by runId even when its name is not in excluded-jobs', async () => {
-    // self run named 'CI Gate' (not 'Gate'), JOB_NAME cleared → only the id can exclude it
-    const selfNamed: WorkflowRunSummary = { id: SELF_RUN_ID, name: 'CI Gate', status: 'in_progress', conclusion: null };
-    expect(await run([[selfNamed]], { JOB_NAME: '', MINIMUM_CHECKS: '0' })).toEqual([]);
+  test('waits for a predicted run that is still in progress', async () => {
+    const { failures, polls } = await gate({
+      polls: [
+        [self, run(TESTS, { status: 'in_progress', conclusion: null })],
+        [self, run(TESTS)],
+      ],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(2);
   });
 
-  test('zero relevant runs + minimum-checks=1 → timeout failure (gate-green-before-tests regression)', async () => {
-    const failures = await run([[gate]], { TIMEOUT: '0' });
-    expect(failures[0]).toMatch(/Only 0\/1 required workflow runs appeared/);
+  test('a predicted run that fails -> red naming it', async () => {
+    const { failures } = await gate({ polls: [[self, run(TESTS, { conclusion: 'failure' })]] });
+    expect(failures[0]).toMatch(/test\.yml/);
+    expect(failures[0]).toMatch(/failure/);
   });
 
-  test('zero relevant runs + minimum-checks=0 → docs-only pass', async () => {
-    expect(await run([[gate]], { MINIMUM_CHECKS: '0' })).toEqual([]);
+  test('a run nobody predicted -> red naming it', async () => {
+    // conventions.yml is not among the repo's workflows, so no entry predicts it.
+    const { failures } = await gate({ polls: [[self, run(TESTS), run(CONVENTIONS)]] });
+    expect(failures[0]).toMatch(/conventions\.yml/);
   });
 
-  test('in-progress → completed transition via polling', async () => {
-    expect(
-      await run([
-        [gate, { id: 1, name: 'T', status: 'in_progress', conclusion: null }],
-        [gate, { id: 1, name: 'T', status: 'completed', conclusion: 'success' }],
-      ]),
-    ).toEqual([]);
+  test('a workflow predicted no-dispatch is not required', async () => {
+    // docs.yml filters on docs/**; the PR touches src/, so it must not be waited on.
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, TESTS, DOCS],
+      files: ['src/index.ts'],
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
   });
 
-  test('run that registers late (needs-gated) is caught after a lull', async () => {
-    // The race the fix closes: at poll 1 only the fast run exists and it is already done;
-    // a dependent run appears at poll 2. Because the parent run stays in_progress, the loop
-    // keeps polling instead of declaring green at poll 1.
-    expect(
-      await run([
-        [gate, { id: 1, name: 'Fast', status: 'completed', conclusion: 'success' }, { id: 2, name: 'Heavy', status: 'in_progress', conclusion: null }],
-        [gate, { id: 1, name: 'Fast', status: 'completed', conclusion: 'success' }, { id: 2, name: 'Heavy', status: 'completed', conclusion: 'failure' }],
-      ]),
-    ).toEqual([expect.stringMatching(/Heavy \(failure\)/)]);
+  test('a workflow-level unknown is tolerated when absent', async () => {
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, TESTS, MURKY],
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
   });
 
-  test('stuck in_progress → timeout failure', async () => {
-    const failures = await run(
-      [[gate, { id: 1, name: 'T', status: 'in_progress', conclusion: null }]],
-      { TIMEOUT: '0' },
-    );
-    expect(failures[0]).toMatch(/Still in progress.*T/);
+  test('a workflow-level unknown is accepted when present, and still has to pass', async () => {
+    const workflows = [SELF_PATH, TESTS, MURKY];
+    const green = await gate({ workflows, polls: [[self, run(TESTS), run(MURKY)]] });
+    expect(green.failures).toEqual([]);
+
+    const red = await gate({
+      workflows,
+      polls: [[self, run(TESTS), run(MURKY, { conclusion: 'failure' })]],
+    });
+    expect(red.failures[0]).toMatch(/murky\.yml/);
   });
 
-  test('resolves PR head sha for the API call', async () => {
-    setEnv();
-    const core = makeCore();
+  test('[skip ci] head commit -> nothing predicted, nothing required', async () => {
+    const { failures } = await gate({ message: 'docs tweak [skip ci]', polls: [[self]] });
+    expect(failures).toEqual([]);
+  });
+
+  test("the gate's own workflow is neither required nor unexpected", async () => {
+    const { failures, polls } = await gate({ workflows: [SELF_PATH], polls: [[self]] });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+  });
+
+  test('a push-event run on the same sha is ignored, not treated as unexpected', async () => {
+    const { failures } = await gate({
+      polls: [[self, run(TESTS), run(CONVENTIONS, { id: 77, event: 'push' })]],
+    });
+    expect(failures).toEqual([]);
+  });
+
+  test('polls the PR head sha, not the merge sha', async () => {
     let usedSha = '';
-    const github = {
-      rest: {
-        actions: {
-          listWorkflowRunsForRepo: async ({ head_sha }: { head_sha: string }) => {
-            usedSha = head_sha;
-            return {
-              data: {
-                total_count: 2,
-                workflow_runs: [gate, { id: 1, name: 'T', status: 'completed', conclusion: 'success' }],
-              },
-            };
-          },
-        },
-      },
-    } as unknown as MonitorParams['github'];
+    const github = makeGithub({ polls: [[self, run(TESTS)]] });
+    const original = github.rest.actions.listWorkflowRunsForRepo;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (github.rest.actions as any).listWorkflowRunsForRepo = async (params: any) => {
+      usedSha = params.head_sha;
+      return original(params);
+    };
     await monitor({
       github,
-      context: makeContext({ pull_request: { head: { sha: 'pr-sha' } } }, 'merge-sha'),
-      core,
+      context: makeContext(),
+      core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
     });
-    expect(usedSha).toBe('pr-sha');
-  });
-});
-
-describe('pre-sleep absorption of setup time', () => {
-  function mockSetTimeoutImmediate() {
-    return vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
-      cb();
-      return 0;
-    }) as unknown as typeof setTimeout);
-  }
-
-  const success: WorkflowRunSummary[][] = [[gate, { id: 1, name: 'T', status: 'completed', conclusion: 'success' }]];
-
-  test('ACTION_START_MS in the past → pre-sleep is reduced to 0 when setup exceeded it', async () => {
-    setEnv({ PRE_SLEEP: '10', ACTION_START_MS: String(Date.now() - 12_000) });
-    const setTimeoutSpy = mockSetTimeoutImmediate();
-    await monitor({ github: makeGithub(success), context: makeContext(), core: makeCore() });
-    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(0);
-    setTimeoutSpy.mockRestore();
+    expect(usedSha).toBe(HEAD_SHA);
   });
 
-  test('ACTION_START_MS recent → pre-sleep reduced by elapsed setup time', async () => {
-    setEnv({ PRE_SLEEP: '10', ACTION_START_MS: String(Date.now() - 3_000) });
-    const setTimeoutSpy = mockSetTimeoutImmediate();
-    await monitor({ github: makeGithub(success), context: makeContext(), core: makeCore() });
-    const slept = setTimeoutSpy.mock.calls[0]?.[1] as number;
-    expect(slept).toBeGreaterThanOrEqual(6_900);
-    expect(slept).toBeLessThanOrEqual(7_000);
-    setTimeoutSpy.mockRestore();
+  test('GITHUB_WORKFLOW_REF unset -> red rather than a bad comparison', async () => {
+    delete process.env.GITHUB_WORKFLOW_REF;
+    const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
+    expect(failures[0]).toMatch(/GITHUB_WORKFLOW_REF/);
+    expect(polls).toBe(0);
   });
 
-  test('no ACTION_START_MS → full pre-sleep is used', async () => {
-    setEnv({ PRE_SLEEP: '7' });
-    const setTimeoutSpy = mockSetTimeoutImmediate();
-    await monitor({ github: makeGithub(success), context: makeContext(), core: makeCore() });
-    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(7_000);
-    setTimeoutSpy.mockRestore();
+  test('no pull_request payload -> red, since there is nothing to predict against', async () => {
+    const setFailed = vi.fn();
+    await monitor({
+      github: makeGithub({ polls: [[self, run(TESTS)]] }),
+      context: {
+        repo: { owner: 'o', repo: 'r' },
+        sha: 'merge-sha',
+        payload: {},
+        runId: SELF_RUN_ID,
+      } as unknown as MonitorParams['context'],
+      core: { setFailed } as unknown as MonitorParams['core'],
+    });
+    expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
   });
 });
