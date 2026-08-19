@@ -19,5 +19,5 @@ jobs:
     uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0
     with:
       languages: '["typescript"]'
-      path: src
+      source: src
       config: testing-conventions.toml
