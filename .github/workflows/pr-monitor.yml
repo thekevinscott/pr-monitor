@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   monitor:
-    name: Check All Workflows
+    name: 'CI Gate'
     runs-on: ubuntu-latest
     # The action has no timeout of its own — this is the backstop. If a predicted
     # run never dispatches, the gate waits here until the job is killed.
