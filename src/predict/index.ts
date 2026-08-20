@@ -1,1 +1,1 @@
-export { expectedWorkflows } from './expectedWorkflows';
+export { expectedChecks } from './expectedChecks';

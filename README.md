@@ -1,6 +1,6 @@
 # PR Monitor
 
-A GitHub Action that predicts which workflow runs a pull request will produce, then gates on exactly that set completing successfully. Use it as a single required check in branch protection instead of listing every workflow.
+A GitHub Action that predicts which checks a pull request will produce, then gates on exactly that set reporting and passing. Use it as a single required check in branch protection instead of listing every workflow.
 
 ## Why?
 
@@ -8,11 +8,12 @@ Instead of maintaining a list of required checks that needs updating every time 
 
 The hard part of that job is knowing when everything has run. GitHub's dispatch decision is server-side and unpublished — no API tells you which workflows will fire for a PR after branch, path, and type filters. Earlier versions of this action guessed: sleep a while, require at least *N* runs to have appeared, give up after a timeout.
 
-It no longer guesses. [willfire](https://github.com/thekevinscott/willfire) evaluates the repo's workflow files against the PR's base branch, changed files, and head commit, and returns the set of runs GitHub will create. The gate is then a set comparison:
+It no longer guesses. [willfire](https://github.com/thekevinscott/willfire) evaluates the repo's workflow files against the PR's base branch, changed files, and head commit, and returns the set of check names GitHub will create. The gate is then a set comparison:
 
 - Stay yellow until every predicted run exists and has finished
 - Go red if a predicted run finishes badly
-- Go red if a run appears that nothing predicted — the prediction and reality disagree, so the gate cannot vouch for the check set
+- Go red if a predicted check name never reports — a renamed job, a deleted one, or a matrix that stopped expanding to a combination
+- Go red if a check name reports that nothing predicted — the prediction and reality disagree, so the gate cannot vouch for the check set
 
 ## Usage
 
@@ -66,23 +67,30 @@ That is the whole surface. There is nothing to tune.
 
 1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself
 2. Calls willfire's `predict()` for the PR, producing the entries GitHub should create
-3. Reduces those entries to one set of workflow files: everything willfire does not call `no-dispatch`. Each must produce a run, and that run must finish
-4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs
-5. Fails immediately on any run outside that set
-6. Waits while any required run is missing or any run is unfinished
-7. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
+3. Turns those entries into the expected set:
+   - **check names** — every entry willfire can resolve to a name. Matrix legs expand, `name:` overrides apply, reusable-workflow callers prefix their children
+   - **workflow files** — every workflow that will dispatch. Kept alongside the names because a run can conclude before it creates a single job: a `startup_failure` creates none, and a comparison made only of names cannot see it
+   - **unresolvable entries** — a job willfire can see but cannot name. Fails immediately; see below
+4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs, and reads each surviving run's jobs
+5. Fails immediately on a run or a check name outside the expected set
+6. Waits while a predicted run is missing or unfinished — a check name has no existence before the run that creates its job
+7. Fails on a predicted check name that never reported once every run has finished
+8. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
 
 A `[skip ci]` commit predicts nothing, so nothing is required and the gate passes.
 
-## Why compare workflow runs, not check runs?
+## Why check names, and why runs are still in the loop
 
-willfire predicts at job granularity, but the gate compares at workflow-run granularity. A workflow run stays non-terminal until *all* of its jobs finish — including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children — so "the run finished" already means "every job finished," with no transient gaps to race against.
+A required status check keys on the **job's check name**, not the workflow file. Comparing workflow files is strictly coarser: a workflow can dispatch, go green, and produce a completely different set of jobs than predicted — a renamed job, a deleted one, a matrix that quietly stopped covering a combination — and a file-level comparison sees nothing wrong.
 
-It also makes willfire's job-level `unknown` verdicts harmless. A matrix computed at runtime from another job's output cannot be expanded statically, but the run exists either way and still has to go green.
+Runs still drive the waiting and the pass/fail conclusion. A run stays non-terminal until *all* of its jobs finish, including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children, so "the run finished" already means "every job finished," with no transient gaps to race against. And a job's own conclusion is the wrong thing to judge: a `continue-on-error: true` job reports `failure` while its check reports green.
+
+**Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or teach willfire to resolve the case.
 
 ## Limitations
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
+- **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job. Pin the matrix statically to use the gate on that repo.
 - **The event action is inferred.** willfire derives `opened` vs `synchronize` from the PR's commit count rather than the actual event ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)). If your workflows narrow `types:`, a wrong guess flips a dispatch verdict and reds a good build. Workflows with a bare `on: pull_request` are unaffected.
 - **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`.
 

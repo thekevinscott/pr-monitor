@@ -4,22 +4,51 @@ import type { WorkflowRunSummary, MonitorParams } from './types';
 
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
+const TESTS = '.github/workflows/test.yml';
+const CONVENTIONS = '.github/workflows/conventions.yml';
+const DOCS = '.github/workflows/docs.yml';
+const LEGS = '.github/workflows/legs.yml';
+const DYNAMIC = '.github/workflows/dynamic.yml';
 const HEAD_SHA = 'head-sha';
 
 // ------------------------------------------------------------------ fixtures
 
-const wf = (name: string, on = 'on: pull_request') =>
-  `name: ${name}\n${on}\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n`;
+const step = '    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n';
+
+const wf = (name: string, jobs: string, on = 'on: pull_request') =>
+  `name: ${name}\n${on}\njobs:\n${jobs}`;
+
+const plainJob = (id: string) => `  ${id}:\n${step}`;
 
 const YAML: Record<string, string> = {
-  [SELF_PATH]: wf('PR Monitor'),
-  '.github/workflows/test.yml': wf('Tests'),
-  '.github/workflows/conventions.yml': wf('Conventions'),
+  [SELF_PATH]: wf('PR Monitor', plainJob('monitor')),
+  [TESTS]: wf('Tests', plainJob('unit')),
+  [CONVENTIONS]: wf('Conventions', plainJob('conventions')),
   // paths filter that no fixture PR touches → willfire predicts `no-dispatch`
-  '.github/workflows/docs.yml': wf('Docs', 'on:\n  pull_request:\n    paths:\n      - docs/**'),
+  [DOCS]: wf('Docs', plainJob('docs'), 'on:\n  pull_request:\n    paths:\n      - docs/**'),
+  // static matrix → two check names willfire can resolve up front
+  [LEGS]: wf(
+    'Legs',
+    `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [20, 22]\n    steps:\n      - run: echo hi\n`,
+  ),
+  // matrix built from another job's output → willfire cannot name the checks
+  [DYNAMIC]: wf(
+    'Dynamic',
+    `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix: \${{ fromJSON(needs.setup.outputs.matrix) }}\n    steps:\n      - run: echo hi\n`,
+  ),
 };
 
 const ALL_WORKFLOWS = Object.keys(YAML);
+
+/** The check names each workflow's run reports, absent a scenario override. */
+const CHECKS: Record<string, string[]> = {
+  [SELF_PATH]: ['monitor'],
+  [TESTS]: ['unit'],
+  [CONVENTIONS]: ['conventions'],
+  [DOCS]: ['docs'],
+  [LEGS]: ['spread (20)', 'spread (22)'],
+  [DYNAMIC]: ['spread'],
+};
 
 interface Scenario {
   /** Workflow files the repo exposes; defaults to the gate plus Tests. */
@@ -28,14 +57,13 @@ interface Scenario {
   files?: string[];
   /** Head commit message — carries `[skip ci]` in the skip case. */
   message?: string;
+  /** Check names a workflow's run reports, overriding `CHECKS`. */
+  checks?: Record<string, string[]>;
   /** One entry per poll; the last entry repeats. */
   polls: WorkflowRunSummary[][];
 }
 
-function run(
-  path: string,
-  over: Partial<WorkflowRunSummary> = {},
-): WorkflowRunSummary {
+function run(path: string, over: Partial<WorkflowRunSummary> = {}): WorkflowRunSummary {
   return {
     id: ALL_WORKFLOWS.indexOf(path) + 1,
     name: path,
@@ -51,7 +79,7 @@ function run(
 const self = run(SELF_PATH, { id: SELF_RUN_ID, status: 'in_progress', conclusion: null });
 
 function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 }) {
-  const paths = scenario.workflows ?? [SELF_PATH, '.github/workflows/test.yml'];
+  const paths = scenario.workflows ?? [SELF_PATH, TESTS];
   const list = async () => {
     const runs = scenario.polls[Math.min(counter.polls, scenario.polls.length - 1)];
     counter.polls++;
@@ -80,6 +108,21 @@ function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 
         data: paths.map((path) => ({ path, state: 'active' })),
       }),
       listWorkflowRunsForRepo: list,
+      listJobsForWorkflowRun: async ({ run_id }: { run_id: number }) => {
+        const path = run_id === SELF_RUN_ID ? SELF_PATH : (ALL_WORKFLOWS[run_id - 1] ?? '');
+        const names = scenario.checks?.[path] ?? CHECKS[path] ?? [];
+        return {
+          data: {
+            total_count: names.length,
+            jobs: names.map((name, i) => ({
+              id: i + 1,
+              name,
+              status: 'completed',
+              conclusion: 'success',
+            })),
+          },
+        };
+      },
     },
   };
   return {
@@ -125,20 +168,16 @@ afterEach(() => {
   delete process.env.GITHUB_WORKFLOW_REF;
 });
 
-describe('predicted run set', () => {
-  const TESTS = '.github/workflows/test.yml';
-  const CONVENTIONS = '.github/workflows/conventions.yml';
-  const DOCS = '.github/workflows/docs.yml';
-
-  test('every predicted run present and green -> pass', async () => {
+describe('predicted check set', () => {
+  test('every predicted check present and green -> pass', async () => {
     const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
     expect(failures).toEqual([]);
     expect(polls).toBe(1);
   });
 
   test('waits for a predicted run that has not registered yet', async () => {
-    // Poll 1 shows only the gate. The old minimum-checks heuristic settles green
-    // here; with a prediction in hand, Tests is known to be coming and is waited on.
+    // Poll 1 shows only the gate. Tests is known to be coming, so it is waited on
+    // — a check name cannot report before the run that creates its job exists.
     const { failures, polls } = await gate({
       polls: [[self], [self], [self, run(TESTS)]],
     });
@@ -169,6 +208,35 @@ describe('predicted run set', () => {
     expect(failures[0]).toMatch(/conventions\.yml/);
   });
 
+  test('a renamed job -> red, even though the workflow ran and went green', async () => {
+    // The path-level comparison this replaced saw nothing wrong here.
+    const { failures } = await gate({
+      checks: { [TESTS]: ['unit-renamed'] },
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures[0]).toMatch(/unit-renamed/);
+    expect(failures[0]).toMatch(/Unpredicted check names/);
+  });
+
+  test('a matrix leg that stops expanding -> red naming the check that never reported', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, LEGS],
+      checks: { [LEGS]: ['spread (20)'] },
+      polls: [[self, run(LEGS)]],
+    });
+    expect(failures[0]).toMatch(/spread \(22\)/);
+    expect(failures[0]).toMatch(/never reported/);
+  });
+
+  test('a deleted job -> red, since its check name never reports', async () => {
+    const { failures } = await gate({
+      checks: { [TESTS]: [] },
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures[0]).toMatch(/unit/);
+    expect(failures[0]).toMatch(/never reported/);
+  });
+
   test('a workflow predicted no-dispatch is not required', async () => {
     // docs.yml filters on docs/**; the PR touches src/, so it must not be waited on.
     const { failures, polls } = await gate({
@@ -180,12 +248,24 @@ describe('predicted run set', () => {
     expect(polls).toBe(1);
   });
 
+  test('a check name willfire cannot resolve -> red before the first poll', async () => {
+    // A dynamic matrix leaves a hole in the predicted set. No observation fills
+    // it, so the gate says so rather than polling or quietly exempting it.
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      polls: [[self, run(DYNAMIC)]],
+    });
+    expect(failures[0]).toMatch(/Unresolvable check names/);
+    expect(failures[0]).toMatch(/dynamic\.yml :: spread/);
+    expect(polls).toBe(0);
+  });
+
   test('[skip ci] head commit -> nothing predicted, nothing required', async () => {
     const { failures } = await gate({ message: 'docs tweak [skip ci]', polls: [[self]] });
     expect(failures).toEqual([]);
   });
 
-  test("the gate's own workflow is neither required nor unexpected", async () => {
+  test("the gate's own checks are neither required nor unexpected", async () => {
     const { failures, polls } = await gate({ workflows: [SELF_PATH], polls: [[self]] });
     expect(failures).toEqual([]);
     expect(polls).toBe(1);
