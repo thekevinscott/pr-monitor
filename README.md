@@ -66,11 +66,9 @@ That is the whole surface. There is nothing to tune.
 
 1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself
 2. Calls willfire's `predict()` for the PR, producing the entries GitHub should create
-3. Reduces those entries to two sets of workflow files:
-   - **required** — will dispatch, so a run must appear and must finish
-   - **tolerated** — willfire could not settle whether the workflow dispatches at all (for example `branches` and `branches-ignore` both set). Not required, but accepted if it turns up, and still has to pass
+3. Reduces those entries to one set of workflow files: everything willfire does not call `no-dispatch`. Each must produce a run, and that run must finish
 4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs
-5. Fails immediately on any run outside both sets
+5. Fails immediately on any run outside that set
 6. Waits while any required run is missing or any run is unfinished
 7. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
 

@@ -17,11 +17,6 @@ const YAML: Record<string, string> = {
   '.github/workflows/conventions.yml': wf('Conventions'),
   // paths filter that no fixture PR touches → willfire predicts `no-dispatch`
   '.github/workflows/docs.yml': wf('Docs', 'on:\n  pull_request:\n    paths:\n      - docs/**'),
-  // branches + branches-ignore together → willfire predicts a workflow-level `unknown`
-  '.github/workflows/murky.yml': wf(
-    'Murky',
-    'on:\n  pull_request:\n    branches: [main]\n    branches-ignore: [wip]',
-  ),
 };
 
 const ALL_WORKFLOWS = Object.keys(YAML);
@@ -134,7 +129,6 @@ describe('predicted run set', () => {
   const TESTS = '.github/workflows/test.yml';
   const CONVENTIONS = '.github/workflows/conventions.yml';
   const DOCS = '.github/workflows/docs.yml';
-  const MURKY = '.github/workflows/murky.yml';
 
   test('every predicted run present and green -> pass', async () => {
     const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
@@ -184,27 +178,6 @@ describe('predicted run set', () => {
     });
     expect(failures).toEqual([]);
     expect(polls).toBe(1);
-  });
-
-  test('a workflow-level unknown is tolerated when absent', async () => {
-    const { failures, polls } = await gate({
-      workflows: [SELF_PATH, TESTS, MURKY],
-      polls: [[self, run(TESTS)]],
-    });
-    expect(failures).toEqual([]);
-    expect(polls).toBe(1);
-  });
-
-  test('a workflow-level unknown is accepted when present, and still has to pass', async () => {
-    const workflows = [SELF_PATH, TESTS, MURKY];
-    const green = await gate({ workflows, polls: [[self, run(TESTS), run(MURKY)]] });
-    expect(green.failures).toEqual([]);
-
-    const red = await gate({
-      workflows,
-      polls: [[self, run(TESTS), run(MURKY, { conclusion: 'failure' })]],
-    });
-    expect(red.failures[0]).toMatch(/murky\.yml/);
   });
 
   test('[skip ci] head commit -> nothing predicted, nothing required', async () => {

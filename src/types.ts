@@ -30,10 +30,11 @@ export interface WorkflowRunSummary {
 
 /** The workflow files willfire says this PR will produce runs for. */
 export interface ExpectedWorkflows {
-  /** Must appear and must finish. */
+  /**
+   * Must appear and must finish. This is the whole set — divergence in either
+   * direction is red, so there is no bucket of runs the gate merely permits.
+   */
   required: string[];
-  /** May or may not appear; if one does, it still has to pass. */
-  tolerated: string[];
 }
 
 export interface RunComparison {

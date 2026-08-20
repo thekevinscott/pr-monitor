@@ -14,7 +14,6 @@ const run = (path: string, over: Partial<WorkflowRunSummary> = {}): WorkflowRunS
 
 const expected = (over: Partial<ExpectedWorkflows> = {}): ExpectedWorkflows => ({
   required: [],
-  tolerated: [],
   ...over,
 });
 
@@ -58,24 +57,4 @@ test('a run for no known workflow is unexpected and not otherwise classified', (
 test('duplicate unexpected runs are reported once, sorted', () => {
   const result = compareRuns([run('z.yml'), run('a.yml'), run('z.yml')], expected());
   expect(result.unexpected).toEqual(['a.yml', 'z.yml']);
-});
-
-test('a tolerated workflow is accepted when present and still has to pass', () => {
-  const present = compareRuns(
-    [run('t.yml', { conclusion: 'failure' })],
-    expected({ tolerated: ['t.yml'] }),
-  );
-  expect(present.unexpected).toEqual([]);
-  expect(present.nonPassing).toEqual(['t.yml (failure)']);
-});
-
-test('a tolerated workflow is not missing when absent', () => {
-  const result = compareRuns([], expected({ tolerated: ['t.yml'] }));
-  expect(result).toEqual({
-    unexpected: [],
-    missing: [],
-    matched: [],
-    inProgress: [],
-    nonPassing: [],
-  });
 });
