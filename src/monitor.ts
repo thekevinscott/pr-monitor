@@ -42,7 +42,6 @@ export async function monitor({ github, context, core }: MonitorParams): Promise
   if (prediction.skip !== null) console.log(`Prediction: ${prediction.skip}`);
   console.log(`Monitoring workflow runs for commit: ${sha}`);
   console.log(`Required: ${JSON.stringify(expected.required)}`);
-  console.log(`Tolerated (willfire could not settle): ${JSON.stringify(expected.tolerated)}`);
 
   while (true) {
     // Only pull_request runs are comparable to a PR prediction, and this

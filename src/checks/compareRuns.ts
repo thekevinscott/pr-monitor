@@ -6,7 +6,7 @@ export function compareRuns(
   runs: ReadonlyArray<WorkflowRunSummary>,
   expected: ExpectedWorkflows,
 ): RunComparison {
-  const known = new Set([...expected.required, ...expected.tolerated]);
+  const known = new Set(expected.required);
 
   const unexpected = new Set<string>();
   const seen = new Set<string>();
