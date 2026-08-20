@@ -34,14 +34,19 @@ permissions:
 
 jobs:
   monitor:
-    name: 'Check All Workflows'
+    name: 'CI Gate'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: thekevinscott/pr-monitor@v1
 ```
 
-Then set "Check All Workflows" as your only required check in branch protection.
+Then set "CI Gate" as your only required check in branch protection.
+
+The required-check context is the **job's `name:`**, not the workflow's. If you
+rename the job, every open PR keeps reporting the old name until it gets a fresh
+run — merge the base branch in, or push, to retrigger. GitHub does not
+re-evaluate an existing run against the new requirement.
 
 Keep this in its own workflow with no other jobs — the action excludes its own *workflow file* from both sides of the comparison, so any sibling jobs in that workflow go unmonitored.
 
@@ -107,7 +112,7 @@ pnpm run verify   # typecheck + lint + tests (100% coverage required)
 
 Individual scripts: `pnpm run typecheck`, `pnpm run lint`, `pnpm run test:coverage`.
 
-This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `Check All Workflows` gate against its own PRs.
+This repo dogfoods the action: [`.github/workflows/pr-monitor.yml`](.github/workflows/pr-monitor.yml) runs `./` as the `CI Gate` check against its own PRs.
 
 To check a prediction by hand:
 
