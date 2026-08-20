@@ -21,8 +21,8 @@ importers:
         specifier: ^4.22.4
         version: 4.22.4
       willfire:
-        specifier: ^0.1.6
-        version: 0.1.6
+        specifier: ^0.1.7
+        version: 0.1.7
     devDependencies:
       '@stryker-mutator/core':
         specifier: ^9.6.1
@@ -2124,8 +2124,8 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  willfire@0.1.6:
-    resolution: {integrity: sha512-+nCmnJAMq5o5IgZDJQEHLWhByLoBv3HafsXc0Xkh5d7PJkrm6IcthPlkBHIqM8ckBmu0KVS9tQrWZGRReZqb6Q==}
+  willfire@0.1.7:
+    resolution: {integrity: sha512-JJ0NN0gBhL4hz4cfHhvKsFwrcm3M35BNdC28zpGLYY0fA2RKS1OpK3h/n6SUNOb+uuFOtOyFM9pmoXAPxLKsDQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4181,7 +4181,7 @@ snapshots:
       siginfo: 2.0.0
       stackback: 0.0.2
 
-  willfire@0.1.6:
+  willfire@0.1.7:
     dependencies:
       '@octokit/rest': 22.0.1
       yaml: 2.9.0
