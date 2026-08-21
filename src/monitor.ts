@@ -5,6 +5,7 @@ import {
   fetchWorkflowRunJobs,
   fetchWorkflowRuns,
   resolveCommitSha,
+  resolveEventAction,
   resolvePullNumber,
   resolveSelfWorkflowPath,
 } from './github';
@@ -45,7 +46,10 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
     return;
   }
 
-  const prediction = await predict(github, `${owner}/${repo}`, pullNumber, { execute });
+  const prediction = await predict(github, `${owner}/${repo}`, pullNumber, {
+    execute,
+    action: resolveEventAction(context),
+  });
   const expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 
