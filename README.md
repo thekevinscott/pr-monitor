@@ -102,7 +102,7 @@ Runs still drive the waiting and the pass/fail conclusion. A run stays non-termi
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
 - **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job — unless you grant execution of the job that computes it (the `execute` input).
-- **The event action is inferred.** willfire accepts the actual event action from its caller ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), but this action does not pass it yet, so willfire falls back to deriving `opened` vs `synchronize` from the PR's commit count. If your workflows narrow `types:`, a wrong guess flips a dispatch verdict and reds a good build. Workflows with a bare `on: pull_request` are unaffected.
+- **Event actions willfire does not model.** The gate hands willfire the real `pull_request` action when it is `opened`, `synchronize`, or `reopened`. Run it on any other type (`labeled`, `ready_for_review`, …) and willfire falls back to inferring the action from the PR's commit count ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), which can flip a dispatch verdict on workflows that narrow `types:`.
 - **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`.
 
 ## Upgrading from the check-count gate

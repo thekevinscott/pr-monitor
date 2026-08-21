@@ -9,6 +9,7 @@ const CONVENTIONS = '.github/workflows/conventions.yml';
 const DOCS = '.github/workflows/docs.yml';
 const LEGS = '.github/workflows/legs.yml';
 const DYNAMIC = '.github/workflows/dynamic.yml';
+const REOPEN = '.github/workflows/reopen.yml';
 const HEAD_SHA = 'head-sha';
 
 // ------------------------------------------------------------------ fixtures
@@ -26,6 +27,9 @@ const YAML: Record<string, string> = {
   [CONVENTIONS]: wf('Conventions', plainJob('conventions')),
   // paths filter that no fixture PR touches → willfire predicts `no-dispatch`
   [DOCS]: wf('Docs', plainJob('docs'), 'on:\n  pull_request:\n    paths:\n      - docs/**'),
+  // narrowed `types:` → the dispatch verdict depends on the real event action;
+  // the fixture PR's single commit makes willfire's fallback infer `opened`
+  [REOPEN]: wf('Reopen', plainJob('greet'), 'on:\n  pull_request:\n    types: [reopened]'),
   // static matrix → two check names willfire can resolve up front
   [LEGS]: wf(
     'Legs',
@@ -61,6 +65,7 @@ const CHECKS: Record<string, string[]> = {
   [DOCS]: ['docs'],
   [LEGS]: ['spread (20)', 'spread (22)'],
   [DYNAMIC]: ['setup', 'spread (x)'],
+  [REOPEN]: ['greet'],
 };
 
 interface Scenario {
@@ -74,6 +79,8 @@ interface Scenario {
   checks?: Record<string, string[]>;
   /** Execution grants handed to the gate; nothing is granted by default. */
   execute?: MonitorParams['execute'];
+  /** The event's `action` field; absent by default, as in the other fixtures. */
+  eventAction?: string;
   /** One entry per poll; the last entry repeats. */
   polls: WorkflowRunSummary[][];
 }
@@ -148,11 +155,11 @@ function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 
   } as unknown as MonitorParams['github'];
 }
 
-function makeContext(): MonitorParams['context'] {
+function makeContext(eventAction?: string): MonitorParams['context'] {
   return {
     repo: { owner: 'o', repo: 'r' },
     sha: 'merge-sha',
-    payload: { pull_request: { number: 5, head: { sha: HEAD_SHA } } },
+    payload: { action: eventAction, pull_request: { number: 5, head: { sha: HEAD_SHA } } },
     runId: SELF_RUN_ID,
   } as unknown as MonitorParams['context'];
 }
@@ -163,7 +170,7 @@ async function gate(scenario: Scenario): Promise<{ failures: string[]; polls: nu
   const counter = { polls: 0 };
   await monitor({
     github: makeGithub(scenario, counter),
-    context: makeContext(),
+    context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
     execute: scenario.execute ?? [],
   });
@@ -252,6 +259,19 @@ describe('predicted check set', () => {
     });
     expect(failures[0]).toMatch(/unit/);
     expect(failures[0]).toMatch(/never reported/);
+  });
+
+  test('the real event action decides a narrowed `types:` dispatch', async () => {
+    // reopen.yml fires on `reopened` only. The fixture PR has one commit, so
+    // willfire's fallback would infer `opened` and call the run unexpected;
+    // the payload's actual action is what predicts it.
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, TESTS, REOPEN],
+      eventAction: 'reopened',
+      polls: [[self, run(TESTS), run(REOPEN)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
   });
 
   test('a workflow predicted no-dispatch is not required', async () => {
