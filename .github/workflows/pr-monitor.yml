@@ -29,4 +29,8 @@ jobs:
       # Dogfood: run this repo's own action (`./`) as the aggregate gate. It
       # predicts the runs this PR should produce (Tests, Testing Conventions),
       # excludes its own workflow, and waits for exactly that set to finish.
+      # The grant lets willfire execute testing-conventions' `detect` job for
+      # real, resolving the dynamic language matrix into exact check names.
       - uses: ./
+        with:
+          execute: thekevinscott/testing-conventions:detect

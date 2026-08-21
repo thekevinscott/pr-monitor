@@ -9,6 +9,16 @@ inputs:
       `pull-requests: read`.
     required: false
     default: ${{ github.token }}
+  execute:
+    description: >-
+      Jobs willfire may execute to resolve a dynamic matrix, as
+      whitespace-separated grants of the form `owner/repo:job1,job2`, where
+      `owner/repo` is the repo the workflow *file* lives in — for a reusable
+      workflow, the callee. The granted job's steps run for real at the
+      predicted commit, so grant only jobs whose code you trust. Empty grants
+      nothing.
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -48,6 +58,7 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        PR_MONITOR_EXECUTE: ${{ inputs.execute }}
       run: ./node_modules/.bin/tsx src/entry.ts
 
 branding:

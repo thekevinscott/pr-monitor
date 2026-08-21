@@ -1,13 +1,17 @@
 /**
- * A run GitHub created that willfire did not predict means the two disagree about
- * the check set, so the gate cannot vouch for it. Name the runs and the likely
- * causes rather than waiting them out.
+ * Something GitHub created that willfire did not predict means the two disagree
+ * about the check set, so the gate cannot vouch for it. Name what turned up and
+ * the likely causes rather than waiting it out.
  */
-export function formatUnexpectedFailure(unexpected: string[]): string {
-  return [
-    `Unpredicted workflow runs: ${JSON.stringify(unexpected)}.`,
-    'These dispatched but willfire did not predict them, so the gate cannot',
-    'confirm the check set is complete. Likely a workflow trigger willfire does',
-    'not model (workflow_run, pull_request_target) or a prediction bug.',
-  ].join(' ');
+export function formatUnexpectedFailure(runs: string[], names: string[]): string {
+  const parts: string[] = [];
+  if (runs.length > 0) parts.push(`Unpredicted workflow runs: ${JSON.stringify(runs)}.`);
+  if (names.length > 0) parts.push(`Unpredicted check names: ${JSON.stringify(names)}.`);
+  parts.push(
+    'These reported but willfire did not predict them, so the gate cannot',
+    'confirm the check set is complete. Likely a renamed job, a matrix that',
+    'grew a combination, a workflow trigger willfire does not model',
+    '(workflow_run, pull_request_target), or a prediction bug.',
+  );
+  return parts.join(' ');
 }

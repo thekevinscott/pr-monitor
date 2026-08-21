@@ -1,2 +1,2 @@
-export { compareRuns } from './compareRuns';
+export { compareObserved } from './compareObserved';
 export { isPassingConclusion } from './isPassingConclusion';

@@ -1,6 +1,7 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
+import type { ExecutionGrant } from './predict/parseGrants';
 
 /**
  * willfire's `predict` takes an `@octokit/rest` client, and the workflow-runs
@@ -15,12 +16,18 @@ export interface MonitorParams {
   github: Octokit;
   context: GitHubContextType;
   core: CoreModule;
+  /**
+   * Jobs willfire may execute to resolve a dynamic matrix, already parsed.
+   * Empty means predict statically only — grants are the caller's to give,
+   * never assumed.
+   */
+  execute: ExecutionGrant[];
 }
 
 export interface WorkflowRunSummary {
   id: number;
   name: string;
-  /** Workflow file path, e.g. `.github/workflows/test.yml` — the key willfire predicts on. */
+  /** Workflow file path, e.g. `.github/workflows/test.yml`. */
   path: string;
   /** Triggering event; only `pull_request` runs are comparable to a PR prediction. */
   event: string;
@@ -28,20 +35,49 @@ export interface WorkflowRunSummary {
   conclusion: string | null;
 }
 
-/** The workflow files willfire says this PR will produce runs for. */
-export interface ExpectedWorkflows {
+export interface WorkflowJobSummary {
+  id: number;
   /**
-   * Must appear and must finish. This is the whole set — divergence in either
-   * direction is red, so there is no bucket of runs the gate merely permits.
+   * The check name GitHub created for this job — matrix legs expanded, `name:`
+   * overrides applied, reusable-workflow callers prefixed. This is the string
+   * required status checks key on, and the observed side of the comparison.
    */
-  required: string[];
+  name: string;
+  /** Workflow file of the run that produced this job. */
+  workflowPath: string;
+  status: string;
+  conclusion: string | null;
 }
 
-export interface RunComparison {
-  /** Observed runs no prediction accounts for — the gate cannot vouch for the set. */
+/** What willfire says this PR will produce. */
+export interface ExpectedChecks {
+  /** Check names that must report. */
+  names: string[];
+  /**
+   * Workflow files that must produce a run. Kept alongside the names because a
+   * run can conclude before it creates any job — `startup_failure` produces
+   * none at all — so the names alone cannot see it.
+   */
+  workflows: string[];
+  /**
+   * Entries willfire sees but cannot resolve to a check name (a dynamic matrix).
+   * The predicted set is incomplete while any of these exist, so the gate cannot
+   * vouch for it and fails naming them.
+   */
+  unresolved: string[];
+}
+
+export interface GateComparison {
+  /** Observed runs no prediction accounts for. */
   unexpected: string[];
-  /** Required workflows with no run yet. */
+  /** Observed check names no prediction accounts for, as `workflow :: name`. */
+  unexpectedNames: string[];
+  /** Predicted workflows with no run yet. */
   missing: string[];
+  /** Predicted check names that have not reported. */
+  missingNames: string[];
+  /** Predicted check names that have reported. */
+  matchedNames: string[];
   matched: string[];
   inProgress: string[];
   nonPassing: string[];

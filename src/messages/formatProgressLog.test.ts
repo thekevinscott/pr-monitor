@@ -1,10 +1,13 @@
 import { expect, test } from 'vitest';
 import { formatProgressLog } from './formatProgressLog';
-import type { RunComparison } from '../types';
+import type { GateComparison } from '../types';
 
-const base: RunComparison = {
+const base: GateComparison = {
   unexpected: [],
+  unexpectedNames: [],
   missing: [],
+  missingNames: [],
+  matchedNames: [],
   matched: [],
   inProgress: [],
   nonPassing: [],
@@ -22,12 +25,23 @@ test('in progress only → names what is still running', () => {
   );
 });
 
-test('both → joined', () => {
-  expect(formatProgressLog({ ...base, missing: ['a.yml'], inProgress: ['b.yml'] })).toBe(
-    'not started: ["a.yml"] | in progress: ["b.yml"]',
+test('missing names only → names the checks that have not reported', () => {
+  expect(formatProgressLog({ ...base, missingNames: ['Test (20)'] })).toBe(
+    'checks not reported: ["Test (20)"]',
   );
 });
 
-test('neither → empty', () => {
+test('all three → joined', () => {
+  expect(
+    formatProgressLog({
+      ...base,
+      missing: ['a.yml'],
+      inProgress: ['b.yml'],
+      missingNames: ['Build'],
+    }),
+  ).toBe('not started: ["a.yml"] | in progress: ["b.yml"] | checks not reported: ["Build"]');
+});
+
+test('none → empty', () => {
   expect(formatProgressLog(base)).toBe('');
 });
