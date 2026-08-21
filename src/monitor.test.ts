@@ -31,12 +31,25 @@ const YAML: Record<string, string> = {
     'Legs',
     `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [20, 22]\n    steps:\n      - run: echo hi\n`,
   ),
-  // matrix built from another job's output → willfire cannot name the checks
+  // matrix built from another job's output → reading alone cannot name the
+  // checks; an execution grant for `setup` resolves them (real steps, real bash)
   [DYNAMIC]: wf(
     'Dynamic',
-    `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix: \${{ fromJSON(needs.setup.outputs.matrix) }}\n    steps:\n      - run: echo hi\n`,
+    `  setup:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: \${{ steps.emit.outputs.matrix }}\n    steps:\n      - id: emit\n        run: echo 'matrix=["x"]' >> "$GITHUB_OUTPUT"\n` +
+      `  spread:\n    needs: setup\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        leg: \${{ fromJSON(needs.setup.outputs.matrix) }}\n    steps:\n      - run: echo hi\n`,
   ),
 };
+
+/**
+ * A one-file tree as `repos.downloadTarballArchive` serves it — single root
+ * directory, gzipped tar — for the executor to materialize as the granted
+ * job's working tree. The fixture jobs never read it, but execution always
+ * starts from a real tree at the predicted commit.
+ */
+const TARBALL = Buffer.from(
+  'H4sIAAAAAAAAA+3RsQrCMBDG8c4+RV4gmNMmmQU7uvgGASN1KqQp+Pi2nbToILQq+P8td9xyH3yNTrqO4aTbOqyLZZie93acvekcd9k6s/HOlMNdjIgUyi6U50HX5pCU+sSrX9Tc93+sdvtDNfuPoWDnytf9i532750tlJk9yRN/3v/5cs1diiqnGFffDgMAAAAAAAAAAAAAAADgLTfCu2JoACgAAA==',
+  'base64',
+);
 
 const ALL_WORKFLOWS = Object.keys(YAML);
 
@@ -47,7 +60,7 @@ const CHECKS: Record<string, string[]> = {
   [CONVENTIONS]: ['conventions'],
   [DOCS]: ['docs'],
   [LEGS]: ['spread (20)', 'spread (22)'],
-  [DYNAMIC]: ['spread'],
+  [DYNAMIC]: ['setup', 'spread (x)'],
 };
 
 interface Scenario {
@@ -59,6 +72,8 @@ interface Scenario {
   message?: string;
   /** Check names a workflow's run reports, overriding `CHECKS`. */
   checks?: Record<string, string[]>;
+  /** Execution grants handed to the gate; nothing is granted by default. */
+  execute?: MonitorParams['execute'];
   /** One entry per poll; the last entry repeats. */
   polls: WorkflowRunSummary[][];
 }
@@ -102,6 +117,7 @@ function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 
         if (!(path in YAML)) throw new Error(`404 ${path}`);
         return { data: YAML[path] };
       },
+      downloadTarballArchive: async () => ({ data: TARBALL }),
     },
     actions: {
       listRepoWorkflows: async () => ({
@@ -149,6 +165,7 @@ async function gate(scenario: Scenario): Promise<{ failures: string[]; polls: nu
     github: makeGithub(scenario, counter),
     context: makeContext(),
     core: { setFailed } as unknown as MonitorParams['core'],
+    execute: scenario.execute ?? [],
   });
   return { failures: setFailed.mock.calls.map((c) => c[0] as string), polls: counter.polls };
 }
@@ -260,6 +277,18 @@ describe('predicted check set', () => {
     expect(polls).toBe(0);
   });
 
+  test('a granted job resolves the dynamic matrix and the gate keys on its legs', async () => {
+    // Same workflow as above; the grant lets willfire run `setup` for real,
+    // so `spread` expands and the gate requires the leg by name.
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      execute: [{ repo: 'o/r', jobs: ['setup'] }],
+      polls: [[self, run(DYNAMIC)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+  });
+
   test('[skip ci] head commit -> nothing predicted, nothing required', async () => {
     const { failures } = await gate({ message: 'docs tweak [skip ci]', polls: [[self]] });
     expect(failures).toEqual([]);
@@ -291,6 +320,7 @@ describe('predicted check set', () => {
       github,
       context: makeContext(),
       core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
+      execute: [],
     });
     expect(usedSha).toBe(HEAD_SHA);
   });
@@ -313,6 +343,7 @@ describe('predicted check set', () => {
         runId: SELF_RUN_ID,
       } as unknown as MonitorParams['context'],
       core: { setFailed } as unknown as MonitorParams['core'],
+      execute: [],
     });
     expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
   });

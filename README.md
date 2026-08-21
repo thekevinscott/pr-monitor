@@ -60,8 +60,19 @@ Keep this in its own workflow with no other jobs — the action excludes its own
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
+| `execute` | Jobs willfire may execute to resolve a dynamic matrix | No | `''` (nothing) |
 
-That is the whole surface. There is nothing to tune.
+That is the whole surface. There is nothing to tune — `execute` is a permission, not a knob.
+
+**`execute`** — whitespace-separated grants of the form `owner/repo:job1,job2`, where `owner/repo` is the repo the workflow *file* lives in (for a reusable workflow, the callee):
+
+```yaml
+      - uses: thekevinscott/pr-monitor@v1
+        with:
+          execute: thekevinscott/testing-conventions:detect
+```
+
+A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. Nothing runs without a grant, and a granted job runs the PR's version of itself, so grant only jobs whose code you trust under this gate. A malformed grant fails the gate immediately, named; an execution that fails leaves the matrix unresolved, which is also red.
 
 ## How it works
 
@@ -85,13 +96,13 @@ A required status check keys on the **job's check name**, not the workflow file.
 
 Runs still drive the waiting and the pass/fail conclusion. A run stays non-terminal until *all* of its jobs finish, including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children, so "the run finished" already means "every job finished," with no transient gaps to race against. And a job's own conclusion is the wrong thing to judge: a `continue-on-error: true` job reports `failure` while its check reports green.
 
-**Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or teach willfire to resolve the case.
+**Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or grant execution of the job that computes it (the `execute` input above).
 
 ## Limitations
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
-- **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job. Pin the matrix statically to use the gate on that repo.
-- **The event action is inferred.** willfire derives `opened` vs `synchronize` from the PR's commit count rather than the actual event ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)). If your workflows narrow `types:`, a wrong guess flips a dispatch verdict and reds a good build. Workflows with a bare `on: pull_request` are unaffected.
+- **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job — unless you grant execution of the job that computes it (the `execute` input).
+- **The event action is inferred.** willfire accepts the actual event action from its caller ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), but this action does not pass it yet, so willfire falls back to deriving `opened` vs `synchronize` from the PR's commit count. If your workflows narrow `types:`, a wrong guess flips a dispatch verdict and reds a good build. Workflows with a bare `on: pull_request` are unaffected.
 - **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`.
 
 ## Upgrading from the check-count gate

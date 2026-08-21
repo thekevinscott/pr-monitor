@@ -30,7 +30,7 @@ const POLL_INTERVAL_MS = 5_000;
  *
  * There is no timeout — the backstop is the caller's own `timeout-minutes`.
  */
-export async function monitor({ github, context, core }: MonitorParams): Promise<void> {
+export async function monitor({ github, context, core, execute }: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
 
   const selfPath = resolveSelfWorkflowPath(process.env.GITHUB_WORKFLOW_REF);
@@ -45,7 +45,7 @@ export async function monitor({ github, context, core }: MonitorParams): Promise
     return;
   }
 
-  const prediction = await predict(github, `${owner}/${repo}`, pullNumber);
+  const prediction = await predict(github, `${owner}/${repo}`, pullNumber, { execute });
   const expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 

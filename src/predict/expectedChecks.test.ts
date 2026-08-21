@@ -8,7 +8,7 @@ function prediction(...entries: Entry[]): Prediction {
   const checkNames = entries.flatMap((e) =>
     e.status === 'run' && e.checkName != null ? [e.checkName] : [],
   );
-  return { entries, checkNames: [...new Set(checkNames)].sort(), skip: null };
+  return { entries, checkNames: [...new Set(checkNames)].sort(), skip: null, sources: [] };
 }
 
 // willfire brands job names so that `"*"` cannot be written into the job-level
@@ -119,7 +119,7 @@ test('output is sorted for stable logs', () => {
 });
 
 test('an empty prediction ([skip ci]) expects nothing', () => {
-  expect(expectedChecks({ entries: [], checkNames: [], skip: 'skip instruction' }, SELF)).toEqual({
+  expect(expectedChecks({ entries: [], checkNames: [], skip: 'skip instruction', sources: [] }, SELF)).toEqual({
     names: [],
     workflows: [],
     unresolved: [],

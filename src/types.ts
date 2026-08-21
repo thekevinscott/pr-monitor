@@ -1,6 +1,7 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
+import type { ExecutionGrant } from './predict/parseGrants';
 
 /**
  * willfire's `predict` takes an `@octokit/rest` client, and the workflow-runs
@@ -15,6 +16,12 @@ export interface MonitorParams {
   github: Octokit;
   context: GitHubContextType;
   core: CoreModule;
+  /**
+   * Jobs willfire may execute to resolve a dynamic matrix, already parsed.
+   * Empty means predict statically only — grants are the caller's to give,
+   * never assumed.
+   */
+  execute: ExecutionGrant[];
 }
 
 export interface WorkflowRunSummary {
