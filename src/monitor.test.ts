@@ -10,7 +10,14 @@ const DOCS = '.github/workflows/docs.yml';
 const LEGS = '.github/workflows/legs.yml';
 const DYNAMIC = '.github/workflows/dynamic.yml';
 const REOPEN = '.github/workflows/reopen.yml';
+const CALLER = '.github/workflows/caller.yml';
 const HEAD_SHA = 'head-sha';
+
+/** The repo the caller's `uses:` reaches into, and the mutable tag it names. */
+const CALLEE_REPO = 'shared';
+const CALLEE_PATH = '.github/workflows/reusable.yml';
+const CALLEE_TAG = 'v0';
+
 
 // ------------------------------------------------------------------ fixtures
 
@@ -35,6 +42,9 @@ const YAML: Record<string, string> = {
     'Legs',
     `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [20, 22]\n    steps:\n      - run: echo hi\n`,
   ),
+  // a cross-repo `uses:` pinned to a moving tag — the only shape whose
+  // prediction can go stale without the PR changing
+  [CALLER]: wf('Caller', `  call:\n    uses: o/${CALLEE_REPO}/${CALLEE_PATH}@${CALLEE_TAG}\n`),
   // matrix built from another job's output → reading alone cannot name the
   // checks; an execution grant for `setup` resolves them (real steps, real bash)
   [DYNAMIC]: wf(
@@ -55,6 +65,18 @@ const TARBALL = Buffer.from(
   'base64',
 );
 
+/**
+ * The callee program at each commit `v0` can name. Moving the tag swaps the
+ * jobs the reusable workflow defines, so the checks the caller reports change
+ * with it — the same divergence a caller would see with nothing wrong on
+ * either side.
+ */
+const CALLEE_AT: Record<string, string> = {
+  'callee-a': wf('Reusable', plainJob('alpha') + plainJob('extra'), 'on:\n  workflow_call:'),
+  'callee-b': wf('Reusable', plainJob('alpha'), 'on:\n  workflow_call:'),
+  'callee-c': wf('Reusable', plainJob('alpha') + plainJob('gamma'), 'on:\n  workflow_call:'),
+};
+
 const ALL_WORKFLOWS = Object.keys(YAML);
 
 /** The check names each workflow's run reports, absent a scenario override. */
@@ -66,6 +88,7 @@ const CHECKS: Record<string, string[]> = {
   [LEGS]: ['spread (20)', 'spread (22)'],
   [DYNAMIC]: ['setup', 'spread (x)'],
   [REOPEN]: ['greet'],
+  [CALLER]: ['call / alpha', 'call / extra'],
 };
 
 interface Scenario {
@@ -81,6 +104,12 @@ interface Scenario {
   execute?: MonitorParams['execute'];
   /** The event's `action` field; absent by default, as in the other fixtures. */
   eventAction?: string;
+  /**
+   * The commits `CALLEE_TAG` resolves to, one per resolution, the last
+   * repeating. A second, different entry is a tag move between the prediction
+   * and the re-resolution; `null` is a ref that stops resolving at all.
+   */
+  refShas?: Array<string | null>;
   /** One entry per poll; the last entry repeats. */
   polls: WorkflowRunSummary[][];
 }
@@ -100,8 +129,15 @@ function run(path: string, over: Partial<WorkflowRunSummary> = {}): WorkflowRunS
 /** The gate's own run — same workflow file the action is executing from. */
 const self = run(SELF_PATH, { id: SELF_RUN_ID, status: 'in_progress', conclusion: null });
 
-function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 }) {
+function makeGithub(
+  scenario: Scenario,
+  counter: { polls: number; predicts: number } = { polls: 0, predicts: 0 },
+) {
   const paths = scenario.workflows ?? [SELF_PATH, TESTS];
+  // One entry consumed per resolution of the callee tag, so a scenario can say
+  // "it answered A, then B" without knowing who asked or when.
+  const refShas = scenario.refShas ?? ['callee-a'];
+  let refReads = 0;
   const list = async () => {
     const runs = scenario.polls[Math.min(counter.polls, scenario.polls.length - 1)];
     counter.polls++;
@@ -117,19 +153,40 @@ function makeGithub(scenario: Scenario, counter: { polls: number } = { polls: 0 
       }),
     },
     repos: {
-      getCommit: async () => ({
-        data: { commit: { message: scenario.message ?? 'a normal commit' } },
-      }),
-      getContent: async ({ path }: { path: string }) => {
+      getCommit: async ({ ref }: { ref: string }) => {
+        // The head is asked for by SHA, and only for its commit message.
+        if (ref === HEAD_SHA) {
+          return {
+            data: { sha: HEAD_SHA, commit: { message: scenario.message ?? 'a normal commit' } },
+          };
+        }
+        const sha = refShas[Math.min(refReads, refShas.length - 1)];
+        refReads++;
+        if (sha === null) throw new Error(`404 ${ref}`);
+        return { data: { sha, commit: { message: 'the callee' } } };
+      },
+      getContent: async ({ repo: from, path, ref }: {
+        repo: string;
+        path: string;
+        ref: string;
+      }) => {
+        // Callee files are served by the commit that named them, so a moved tag
+        // hands back a different program.
+        if (from === CALLEE_REPO) {
+          if (path !== CALLEE_PATH || !(ref in CALLEE_AT)) throw new Error(`404 ${path}@${ref}`);
+          return { data: CALLEE_AT[ref] };
+        }
         if (!(path in YAML)) throw new Error(`404 ${path}`);
         return { data: YAML[path] };
       },
       downloadTarballArchive: async () => ({ data: TARBALL }),
     },
     actions: {
-      listRepoWorkflows: async () => ({
-        data: paths.map((path) => ({ path, state: 'active' })),
-      }),
+      listRepoWorkflows: async () => {
+        // Read exactly once per prediction, so this counts predictions.
+        counter.predicts++;
+        return { data: paths.map((path) => ({ path, state: 'active' })) };
+      },
       listWorkflowRunsForRepo: list,
       listJobsForWorkflowRun: async ({ run_id }: { run_id: number }) => {
         const path = run_id === SELF_RUN_ID ? SELF_PATH : (ALL_WORKFLOWS[run_id - 1] ?? '');
@@ -164,17 +221,32 @@ function makeContext(eventAction?: string): MonitorParams['context'] {
   } as unknown as MonitorParams['context'];
 }
 
-/** Run the gate; report what it failed on and how many times it polled. */
-async function gate(scenario: Scenario): Promise<{ failures: string[]; polls: number }> {
+interface GateResult {
+  failures: string[];
+  polls: number;
+  /** How many times the gate predicted; a reconciliation is the second. */
+  predicts: number;
+  /** Everything the gate logged, joined — provenance and moves are reported here. */
+  log: string;
+}
+
+/** Run the gate; report what it failed on, said, and how far it got. */
+async function gate(scenario: Scenario): Promise<GateResult> {
   const setFailed = vi.fn();
-  const counter = { polls: 0 };
+  const counter = { polls: 0, predicts: 0 };
   await monitor({
     github: makeGithub(scenario, counter),
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
     execute: scenario.execute ?? [],
   });
-  return { failures: setFailed.mock.calls.map((c) => c[0] as string), polls: counter.polls };
+  const logged = vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
+  return {
+    failures: setFailed.mock.calls.map((c) => c[0] as string),
+    polls: counter.polls,
+    predicts: counter.predicts,
+    log: logged.join('\n'),
+  };
 }
 
 beforeEach(() => {
@@ -366,5 +438,93 @@ describe('predicted check set', () => {
       execute: [],
     });
     expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
+  });
+});
+
+describe('a callee tag that moves mid-flight', () => {
+  const caller = { workflows: [SELF_PATH, CALLER] };
+
+  test('records the commits the prediction was read from', async () => {
+    // "willfire said these checks" is only reconcilable against a run if it also
+    // says which commits it read to say it.
+    const { failures, log } = await gate({
+      ...caller,
+      refShas: ['callee-a'],
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures).toEqual([]);
+    expect(log).toMatch(/o\/r@head-sha -> head-sha/);
+    expect(log).toMatch(new RegExp(`o/${CALLEE_REPO}@${CALLEE_TAG} -> callee-a`));
+  });
+
+  test('a move that explains an unpredicted check -> green, naming the move', async () => {
+    // Predicted against callee-a (alpha only after the tag moved off it is not
+    // the point) — the tag moved to callee-c, which adds `gamma`. GitHub
+    // scheduled the new program; willfire described the old one. Nobody erred.
+    const { failures, log, predicts, polls } = await gate({
+      ...caller,
+      refShas: ['callee-b', 'callee-c', 'callee-c'],
+      checks: { [CALLER]: ['call / alpha', 'call / gamma'] },
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures).toEqual([]);
+    expect(log).toMatch(/callee-b/);
+    expect(log).toMatch(/callee-c/);
+    expect(predicts).toBe(2);
+    expect(polls).toBeGreaterThan(0);
+  });
+
+  test('a move that explains a check that never reported -> green', async () => {
+    // The mirror case, and the one the terminal path sees: callee-a defines
+    // `extra`, callee-b does not, so the predicted name simply never reports.
+    const { failures, log } = await gate({
+      ...caller,
+      refShas: ['callee-a', 'callee-b', 'callee-b'],
+      checks: { [CALLER]: ['call / alpha'] },
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures).toEqual([]);
+    expect(log).toMatch(/callee-a/);
+    expect(log).toMatch(/callee-b/);
+  });
+
+  test('nothing moved -> the divergence stands, and nothing is re-predicted', async () => {
+    // The tag resolves to the same commit it did at prediction time, so the
+    // extra check is real divergence. Re-predicting would execute granted jobs
+    // a second time for no reason.
+    const { failures, predicts } = await gate({
+      ...caller,
+      refShas: ['callee-a'],
+      checks: { [CALLER]: ['call / alpha', 'call / extra', 'call / rogue'] },
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures[0]).toMatch(/rogue/);
+    expect(failures[0]).toMatch(/Unpredicted check names/);
+    expect(predicts).toBe(1);
+  });
+
+  test('a move that does not explain the divergence -> still red', async () => {
+    // callee-c adds `gamma`, but `rogue` is in neither program. Reconciling once
+    // is not a licence to keep looking until something agrees.
+    const { failures } = await gate({
+      ...caller,
+      refShas: ['callee-a', 'callee-c', 'callee-c'],
+      checks: { [CALLER]: ['call / alpha', 'call / gamma', 'call / rogue'] },
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures[0]).toMatch(/rogue/);
+  });
+
+  test('a ref that stops resolving -> red, never green', async () => {
+    // Deleted tag, rate limit, network. The gate cannot name the commits behind
+    // its own answer, so it fails closed rather than assuming nothing moved.
+    const { failures } = await gate({
+      ...caller,
+      refShas: ['callee-a', null],
+      checks: { [CALLER]: ['call / alpha', 'call / extra', 'call / rogue'] },
+      polls: [[self, run(CALLER)]],
+    });
+    expect(failures[0]).toMatch(new RegExp(`o/${CALLEE_REPO}@${CALLEE_TAG}`));
+    expect(failures[0]).toMatch(/could not be re-resolved/);
   });
 });
