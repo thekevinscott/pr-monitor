@@ -24,22 +24,13 @@ test('non-passing → setFailed with list', () => {
   expect(e.log).not.toHaveBeenCalled();
 });
 
-test('a predicted check name that never reported → setFailed naming it', () => {
+test('a name that never reported is not this function\'s verdict to give', () => {
+  // `describeDivergence` fails the gate on set membership before the run ever
+  // gets here, so by this point the only question left is whether what ran
+  // passed. See describeDivergence.test.ts for the missing-name cases.
   const e = effects();
-  reportFinalResult({ ...base, missingNames: ['Test (20)'] }, e);
-  expect(e.setFailed.mock.calls[0]?.[0]).toContain('["Test (20)"]');
-  expect(e.setFailed.mock.calls[0]?.[0]).toContain('these are not late');
-  expect(e.log).not.toHaveBeenCalled();
-});
-
-test('a failed run is reported ahead of the names it swallowed', () => {
-  const e = effects();
-  reportFinalResult(
-    { ...base, nonPassing: ['test.yml (failure)'], missingNames: ['Deploy'] },
-    e,
-  );
-  expect(e.setFailed).toHaveBeenCalledTimes(1);
-  expect(e.setFailed.mock.calls[0]?.[0]).toContain('Non-passing runs');
+  reportFinalResult({ ...base, missingNames: ['Test (20)'], matched: ['a.yml'] }, e);
+  expect(e.setFailed).not.toHaveBeenCalled();
 });
 
 test('all passing → success log with both counts', () => {
