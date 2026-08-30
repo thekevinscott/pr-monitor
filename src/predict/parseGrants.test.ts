@@ -1,6 +1,13 @@
 import { expect, test } from 'vitest';
 import { parseGrants } from './parseGrants';
 
+test('a grant is a repo and its job names, and nothing else', () => {
+  const parsed = parseGrants('o/r:detect');
+  // The shape used to be derived from willfire's own option type, which 0.1.31
+  // removed. Nothing outside this repo checks it now, so it is pinned here.
+  expect('grants' in parsed && Object.keys(parsed.grants[0]).sort()).toEqual(['jobs', 'repo']);
+});
+
 test('empty input grants nothing', () => {
   expect(parseGrants('')).toEqual({ grants: [] });
 });
