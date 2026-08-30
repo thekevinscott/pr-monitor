@@ -1,7 +1,17 @@
-import type { PredictOptions } from 'willfire';
-
-/** willfire's execution grant, named via the option that carries it. */
-export type ExecutionGrant = NonNullable<PredictOptions['execute']>[number];
+/**
+ * A consumer's grant to execute jobs in one repo.
+ *
+ * willfire 0.1.31 removed per-repo grants: execution runs in a docker sandbox
+ * and the only lever it exposes is the whole executor, on or off. The grant
+ * stays pr-monitor's own type because the trust decision is policy and goal 3
+ * puts policy outside willfire — but `jobs` is no longer enforced by anything.
+ * `monitor` says so in the log rather than letting the narrower spelling imply
+ * a limit that is not applied.
+ */
+export interface ExecutionGrant {
+  repo: string;
+  jobs: string[];
+}
 
 /**
  * Parse the action's `execute` input into willfire execution grants.

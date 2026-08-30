@@ -13,6 +13,15 @@ const REOPEN = '.github/workflows/reopen.yml';
 const CALLER = '.github/workflows/caller.yml';
 const HEAD_SHA = 'head-sha';
 
+/**
+ * The base branch, its tip, and the PR's test merge commit. GitHub evaluates a
+ * `pull_request` at the test merge rather than the head, so willfire reads that
+ * commit — and walks its first parent to tell a plain PR from a stacked one.
+ */
+const BASE_REF = 'main';
+const BASE_SHA = 'base-sha';
+const MERGE_SHA = 'merge-sha';
+
 /** The repo the caller's `uses:` reaches into, and the mutable tag it names. */
 const CALLEE_REPO = 'shared';
 const CALLEE_PATH = '.github/workflows/reusable.yml';
@@ -102,6 +111,8 @@ interface Scenario {
   checks?: Record<string, string[]>;
   /** Execution grants handed to the gate; nothing is granted by default. */
   execute?: MonitorParams['execute'];
+  /** Stands in for willfire's live executor; see `MonitorParams.executor`. */
+  executor?: MonitorParams['executor'];
   /** The event's `action` field; absent by default, as in the other fixtures. */
   eventAction?: string;
   /**
@@ -146,7 +157,12 @@ function makeGithub(
   const rest = {
     pulls: {
       get: async () => ({
-        data: { commits: 1, base: { ref: 'main' }, head: { sha: HEAD_SHA } },
+        data: {
+          commits: 1,
+          base: { ref: BASE_REF },
+          head: { sha: HEAD_SHA },
+          merge_commit_sha: MERGE_SHA,
+        },
       }),
       listFiles: async () => ({
         data: (scenario.files ?? ['src/index.ts']).map((filename) => ({ filename })),
@@ -154,16 +170,37 @@ function makeGithub(
     },
     repos: {
       getCommit: async ({ ref }: { ref: string }) => {
-        // The head is asked for by SHA, and only for its commit message.
-        if (ref === HEAD_SHA) {
+        // The test merge sits on the base tip, which is what makes this fixture
+        // a plain PR rather than a stacked one.
+        if (ref === MERGE_SHA) {
           return {
-            data: { sha: HEAD_SHA, commit: { message: scenario.message ?? 'a normal commit' } },
+            data: {
+              sha: MERGE_SHA,
+              parents: [{ sha: BASE_SHA }],
+              commit: { message: 'the test merge' },
+            },
+          };
+        }
+        if (ref === BASE_REF) {
+          return { data: { sha: BASE_SHA, parents: [], commit: { message: 'the base tip' } } };
+        }
+        // Only the callee tag moves. Everything else is asked for by commit and
+        // answers as itself, so the sequence below stays keyed to the thing
+        // under test rather than to however many refs willfire happens to
+        // resolve on the way — which changed in 0.1.31.
+        if (ref !== CALLEE_TAG) {
+          return {
+            data: {
+              sha: ref,
+              parents: [],
+              commit: { message: scenario.message ?? 'a normal commit' },
+            },
           };
         }
         const sha = refShas[Math.min(refReads, refShas.length - 1)];
         refReads++;
         if (sha === null) throw new Error(`404 ${ref}`);
-        return { data: { sha, commit: { message: 'the callee' } } };
+        return { data: { sha, parents: [], commit: { message: 'the callee' } } };
       },
       getContent: async ({ repo: from, path, ref }: {
         repo: string;
@@ -234,11 +271,17 @@ interface GateResult {
 async function gate(scenario: Scenario): Promise<GateResult> {
   const setFailed = vi.fn();
   const counter = { polls: 0, predicts: 0 };
+  const github = makeGithub(scenario, counter);
   await monitor({
-    github: makeGithub(scenario, counter),
+    github,
+    // The fake already answers in willfire's shape — raw text from
+    // `getContent`, unwrapped list endpoints — so one object serves both roles
+    // here. In production they are two different clients; see `run.ts`.
+    predictClient: github as unknown as MonitorParams['predictClient'],
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
     execute: scenario.execute ?? [],
+    executor: scenario.executor,
   });
   const logged = vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
   return {
@@ -370,11 +413,19 @@ describe('predicted check set', () => {
   });
 
   test('a granted job resolves the dynamic matrix and the gate keys on its legs', async () => {
-    // Same workflow as above; the grant lets willfire run `setup` for real,
-    // so `spread` expands and the gate requires the leg by name.
+    // Same workflow as above; the grant lets willfire run `setup`, so `spread`
+    // expands and the gate requires the leg by name. What running means is the
+    // seam: willfire's own executor clones and shells out to docker, so the
+    // stub stands where `setup` would have written to `$GITHUB_OUTPUT`.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
       execute: [{ repo: 'o/r', jobs: ['setup'] }],
+      executor: {
+        executeJob: async (jobId: string) =>
+          jobId === 'setup'
+            ? { ok: true, outputs: { matrix: '["x"]' } }
+            : { ok: false, reason: `no stub for ${jobId}` },
+      },
       polls: [[self, run(DYNAMIC)]],
     });
     expect(failures).toEqual([]);
@@ -410,6 +461,7 @@ describe('predicted check set', () => {
     };
     await monitor({
       github,
+      predictClient: github as unknown as MonitorParams['predictClient'],
       context: makeContext(),
       core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
       execute: [],
@@ -428,6 +480,9 @@ describe('predicted check set', () => {
     const setFailed = vi.fn();
     await monitor({
       github: makeGithub({ polls: [[self, run(TESTS)]] }),
+      predictClient: makeGithub({
+        polls: [[self, run(TESTS)]],
+      }) as unknown as MonitorParams['predictClient'],
       context: {
         repo: { owner: 'o', repo: 'r' },
         sha: 'merge-sha',
@@ -526,5 +581,40 @@ describe('a callee tag that moves mid-flight', () => {
     });
     expect(failures[0]).toMatch(new RegExp(`o/${CALLEE_REPO}@${CALLEE_TAG}`));
     expect(failures[0]).toMatch(/could not be re-resolved/);
+  });
+});
+
+describe('the execute input as the execution switch', () => {
+  // willfire 0.1.31 runs jobs by default. What keeps that from reaching every
+  // consumer is `monitor` passing `executor: null` when nothing was granted,
+  // so these pin the switch rather than the prediction it feeds.
+  const logged = () =>
+    vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
+
+  const GRANT = [{ repo: 'o/r', jobs: ['detect'] }];
+  // These fixtures have no dynamic matrix, so nothing should ask to run. The
+  // stub is here so that if something ever does, it fails in-process instead
+  // of reaching for the network the way willfire's live executor would.
+  const NEVER_CALLED: MonitorParams['executor'] = {
+    executeJob: async (jobId: string) => ({ ok: false, reason: `unexpected execution of ${jobId}` }),
+  };
+
+  test('a grant turns execution on and names the repo it came from', async () => {
+    await gate({ polls: [[self, run(TESTS)]], execute: GRANT, executor: NEVER_CALLED });
+    expect(logged()).toContainEqual(
+      expect.stringContaining('Execution enabled by the execute input for: o/r'),
+    );
+  });
+
+  test('naming a job no longer restricts execution to it, and the log says so', async () => {
+    await gate({ polls: [[self, run(TESTS)]], execute: GRANT, executor: NEVER_CALLED });
+    expect(logged()).toContainEqual(
+      expect.stringContaining('no longer restricts which jobs run'),
+    );
+  });
+
+  test('no grant leaves execution off, silently', async () => {
+    await gate({ polls: [[self, run(TESTS)]] });
+    expect(logged()).not.toContainEqual(expect.stringContaining('Execution enabled'));
   });
 });

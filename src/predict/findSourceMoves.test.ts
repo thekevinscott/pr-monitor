@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import { findSourceMoves } from './findSourceMoves';
-import type { Octokit } from '../types';
+import type { PredictClient } from '../types';
 
 const head = { owner: 'o', repo: 'r', ref: 'head-sha', sha: 'head-sha' };
 const callee = { owner: 'o', repo: 'shared', ref: 'v0', sha: 'callee-a' };
@@ -11,7 +11,7 @@ function github(shas: Record<string, string | null>) {
     if (sha == null) throw new Error('404');
     return { data: { sha } };
   });
-  return { github: { rest: { repos: { getCommit } } } as unknown as Octokit, getCommit };
+  return { github: { rest: { repos: { getCommit } } } as unknown as PredictClient, getCommit };
 }
 
 test('a ref that still names the same commit is not a move', async () => {

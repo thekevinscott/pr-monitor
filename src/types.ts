@@ -1,19 +1,32 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
+import type { GithubClient, JobExecutor } from 'willfire';
 import type { ExecutionGrant } from './predict/parseGrants';
 
 /**
- * willfire's `predict` takes an `@octokit/rest` client, and the workflow-runs
- * endpoint is identical on it, so the action builds one client and uses it for
- * both the prediction and the poll.
+ * The client the action polls runs and jobs with. Separate from the one
+ * willfire predicts with since 0.1.31 — see `MonitorParams.predictClient`.
  */
 export type Octokit = RestOctokit;
+/**
+ * The client willfire reads with. Since 0.1.31 willfire ships its own rather
+ * than taking octokit's, and the two are not interchangeable — this one hands
+ * back raw file text and unwrapped lists.
+ */
+export type PredictClient = GithubClient;
 export type GitHubContextType = typeof GitHubContext;
 export type CoreModule = typeof Core;
 
 export interface MonitorParams {
   github: Octokit;
+  /**
+   * The client willfire predicts with. Deliberately not `github`: willfire
+   * dropped octokit in 0.1.31 and its client returns file contents as raw text
+   * and list endpoints already unwrapped, where octokit returns JSON and an
+   * envelope. One object cannot be both, so the action carries both.
+   */
+  predictClient: GithubClient;
   context: GitHubContextType;
   core: CoreModule;
   /**
@@ -22,6 +35,14 @@ export interface MonitorParams {
    * never assumed.
    */
   execute: ExecutionGrant[];
+  /**
+   * A stand-in executor, which willfire documents as a test seam rather than
+   * configuration. Production omits it, so a grant builds willfire's live
+   * sandboxed executor: that one clones over the network and runs steps in
+   * docker, neither of which belongs in a unit test. `execute` still decides
+   * whether any executor is built at all — this only says which.
+   */
+  executor?: JobExecutor;
 }
 
 export interface WorkflowRunSummary {

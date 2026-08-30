@@ -15,6 +15,11 @@ vi.mock('@octokit/rest', async () => {
   return { ...actual, Octokit: vi.fn(() => ({ rest: {} })) };
 });
 
+vi.mock('willfire', async () => {
+  const actual = await vi.importActual<typeof import('willfire')>('willfire');
+  return { ...actual, makeGithubClient: vi.fn(() => ({ willfire: true })) };
+});
+
 vi.mock('./monitor', async () => {
   const actual = await vi.importActual<typeof import('./monitor')>('./monitor');
   return { ...actual, monitor: vi.fn() };
@@ -22,6 +27,7 @@ vi.mock('./monitor', async () => {
 
 import * as core from '@actions/core';
 import { Octokit } from '@octokit/rest';
+import { makeGithubClient } from 'willfire';
 import { monitor } from './monitor';
 import { run } from './run';
 
@@ -58,6 +64,17 @@ test('PR_MONITOR_EXECUTE → parsed grants handed to monitor', async () => {
     { repo: 'o/conventions', jobs: ['detect'] },
   ]);
   expect(core.setFailed).not.toHaveBeenCalled();
+});
+
+test('prediction gets willfire’s own client, not the octokit one', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  await run();
+  expect(makeGithubClient).toHaveBeenCalledTimes(1);
+  const params = vi.mocked(monitor).mock.calls[0][0];
+  // The two are not interchangeable — willfire's client hands back raw file
+  // text and unwrapped lists where octokit returns JSON and an envelope — so
+  // handing prediction the polling client would fail on every workflow read.
+  expect(params.predictClient).not.toBe(params.github);
 });
 
 test('malformed PR_MONITOR_EXECUTE → setFailed naming the entry, monitor not called', async () => {

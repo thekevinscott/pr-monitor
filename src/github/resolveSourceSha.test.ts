@@ -1,11 +1,11 @@
 import { expect, test, vi } from 'vitest';
 import { resolveSourceSha } from './resolveSourceSha';
-import type { Octokit } from '../types';
+import type { PredictClient } from '../types';
 
 const source = { owner: 'o', repo: 'shared', ref: 'v0' };
 
-function github(getCommit: () => Promise<unknown>): Octokit {
-  return { rest: { repos: { getCommit } } } as unknown as Octokit;
+function github(getCommit: () => Promise<unknown>): PredictClient {
+  return { rest: { repos: { getCommit } } } as unknown as PredictClient;
 }
 
 test('resolves a ref to the commit it names', async () => {

@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { Octokit } from '@octokit/rest';
+import { makeGithubClient } from 'willfire';
 import { monitor } from './monitor';
 import { parseGrants } from './predict';
 
@@ -22,6 +23,9 @@ export async function run(): Promise<void> {
   }
   await monitor({
     github: new Octokit({ auth: token }),
+    // Reads GH_TOKEN / GITHUB_TOKEN from the environment itself; `token` above
+    // is the same value, checked here so the failure names the missing var.
+    predictClient: makeGithubClient(),
     context,
     core,
     execute: parsed.grants,

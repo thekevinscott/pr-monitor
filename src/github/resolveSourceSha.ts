@@ -1,5 +1,5 @@
 import type { SourceRef } from 'willfire';
-import type { Octokit } from '../types';
+import type { PredictClient } from '../types';
 
 /**
  * Resolve a tag, branch, or SHA to the commit it names, or null when it cannot
@@ -14,7 +14,7 @@ import type { Octokit } from '../types';
  * function's. It is never a cue to fall back to the ref.
  */
 export async function resolveSourceSha(
-  github: Octokit,
+  github: PredictClient,
   { owner, repo, ref }: SourceRef,
 ): Promise<string | null> {
   try {
