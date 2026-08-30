@@ -83,10 +83,11 @@ A matrix built from another job's outputs cannot be read into check names — wi
    - **workflow files** — every workflow that will dispatch. Kept alongside the names because a run can conclude before it creates a single job: a `startup_failure` creates none, and a comparison made only of names cannot see it
    - **unresolvable entries** — a job willfire can see but cannot name. Fails immediately; see below
 4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs, and reads each surviving run's jobs
-5. Fails immediately on a run or a check name outside the expected set
-6. Waits while a predicted run is missing or unfinished — a check name has no existence before the run that creates its job
-7. Fails on a predicted check name that never reported once every run has finished
-8. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
+5. Logs the commits the prediction was read from — the PR head, and every repo a `uses:` reached
+6. Fails immediately on a run or a check name outside the expected set
+7. Waits while a predicted run is missing or unfinished — a check name has no existence before the run that creates its job
+8. Fails on a predicted check name that never reported once every run has finished
+9. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
 
 A `[skip ci]` commit predicts nothing, so nothing is required and the gate passes.
 
@@ -98,12 +99,17 @@ Runs still drive the waiting and the pass/fail conclusion. A run stays non-termi
 
 **Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or grant execution of the job that computes it (the `execute` input above).
 
+**A callee tag that moved.** A `uses:` naming a moving tag — `owner/repo/.github/workflows/x.yml@v0` — can resolve to one commit when GitHub schedules the run and another when the gate predicts. The observed checks then come from one program and the predicted checks from another, with nothing wrong on either side.
+
+So the gate records which commits each prediction was read from, and on divergence re-resolves those refs **once**. If any moved, it predicts again at the new commits and judges the same observation against the fresh expectation; the move is named in the log. If nothing moved, the divergence is real and stands — and no second prediction runs, so granted jobs are never executed twice to confirm a tag that held still. A move that still does not explain the observation is red, and so is a ref that stopped resolving: the gate will not vouch for a check set whose commits it cannot name.
+
 ## Limitations
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
 - **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job — unless you grant execution of the job that computes it (the `execute` input).
 - **Event actions willfire does not model.** The gate hands willfire the real `pull_request` action when it is `opened`, `synchronize`, or `reopened`. Run it on any other type (`labeled`, `ready_for_review`, …) and willfire falls back to inferring the action from the PR's commit count ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), which can flip a dispatch verdict on workflows that narrow `types:`.
-- **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`.
+- **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`. Reconciliation does not help here: it runs on divergence, and waiting is not divergence.
+- **Reconciliation is a single attempt.** One re-resolve and at most one re-prediction per gate run. A tag that moves twice mid-flight, or moves after the reconciliation, stays red — repeating would be a search for a prediction that agrees rather than a gate on one.
 
 ## Upgrading from the check-count gate
 

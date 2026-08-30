@@ -9,11 +9,11 @@ import {
   resolvePullNumber,
   resolveSelfWorkflowPath,
 } from './github';
-import { compareObserved } from './checks';
-import { expectedChecks } from './predict';
+import { compareObserved, describeDivergence } from './checks';
+import { expectedChecks, reconcile } from './predict';
 import {
   formatProgressLog,
-  formatUnexpectedFailure,
+  formatSources,
   formatUnresolvedFailure,
   reportFinalResult,
 } from './messages';
@@ -46,11 +46,10 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
     return;
   }
 
-  const prediction = await predict(github, `${owner}/${repo}`, pullNumber, {
-    execute,
-    action: resolveEventAction(context),
-  });
-  const expected = expectedChecks(prediction, selfPath);
+  const slug = `${owner}/${repo}`;
+  const options = { execute, action: resolveEventAction(context) };
+  const prediction = await predict(github, slug, pullNumber, options);
+  let expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 
   // A prediction with a hole in it cannot be compared against, and no amount of
@@ -62,8 +61,15 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
 
   if (prediction.skip !== null) console.log(`Prediction: ${prediction.skip}`);
   console.log(`Monitoring workflow runs for commit: ${sha}`);
+  // Provenance. A `uses:` tag can name a different program by the time this is
+  // read, so the answer is only reconcilable if the commits behind it are named.
+  console.log(`Prediction read from: ${formatSources(prediction.sources)}`);
   console.log(`Expected checks: ${JSON.stringify(expected.names)}`);
   console.log(`Expected runs: ${JSON.stringify(expected.workflows)}`);
+
+  // At most one reconciliation per gate run. Trying again on every poll would be
+  // a search for a prediction that agrees, which is the opposite of gating.
+  let reconciled = false;
 
   while (true) {
     // Only pull_request runs are comparable to a PR prediction, and this
@@ -73,12 +79,37 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
       (r) => r.event === 'pull_request' && r.path !== selfPath,
     );
     const jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
-    const comparison = compareObserved(runs, jobs, expected);
+    let comparison = compareObserved(runs, jobs, expected);
+    let divergence = describeDivergence(comparison);
 
-    if (comparison.unexpected.length > 0 || comparison.unexpectedNames.length > 0) {
-      core.setFailed(
-        formatUnexpectedFailure(comparison.unexpected, comparison.unexpectedNames),
-      );
+    if (divergence !== null && !reconciled) {
+      reconciled = true;
+      const outcome = await reconcile({
+        github,
+        slug,
+        pullNumber,
+        options,
+        selfPath,
+        sources: prediction.sources,
+      });
+      if (outcome.kind === 'failed') {
+        core.setFailed(`${divergence} ${outcome.detail}`);
+        return;
+      }
+      if (outcome.kind === 'repredicted') {
+        console.log(outcome.detail);
+        // Judged against the same observation the divergence was found in. A
+        // fresh fetch would move the target the decision was made about.
+        expected = outcome.expected;
+        console.log(`Expected checks: ${JSON.stringify(expected.names)}`);
+        console.log(`Expected runs: ${JSON.stringify(expected.workflows)}`);
+        comparison = compareObserved(runs, jobs, expected);
+        divergence = describeDivergence(comparison);
+      }
+    }
+
+    if (divergence !== null) {
+      core.setFailed(divergence);
       return;
     }
     if (comparison.missing.length === 0 && comparison.inProgress.length === 0) {
