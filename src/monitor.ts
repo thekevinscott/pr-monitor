@@ -37,6 +37,7 @@ export async function monitor({
   context,
   core,
   execute,
+  executor,
 }: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
 
@@ -76,7 +77,7 @@ export async function monitor({
   // Shared with `reconcile`, so the second prediction is made under exactly the
   // options the first one was.
   const options = {
-    executor: execute.length > 0 ? undefined : null,
+    executor: execute.length > 0 ? executor : null,
     action: resolveEventAction(context),
   };
   const prediction = await predict(predictClient, slug, pullNumber, options);
