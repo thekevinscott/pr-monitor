@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import { reconcile } from './reconcile';
-import type { Octokit } from '../types';
+import type { PredictClient } from '../types';
 
 const HEAD = 'head-sha';
 const SELF = '.github/workflows/pr-monitor.yml';
@@ -62,11 +62,11 @@ function makeGithub(tagSha: string | null) {
     rest,
     paginate: async (fn: (p: unknown) => Promise<{ data: unknown }>, params: unknown) =>
       (await fn(params)).data,
-  } as unknown as Octokit;
+  } as unknown as PredictClient;
   return { github, listRepoWorkflows };
 }
 
-function params(github: Octokit) {
+function params(github: PredictClient) {
   return {
     github,
     slug: 'o/r',

@@ -1,6 +1,7 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
+import type { GithubClient } from 'willfire';
 import type { ExecutionGrant } from './predict/parseGrants';
 
 /**
@@ -9,11 +10,24 @@ import type { ExecutionGrant } from './predict/parseGrants';
  * both the prediction and the poll.
  */
 export type Octokit = RestOctokit;
+/**
+ * The client willfire reads with. Since 0.1.31 willfire ships its own rather
+ * than taking octokit's, and the two are not interchangeable — this one hands
+ * back raw file text and unwrapped lists.
+ */
+export type PredictClient = GithubClient;
 export type GitHubContextType = typeof GitHubContext;
 export type CoreModule = typeof Core;
 
 export interface MonitorParams {
   github: Octokit;
+  /**
+   * The client willfire predicts with. Deliberately not `github`: willfire
+   * dropped octokit in 0.1.31 and its client returns file contents as raw text
+   * and list endpoints already unwrapped, where octokit returns JSON and an
+   * envelope. One object cannot be both, so the action carries both.
+   */
+  predictClient: GithubClient;
   context: GitHubContextType;
   core: CoreModule;
   /**

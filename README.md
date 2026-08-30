@@ -74,6 +74,8 @@ That is the whole surface. There is nothing to tune — `execute` is a permissio
 
 A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. Nothing runs without a grant, and a granted job runs the PR's version of itself, so grant only jobs whose code you trust under this gate. A malformed grant fails the gate immediately, named; an execution that fails leaves the matrix unresolved, which is also red.
 
+**The job names are no longer enforced.** willfire 0.1.31 removed per-job grants — execution there is one switch for the whole prediction, run inside a docker sandbox. This action keeps `execute` as the switch, so a repo that grants nothing still executes nothing. But a grant that names one job now permits every job the prediction needs to run, not only that one. The names are still parsed, still validated, and logged back so the run says what was meant; they just no longer narrow anything. Grant on the basis of the whole workflow, not the single job you named.
+
 ## How it works
 
 1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself

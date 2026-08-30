@@ -11,12 +11,17 @@ inputs:
     default: ${{ github.token }}
   execute:
     description: >-
-      Jobs willfire may execute to resolve a dynamic matrix, as
+      Whether willfire may execute jobs to resolve a dynamic matrix. Spelled as
       whitespace-separated grants of the form `owner/repo:job1,job2`, where
       `owner/repo` is the repo the workflow *file* lives in — for a reusable
-      workflow, the callee. The granted job's steps run for real at the
-      predicted commit, so grant only jobs whose code you trust. Empty grants
-      nothing.
+      workflow, the callee. Empty grants nothing, and nothing is executed.
+
+      Since willfire 0.1.31 the job names are no longer enforced: willfire
+      removed per-job grants, so any grant enables execution for the whole
+      prediction. The steps run for real, in a docker sandbox, at the predicted
+      commit — so grant only if you trust every job the prediction reaches, not
+      just the one you named. The names are still parsed, and still say in the
+      log what you meant.
     required: false
     default: ''
 

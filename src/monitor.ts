@@ -31,7 +31,13 @@ const POLL_INTERVAL_MS = 5_000;
  *
  * There is no timeout — the backstop is the caller's own `timeout-minutes`.
  */
-export async function monitor({ github, context, core, execute }: MonitorParams): Promise<void> {
+export async function monitor({
+  github,
+  predictClient,
+  context,
+  core,
+  execute,
+}: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
 
   const selfPath = resolveSelfWorkflowPath(process.env.GITHUB_WORKFLOW_REF);
@@ -47,8 +53,33 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
   }
 
   const slug = `${owner}/${repo}`;
-  const options = { execute, action: resolveEventAction(context) };
-  const prediction = await predict(github, slug, pullNumber, options);
+
+  // willfire 0.1.31 builds a live sandboxed executor when `executor` is
+  // omitted, so the default would start running PR-authored job steps in every
+  // repo that consumes this action. The `execute` input stays the switch: a
+  // consumer that granted nothing gets no executor, which is what it has today.
+  if (execute.length > 0) {
+    console.log(
+      `Execution enabled by the execute input for: ${execute.map((g) => g.repo).join(', ')}`,
+    );
+    // willfire no longer accepts job ids, so a grant that named one now permits
+    // every job the prediction needs. Say so rather than letting the narrower
+    // spelling imply a limit nothing applies.
+    const named = execute.flatMap((g) => g.jobs);
+    if (named.length > 0) {
+      console.log(
+        `Note: per-job grants are gone in willfire 0.1.31, so naming ${JSON.stringify(named)} no longer restricts which jobs run.`,
+      );
+    }
+  }
+
+  // Shared with `reconcile`, so the second prediction is made under exactly the
+  // options the first one was.
+  const options = {
+    executor: execute.length > 0 ? undefined : null,
+    action: resolveEventAction(context),
+  };
+  const prediction = await predict(predictClient, slug, pullNumber, options);
   let expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 
@@ -85,7 +116,7 @@ export async function monitor({ github, context, core, execute }: MonitorParams)
     if (divergence !== null && !reconciled) {
       reconciled = true;
       const outcome = await reconcile({
-        github,
+        github: predictClient,
         slug,
         pullNumber,
         options,

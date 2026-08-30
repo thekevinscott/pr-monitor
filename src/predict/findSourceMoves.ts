@@ -1,6 +1,6 @@
 import type { WorkflowSource } from 'willfire';
 import { resolveSourceSha } from '../github';
-import type { Octokit } from '../types';
+import type { PredictClient } from '../types';
 
 export interface SourceMove {
   /** The source as the prediction recorded it, carrying the commit it read. */
@@ -18,7 +18,7 @@ export interface SourceMove {
  * which willfire records by SHA.
  */
 export async function findSourceMoves(
-  github: Octokit,
+  github: PredictClient,
   sources: ReadonlyArray<WorkflowSource>,
 ): Promise<SourceMove[]> {
   const moves: SourceMove[] = [];
