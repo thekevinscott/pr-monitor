@@ -1,30 +1,47 @@
-name: Re-point v1 tag to main
+name: Promote v1 tag
 
-# Rolling release: this action is consumed by repos that pin `@v1` and expect to
-# track the latest `main` immediately (no per-consumer SHA bumps). On every push
-# to main we force-move the `v1` tag to the new HEAD. The action runs from source
-# (`tsx src/entry.ts`) at runtime, so moving the tag is sufficient — no dist build.
-#
-# Note: bugs auto-propagate and are fixed forward. For a *deliberate* breaking
-# change, either update consumers in lockstep or cut `v2` and migrate them.
+# Consumers pin `@v1`, so the tag is the release. It advances only to a commit
+# whose whole CI surface on `main` is green, and otherwise stays where it is.
+# The rule itself lives in `src/promote/decide.ts`, under test.
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    # Every workflow that runs on push to `main` belongs here, or it can be the
+    # last to finish and `v1` never advances. This trigger is only permission to
+    # look: it fires once per completion, so the gate re-reads the whole surface.
+    workflows:
+      - Tests
+      - Testing Conventions
+    types: [completed]
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
-  group: move-v1
-  cancel-in-progress: true
+  group: promote-v1
+  cancel-in-progress: false
 
 jobs:
-  move-v1:
+  promote:
+    name: Promote v1
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Re-point v1 → main HEAD
-        run: |
-          git tag -f v1
-          git push origin -f v1
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Promote v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PROMOTE_OWNER: ${{ github.repository_owner }}
+          PROMOTE_REPO: ${{ github.event.repository.name }}
+          PROMOTE_SHA: ${{ github.event.workflow_run.head_sha }}
+          PROMOTE_TAG: v1
+        run: pnpm run promote
