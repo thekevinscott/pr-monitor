@@ -12,6 +12,7 @@ test('a command wrapped across lines with backslashes is still one command', () 
 
 test('blank lines and comments are not commands', () => {
   expect(findRunLogic('\n# set the version\npnpm run promote\n')).toBeUndefined();
+  expect(findRunLogic('  # indented, still a comment\n  pnpm run promote')).toBeUndefined();
   expect(findRunLogic('   \n\n')).toBeUndefined();
 });
 
