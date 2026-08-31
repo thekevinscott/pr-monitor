@@ -11,7 +11,8 @@
     "promote": "tsx src/promote/entry.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test:coverage"
+    "check:workflows": "tsx src/policy/cli.ts",
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test:coverage && pnpm run check:workflows"
   },
   "devDependencies": {
     "@stryker-mutator/core": "^9.6.1",
@@ -22,7 +23,8 @@
     "testing-conventions": "^0.0.91",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.20.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "yaml": "^2.9.0"
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
