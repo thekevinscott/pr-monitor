@@ -14,10 +14,14 @@ const { exit, logged } = vi.hoisted(() => {
   };
 });
 
-vi.mock('node:fs/promises', () => ({
-  readdir: vi.fn(() => Promise.resolve([])),
-  readFile: vi.fn(() => Promise.resolve('')),
-}));
+vi.mock('node:fs/promises', async () => {
+  const actual = await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises');
+  return {
+    ...actual,
+    readdir: vi.fn(() => Promise.resolve([])),
+    readFile: vi.fn(() => Promise.resolve('')),
+  };
+});
 
 import { readdir, readFile } from 'node:fs/promises';
 import { report } from './cli';
