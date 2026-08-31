@@ -63,3 +63,13 @@ reason = "unit test; mocks the first-party collaborator (run) it isolates, as un
 path = "run.test.ts"
 rules = ["no-first-party-mock"]
 reason = "unit test; mocks the first-party collaborator (monitor) it isolates, as unit lint requires"
+
+[[typescript.exempt]]
+path = "promote/entry.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (promote/run) it isolates, as unit lint requires"
+
+[[typescript.exempt]]
+path = "promote/run.test.ts"
+rules = ["no-first-party-mock"]
+reason = "unit test; mocks the first-party collaborator (promote) it isolates, as unit lint requires"

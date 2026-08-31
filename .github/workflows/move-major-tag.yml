@@ -1,232 +1,47 @@
 name: Promote v1 tag
 
-# Rolling release: this action is consumed by repos that pin `@v1` and expect to
-# track `main` without per-consumer SHA bumps, so the `v1` tag *is* the release.
-# The action runs from source (`tsx src/entry.ts`) at runtime, so moving the tag
-# is the whole release — there is no dist build.
-#
-# `v1` advances only to a commit whose entire CI surface on `main` is green.
-# Anything else — a red check, a check still running, a commit that would move
-# the tag backwards — leaves `v1` where it is. Failing closed means a bad commit
-# on `main` is fixed forward without every consumer going red in the meantime.
-#
-# Why `workflow_run` and not `push`: on `push` this workflow dispatched in the
-# same second as `Tests` and won the race every time. It is a checkout plus two
-# git commands; `Tests` installs pnpm and runs a coverage suite. `v1` was
-# repointed before anything had validated the commit, and nothing consulted the
-# result.
+# Consumers pin `@v1`, so the tag is the release. It advances only to a commit
+# whose whole CI surface on `main` is green, and otherwise stays where it is.
+# The rule itself lives in `src/promote/decide.ts`, under test.
 
 on:
   workflow_run:
-    # Every workflow that runs on push to `main` belongs here. The list is not a
-    # statement about which checks matter — the job below reads *all* of the
-    # commit's check runs — it is the set of events that get to ask the question.
-    # A push-to-main workflow left off this list can be the last one to finish,
-    # in which case the final ask sees it still running and `v1` never advances.
-    # Add new ones here.
+    # Every workflow that runs on push to `main` belongs here, or it can be the
+    # last to finish and `v1` never advances. This trigger is only permission to
+    # look: it fires once per completion, so the gate re-reads the whole surface.
     workflows:
       - Tests
       - Testing Conventions
     types: [completed]
 
 permissions:
-  contents: write # force-push the tag
-  actions: read # list this commit's workflow runs, to find our own
-  checks: read # read this commit's check runs
+  contents: write
+  actions: read
 
 concurrency:
-  # Serialise promotions so two runs never race on the same tag. Do not cancel
-  # in progress: `workflow_run` completions do not arrive in commit order, so the
-  # run being cancelled is not necessarily the stale one, and every completion
-  # needs its own look at the surface.
   group: promote-v1
   cancel-in-progress: false
 
 jobs:
   promote:
     name: Promote v1
-    # A failed trigger workflow need not fire this at all — the sibling
-    # workflow's completion will find the failure in the check-run list and
-    # refuse. Requiring `event == 'push'` keeps `pull_request` runs out; a fork
-    # whose branch is also called `main` cannot reach this, because pushes in a
-    # fork do not raise `workflow_run` in the upstream repo.
     if: >-
       github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-      REPO: ${{ github.repository }}
-      # The commit the triggering run actually validated, pinned. A floating HEAD
-      # here would reintroduce the race this workflow exists to close.
-      SHA: ${{ github.event.workflow_run.head_sha }}
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-          # Full history and tags: the promotion is only allowed to move `v1`
-          # forward, which takes ancestry queries against the existing tag.
-          fetch-depth: 0
-
-      - name: Verify the whole CI surface is green
-        id: surface
-        run: |
-          set -euo pipefail
-
-          # Derived, not hardcoded: renaming this file would otherwise stop it
-          # recognising its own runs, and the deadlock that causes is silent.
-          # GITHUB_WORKFLOW_REF is `owner/repo/<path>@<ref>`.
-          self_path="${GITHUB_WORKFLOW_REF#"$REPO/"}"
-          self_path="${self_path%@*}"
-          case "$self_path" in
-            .github/workflows/*) ;;
-            *)
-              echo "::error::Could not determine this workflow's own path from '$GITHUB_WORKFLOW_REF'. Refusing to move v1."
-              exit 1
-              ;;
-          esac
-          echo "This workflow: $self_path"
-
-          # Each API call is its own command so a non-zero exit aborts the step.
-          # Piping `gh` straight into `jq` would hide the failure: `gh` writes the
-          # error body to stdout, `jq` happily parses it, and the step would go on
-          # to judge an error response as if it were a check-run list.
-          # `--paginate` emits one JSON document per page, which `jq -s` slurps.
-          runs_json="$RUNNER_TEMP/runs.json"
-          checks_json="$RUNNER_TEMP/checks.json"
-          gh api "repos/$REPO/actions/runs?head_sha=$SHA&per_page=100" --paginate > "$runs_json"
-          gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" --paginate > "$checks_json"
-
-          # This job's own check run lands on the same commit it is judging. Both
-          # `Tests` and `Testing Conventions` fire this workflow, so a second
-          # promotion run can be on the commit too. Counting either as part of
-          # the surface deadlocks: each run waits on the other and `v1` never
-          # moves. Identify them by workflow path and drop them.
-          self_ids="$(
-            jq -s --arg path "$self_path" \
-              '[.[].workflow_runs[] | select(.path == $path) | .id | tostring]' "$runs_json"
-          )"
-          echo "Promotion runs on this commit (excluded): $self_ids"
-
-          # `filter=latest` is the default, so a re-run supersedes the run it
-          # replaced rather than both being counted.
-          surface="$(
-            jq -s --argjson self "$self_ids" '
-              [.[].check_runs[]]
-              | map(. + {
-                  run_id: ((.html_url // "") | [scan("/actions/runs/([0-9]+)")] | flatten | first)
-                })
-              | map(select((.run_id | IN($self[])) | not))
-            ' "$checks_json"
-          )"
-
-          echo "### Checks on \`$SHA\`" >> "$GITHUB_STEP_SUMMARY"
-          jq -r '.[] | "- \(.name) — \(.status)/\(.conclusion // "—")"' <<<"$surface" \
-            | tee -a "$GITHUB_STEP_SUMMARY"
-
-          # An empty surface means the API told us nothing, not that nothing is
-          # wrong. Fail closed.
-          if [ "$(jq 'length' <<<"$surface")" -eq 0 ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::error::No check runs found for $SHA. Refusing to move v1."
-            exit 1
-          fi
-
-          # `skipped` is a real outcome here: several `conventions / *` jobs skip
-          # by design. Everything else that is not `success` blocks the move.
-          failed="$(jq -r '
-            [.[] | select(.status == "completed" and (.conclusion | . != "success" and . != "skipped"))]
-            | .[] | "\(.name) → \(.conclusion // "null")"
-          ' <<<"$surface")"
-
-          pending="$(jq -r '
-            [.[] | select(.status != "completed")] | .[] | "\(.name) → \(.status)"
-          ' <<<"$surface")"
-
-          if [ -n "$failed" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::error::v1 not moved — these checks did not pass on $SHA:"
-            echo "$failed"
-            exit 1
-          fi
-
-          if [ -n "$pending" ]; then
-            # Not an error: the sibling workflow is still going and its own
-            # completion will fire this workflow again and re-ask. Exiting green
-            # here keeps a spurious red X off every merge commit.
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::v1 not moved yet — still running on $SHA:"
-            echo "$pending"
-            exit 0
-          fi
-
-          echo "ready=true" >> "$GITHUB_OUTPUT"
-          echo "All checks green on $SHA."
-
-      - name: Verify the move is forward
-        id: ancestry
-        if: steps.surface.outputs.ready == 'true'
-        run: |
-          set -euo pipefail
-          # Into an explicit ref, not FETCH_HEAD — the tag fetch below would
-          # overwrite that.
-          git fetch --force origin main:refs/remotes/origin/main
-          git fetch --force --tags origin
-
-          target="$(git rev-parse "$SHA^{commit}")"
-
-          # A commit that is not on `main` has no business being the release,
-          # whatever its checks say.
-          if ! git merge-base --is-ancestor "$target" refs/remotes/origin/main; then
-            echo "forward=false" >> "$GITHUB_OUTPUT"
-            echo "::error::$SHA is not reachable from origin/main. Refusing to move v1."
-            exit 1
-          fi
-
-          if ! git rev-parse -q --verify refs/tags/v1 >/dev/null; then
-            echo "forward=true" >> "$GITHUB_OUTPUT"
-            echo "v1 does not exist yet; creating it at $target."
-            exit 0
-          fi
-
-          current="$(git rev-parse "refs/tags/v1^{commit}")"
-
-          if [ "$current" = "$target" ]; then
-            echo "forward=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::v1 already points at $target. Nothing to do."
-            exit 0
-          fi
-
-          # Ancestry, not timestamps, decides direction. `workflow_run`
-          # completions arrive out of commit order — an older commit's slow run
-          # can finish after a newer commit has already been promoted — and
-          # re-running an old workflow can raise the event months later. An older
-          # commit is not a descendant of the current tag, so it is refused.
-          if ! git merge-base --is-ancestor "$current" "$target"; then
-            echo "forward=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::v1 is at $current, which is not an ancestor of $target. A newer commit has already been promoted; refusing to move v1 backwards."
-            exit 0
-          fi
-
-          echo "forward=true" >> "$GITHUB_OUTPUT"
-          echo "Moving v1 from $current to $target."
-
-      - name: Move v1
-        if: steps.ancestry.outputs.forward == 'true'
-        run: |
-          set -euo pipefail
-          git tag -f v1 "$SHA"
-          git push --force origin refs/tags/v1
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**v1 → \`$SHA\`**" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Report when v1 was held back
-        # `always()`: the surface step exits non-zero on a red commit, and the
-        # summary should still say what happened to the tag.
-        if: >-
-          always() && (steps.surface.outputs.ready != 'true'
-          || steps.ancestry.outputs.forward != 'true')
-        run: |
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**v1 not moved.** It still points where it did before this run." >> "$GITHUB_STEP_SUMMARY"
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Promote v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PROMOTE_OWNER: ${{ github.repository_owner }}
+          PROMOTE_REPO: ${{ github.event.repository.name }}
+          PROMOTE_SHA: ${{ github.event.workflow_run.head_sha }}
+          PROMOTE_TAG: v1
+        run: pnpm run promote

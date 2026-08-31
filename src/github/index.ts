@@ -1,5 +1,9 @@
+export { compareToTag } from './compareToTag';
+export type { TagRelation } from './compareToTag';
 export { fetchWorkflowRuns } from './fetchWorkflowRuns';
 export { fetchWorkflowRunJobs } from './fetchWorkflowRunJobs';
+export { isNotFound } from './isNotFound';
+export { moveTag } from './moveTag';
 export { resolveCommitSha } from './resolveCommitSha';
 export { resolveEventAction } from './resolveEventAction';
 export { resolvePullNumber } from './resolvePullNumber';
