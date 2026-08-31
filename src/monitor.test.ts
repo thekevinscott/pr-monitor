@@ -40,28 +40,17 @@ const wf = (name: string, jobs: string, on = 'on: pull_request') =>
 
 const plainJob = (id: string) => `  ${id}:\n${step}`;
 
-/**
- * One optional string input, declared identically on both sides of a call.
- *
- * `default:` is here because real workflows write one, not because it decides
- * anything: a `pull_request` is neither a dispatch nor a call, so no default is
- * ever applied and every declared input reads as the empty string.
- */
 const VERSION_INPUT =
   "    inputs:\n      version:\n        type: string\n        required: false\n        default: ''";
 
-/** A root trigger that also declares an input, and the call side of the same. */
 const DISPATCH_ON = `on:\n  pull_request:\n  workflow_dispatch:\n${VERSION_INPUT}`;
 const CALL_ON = `on:\n  workflow_call:\n${VERSION_INPUT}`;
 
 /**
- * A job gated on `version` being set, over a static matrix.
- *
- * The `if:` is what makes this fixture load-bearing. On a `pull_request`
- * `inputs.version` is empty, so the job skips — and a skipped job never expands
- * its matrix, collapsing to one check under the bare job name. Leave `inputs`
- * unbound instead and the `if:` is undecidable, the matrix expands, and the same
- * workflow predicts `(a)` and `(b)` rather than the one name GitHub creates.
+ * The matrix is what makes the `if:` observable. Bound, `inputs.version` is
+ * empty on a `pull_request`, the job skips, and a skipped job never expands its
+ * matrix — one check, bare name. Unbound, the `if:` is undecidable, the matrix
+ * expands, and the prediction names `(a)` and `(b)` GitHub never creates.
  */
 const gatedJob = (id: string) =>
   `  ${id}:\n    if: inputs.version != ''\n    strategy:\n      matrix:\n        leg: [a, b]\n${step}`;
@@ -90,11 +79,7 @@ const YAML: Record<string, string> = {
     `  setup:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: \${{ steps.emit.outputs.matrix }}\n    steps:\n      - id: emit\n        run: echo 'matrix=["x"]' >> "$GITHUB_OUTPUT"\n` +
       `  spread:\n    needs: setup\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        leg: \${{ fromJSON(needs.setup.outputs.matrix) }}\n    steps:\n      - run: echo hi\n`,
   ),
-  // a root workflow that declares its own `inputs` and reads them in a job's
-  // `if:` — the context a `pull_request` binds empty rather than leaves unset
   [GATED]: wf('Gated', gatedJob('guard'), DISPATCH_ON),
-  // the same input, one call further down: the root declares it, the caller job
-  // hands it to a reusable workflow, and the callee's `if:` is what reads it
   [PINNED]: wf(
     'Pinned',
     `  detect:\n    uses: ./${SCAN}\n    with:\n      version: \${{ inputs.version }}\n`,
@@ -138,8 +123,6 @@ const CHECKS: Record<string, string[]> = {
   [DYNAMIC]: ['setup', 'spread (x)'],
   [REOPEN]: ['greet'],
   [CALLER]: ['call / alpha', 'call / extra'],
-  // one check each, concluded `skipped` — GitHub creates the check for a job it
-  // skips, under the bare name, with no matrix parenthetical
   [GATED]: ['guard'],
   [PINNED]: ['detect / scan_hermetic'],
 };
@@ -541,19 +524,6 @@ describe('predicted check set', () => {
 });
 
 describe("a root workflow's own inputs", () => {
-  // Regression guard for the willfire 0.1.30 break of 2026-08-30, which froze
-  // testing-conventions for ~12 hours behind `Unresolvable check names`. A root
-  // workflow's `inputs` context was left unset rather than bound, so anything
-  // reading `inputs.*` — directly, or after a caller passed it down a `with:` —
-  // was undecidable. Fixed in 0.1.31 and adopted in #27; these fixtures are what
-  // would stop a later bump reintroducing it and still going green here.
-  //
-  // Both assert the resolved names, not just that the gate passed: an
-  // undecidable `if:` still produces a *named* entry, and `expectedChecks`
-  // deliberately expects a named entry whatever its status. The name is where
-  // the difference shows — a skipped job collapses its matrix, an undecidable
-  // one does not.
-
   test("an input the workflow declares itself decides its own job's `if:`", async () => {
     const { failures, log, polls } = await gate({
       workflows: [SELF_PATH, GATED],
@@ -565,10 +535,6 @@ describe("a root workflow's own inputs", () => {
   });
 
   test("an input passed down a `with:` decides the callee's `if:`", async () => {
-    // The incident's own shape: the root declares `version`, the caller job
-    // interpolates it into `with:`, and the callee job's `if:` reads it on the
-    // other side of the call. Unbound at the root, the UNKNOWN travels the whole
-    // way and lands on the callee's `if:`.
     const { failures, log, polls } = await gate({
       workflows: [SELF_PATH, PINNED],
       polls: [[self, run(PINNED)]],
