@@ -26,16 +26,6 @@ jobs:
       # this repo, not a waiver of a failing check. Diff-scoped variants ride along —
       # colocated-test brings co-change, unit-coverage brings the changed-line job.
       #
-      # e2e-verify is named though it stays skipped today: its job runs only when an
-      # `e2e-attestation.json` is committed or `run_e2e` is set, and neither is true
-      # here. Naming it now means the day an attestation lands the freshness check is
-      # already holding it current, instead of waiting on someone to notice.
-      #
-      # Left out:
-      #   packaging — the action runs `tsx src/entry.ts` directly. There is no build
-      #     step and no built artifact to inspect, so the gate packs the source tree
-      #     and reports the 33 colocated `*.test.ts` files as shipped test files.
-      #   mutation  — needs `@stryker-mutator/core` and a runner plugin in the
-      #     package's own deps; this repo has neither. Worth adding on its own merits,
-      #     but that is a change to how the repo is tested, not part of this one.
-      gates: '["colocated-test", "unit-lint", "unit-coverage", "integration-lint", "e2e-verify"]'
+      # Left out: packaging — the action runs `tsx src/entry.ts` from source, so there
+      # is no built artifact to inspect.
+      gates: '["colocated-test", "unit-lint", "unit-coverage", "mutation", "integration-lint", "e2e-verify"]'
