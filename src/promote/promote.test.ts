@@ -54,5 +54,8 @@ test('a blocked decision leaves the tag untouched and fails the run', async () =
   const outcome = await promote(TARGET, io);
 
   expect(io.moveTag).not.toHaveBeenCalled();
-  expect(outcome.exitCode).toBe(1);
+  expect(outcome).toEqual({
+    exitCode: 1,
+    lines: ['::error::no other checks reported for abc123; refusing to move v1 on an empty result'],
+  });
 });

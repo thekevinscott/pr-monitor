@@ -28,6 +28,12 @@ test('an unpredicted check name is divergence', () => {
   expect(describeDivergence(comparison({ unexpectedNames: ['a.yml :: rogue'] }))).toContain('rogue');
 });
 
+test('an unpredicted run outranks a predicted name that never reported', () => {
+  expect(
+    describeDivergence(comparison({ unexpected: ['a.yml'], missingNames: ['unit'] })),
+  ).toContain('a.yml');
+});
+
 test('a predicted name that never reported is divergence once everything finished', () => {
   expect(describeDivergence(comparison({ missingNames: ['unit'] }))).toContain('unit');
 });
