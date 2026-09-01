@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { monitor } from './monitor';
+import { sleep } from './timing/sleep';
 import type { WorkflowRunSummary, MonitorParams } from './types';
+
+vi.mock('./timing/sleep', () => ({ sleep: vi.fn(() => Promise.resolve()) }));
 
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
@@ -606,8 +609,9 @@ describe('a rate-limited read', () => {
     });
     expect(setFailed).not.toHaveBeenCalled();
     expect(vi.mocked(console.log).mock.calls.map((c) => String(c[0]))).toContainEqual(
-      expect.stringContaining('rate limited'),
+      'GitHub API rate limited; retrying in 60s',
     );
+    expect(vi.mocked(sleep)).toHaveBeenCalledWith(60_000);
   });
 
   test('a rate limit fetching jobs waits and resumes rather than failing', async () => {
@@ -629,6 +633,7 @@ describe('a rate-limited read', () => {
       execute: false,
     });
     expect(setFailed).not.toHaveBeenCalled();
+    expect(vi.mocked(sleep)).toHaveBeenCalledWith(60_000);
   });
 
   test('a non-rate-limit error fetching runs is not swallowed', async () => {
@@ -646,5 +651,6 @@ describe('a rate-limited read', () => {
         execute: false,
       }),
     ).rejects.toThrow('socket hang up');
+    expect(vi.mocked(sleep)).not.toHaveBeenCalled();
   });
 });
