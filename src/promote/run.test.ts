@@ -77,7 +77,9 @@ test('wires the injected I/O to the REST client', async () => {
     data: { jobs: [{ id: 9, name: 'Lint', status: 'completed', conclusion: 'success' }] },
   });
   rest.git.getRef.mockResolvedValue({ data: {} });
-  rest.repos.compareCommitsWithBasehead.mockResolvedValue({ data: { status: 'ahead' } });
+  rest.repos.compareCommitsWithBasehead.mockResolvedValue({
+    data: { status: 'ahead', ahead_by: 2 },
+  });
   rest.git.updateRef.mockResolvedValue({});
 
   let io: PromotionIO | undefined;
@@ -101,7 +103,7 @@ test('wires the injected I/O to the REST client', async () => {
     expect.objectContaining({ owner: 'o', repo: 'r', head_sha: 'abc123' }),
   );
 
-  expect(await io?.compare('v1', 'abc123')).toBe('ahead');
+  expect(await io?.compare('v1', 'abc123')).toEqual({ relation: 'ahead', aheadBy: 2 });
 
   await io?.moveTag('v1', 'abc123');
   expect(rest.git.updateRef).toHaveBeenCalledWith({

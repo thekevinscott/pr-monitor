@@ -22,7 +22,7 @@ const GREEN: WorkflowJobSummary[] = [
 function makeIO(overrides: Partial<PromotionIO> = {}): PromotionIO {
   return {
     fetchJobs: vi.fn(async () => GREEN),
-    compare: vi.fn(async () => 'ahead' as const),
+    compare: vi.fn(async () => ({ relation: 'ahead' as const, aheadBy: 1 })),
     moveTag: vi.fn(async () => undefined),
     ...overrides,
   };
@@ -40,7 +40,7 @@ test('a green surface ahead of the tag moves it', async () => {
 });
 
 test('a held decision leaves the tag untouched', async () => {
-  const io = makeIO({ compare: vi.fn(async () => 'identical' as const) });
+  const io = makeIO({ compare: vi.fn(async () => ({ relation: 'identical' as const, aheadBy: 0 })) });
 
   const outcome = await promote(TARGET, io);
 

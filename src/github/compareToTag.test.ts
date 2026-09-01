@@ -15,7 +15,10 @@ test('an absent tag ref reports missing without comparing', async () => {
   const getRef = vi.fn().mockRejectedValue(Object.assign(new Error('nope'), { status: 404 }));
   const compare = vi.fn();
 
-  expect(await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).toBe('missing');
+  expect(await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).toEqual({
+    relation: 'missing',
+    aheadBy: 0,
+  });
   expect(getRef).toHaveBeenCalledWith({ owner: 'o', repo: 'r', ref: 'tags/v1' });
   expect(compare).not.toHaveBeenCalled();
 });
@@ -28,17 +31,22 @@ test('a non-404 on the tag ref propagates rather than reading as missing', async
   );
 });
 
-test('compares the tag name against the commit and returns the status', async () => {
+test('compares the tag name against the commit and reports status and distance', async () => {
   const getRef = vi.fn().mockResolvedValue({ data: { object: { sha: 'old' } } });
-  const compare = vi.fn().mockResolvedValue({ data: { status: 'ahead' } });
+  const compare = vi.fn().mockResolvedValue({ data: { status: 'ahead', ahead_by: 7 } });
 
-  expect(await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).toBe('ahead');
+  expect(await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).toEqual({
+    relation: 'ahead',
+    aheadBy: 7,
+  });
   expect(compare).toHaveBeenCalledWith({ owner: 'o', repo: 'r', basehead: 'v1...abc' });
 });
 
 test('passes a diverged status straight through', async () => {
   const getRef = vi.fn().mockResolvedValue({ data: { object: { sha: 'old' } } });
-  const compare = vi.fn().mockResolvedValue({ data: { status: 'diverged' } });
+  const compare = vi.fn().mockResolvedValue({ data: { status: 'diverged', ahead_by: 4 } });
 
-  expect(await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).toBe('diverged');
+  expect(
+    (await compareToTag(makeClient(getRef, compare), 'o', 'r', 'v1', 'abc')).relation,
+  ).toBe('diverged');
 });
