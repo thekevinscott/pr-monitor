@@ -5,6 +5,10 @@ test('parses a count', () => {
   expect(requireCount('DRIFT_LIMIT', '3')).toBe(3);
 });
 
+test('one is the tightest usable limit', () => {
+  expect(requireCount('DRIFT_LIMIT', '1')).toBe(1);
+});
+
 test('an unset value fails naming the variable', () => {
   expect(() => requireCount('DRIFT_LIMIT', undefined)).toThrow('DRIFT_LIMIT is required');
 });

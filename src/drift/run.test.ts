@@ -57,10 +57,17 @@ test('returns the decided exit code when the gap is too wide', async () => {
   expect(await run()).toBe(1);
 });
 
-test('a missing variable fails before any request is made', async () => {
-  delete process.env.DRIFT_BRANCH;
+test.each([
+  'GITHUB_TOKEN',
+  'DRIFT_OWNER',
+  'DRIFT_REPO',
+  'DRIFT_TAG',
+  'DRIFT_BRANCH',
+  'DRIFT_LIMIT',
+])('a missing %s fails by name before any request is made', async (name) => {
+  delete process.env[name];
 
-  await expect(run()).rejects.toThrow('DRIFT_BRANCH is required');
+  await expect(run()).rejects.toThrow(`${name} is required`);
   expect(rest.git.getRef).not.toHaveBeenCalled();
 });
 
