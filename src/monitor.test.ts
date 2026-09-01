@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { monitor } from './monitor';
+import { sleep } from './timing/sleep';
 import type { WorkflowRunSummary, MonitorParams } from './types';
+
+vi.mock('./timing/sleep', async () => {
+  const actual = await vi.importActual<typeof import('./timing/sleep')>('./timing/sleep');
+  return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
+});
 
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
@@ -577,5 +583,77 @@ describe('the execute input as the execution switch', () => {
       polls: [[self, run(DYNAMIC)]],
     });
     expect(failures[0]).toMatch(/Unresolvable check names/);
+  });
+});
+
+describe('a rate-limited read', () => {
+  const RATE_LIMIT_ERROR = Object.assign(new Error('API rate limit exceeded for installation'), {
+    status: 403,
+    response: { headers: { 'retry-after': '30' } },
+  });
+
+  test('a rate limit fetching runs waits and resumes rather than failing', async () => {
+    const github = makeGithub({ polls: [[self, run(TESTS)]] });
+    const original = github.rest.actions.listWorkflowRunsForRepo;
+    let calls = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (github.rest.actions as any).listWorkflowRunsForRepo = async (params: any) => {
+      calls++;
+      if (calls === 1) throw RATE_LIMIT_ERROR;
+      return original(params);
+    };
+    const setFailed = vi.fn();
+    await monitor({
+      github,
+      predictClient: github as unknown as MonitorParams['predictClient'],
+      context: makeContext(),
+      core: { setFailed } as unknown as MonitorParams['core'],
+      execute: false,
+    });
+    expect(setFailed).not.toHaveBeenCalled();
+    expect(vi.mocked(console.log).mock.calls.map((c) => String(c[0]))).toContainEqual(
+      'GitHub API rate limited; retrying in 60s',
+    );
+    expect(vi.mocked(sleep)).toHaveBeenCalledWith(60_000);
+  });
+
+  test('a rate limit fetching jobs waits and resumes rather than failing', async () => {
+    const github = makeGithub({ polls: [[self, run(TESTS)]] });
+    const original = github.rest.actions.listJobsForWorkflowRun;
+    let calls = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (github.rest.actions as any).listJobsForWorkflowRun = async (params: any) => {
+      calls++;
+      if (calls === 1) throw RATE_LIMIT_ERROR;
+      return original(params);
+    };
+    const setFailed = vi.fn();
+    await monitor({
+      github,
+      predictClient: github as unknown as MonitorParams['predictClient'],
+      context: makeContext(),
+      core: { setFailed } as unknown as MonitorParams['core'],
+      execute: false,
+    });
+    expect(setFailed).not.toHaveBeenCalled();
+    expect(vi.mocked(sleep)).toHaveBeenCalledWith(60_000);
+  });
+
+  test('a non-rate-limit error fetching runs is not swallowed', async () => {
+    const github = makeGithub({ polls: [[self, run(TESTS)]] });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (github.rest.actions as any).listWorkflowRunsForRepo = async () => {
+      throw new Error('socket hang up');
+    };
+    await expect(
+      monitor({
+        github,
+        predictClient: github as unknown as MonitorParams['predictClient'],
+        context: makeContext(),
+        core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
+        execute: false,
+      }),
+    ).rejects.toThrow('socket hang up');
+    expect(vi.mocked(sleep)).not.toHaveBeenCalled();
   });
 });
