@@ -15,4 +15,3 @@ jobs:
       languages: '["typescript"]'
       source: src
       config: testing-conventions.toml
-      gates: '["colocated-test", "unit-lint", "unit-coverage", "mutation", "integration-lint", "e2e-verify"]'
