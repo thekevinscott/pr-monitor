@@ -43,8 +43,6 @@ test('a predicted name is not missing while a run is still going', () => {
 });
 
 test('a failed run suppresses the missing names it caused', () => {
-  // The jobs downstream of a failure never report. Naming them would bury the
-  // cause, which `reportFinalResult` states instead.
   expect(
     describeDivergence(comparison({ missingNames: ['unit'], nonPassing: ['a.yml (failure)'] })),
   ).toBeNull();

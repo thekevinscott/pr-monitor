@@ -30,8 +30,6 @@ test('a ref that stopped resolving is a move with no commit', async () => {
 });
 
 test('a source already pinned to its commit is not asked about', async () => {
-  // The PR's own head is recorded by SHA. A SHA cannot move, so asking would
-  // spend a request to learn nothing.
   const { github: gh, getCommit } = github({});
   expect(await findSourceMoves(gh, [head])).toEqual([]);
   expect(getCommit).not.toHaveBeenCalled();

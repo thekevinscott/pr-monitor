@@ -12,7 +12,6 @@ export async function fetchWorkflowRuns(
   let page = 1;
   let batchSize = PER_PAGE;
 
-  // Paginate: a busy repo can have more than one page of runs for a SHA.
   while (batchSize === PER_PAGE) {
     const response = await github.rest.actions.listWorkflowRunsForRepo({
       owner,

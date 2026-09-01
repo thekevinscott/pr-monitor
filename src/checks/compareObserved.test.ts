@@ -66,7 +66,6 @@ test('a predicted check name that has not reported is missing by name', () => {
 });
 
 test('a renamed job shows as both a missing name and an unexpected one', () => {
-  // The workflow still runs and still goes green — only the names diverge.
   const result = compareObserved(
     [run('a.yml')],
     [job('a.yml', 'Build (renamed)')],
@@ -145,7 +144,6 @@ test('a startup_failure run has no jobs and is still caught at run granularity',
 });
 
 test('a continue-on-error job does not fail the gate on its own conclusion', () => {
-  // The job reports `failure` but the run is green and so is the check.
   const result = compareObserved(
     [run('a.yml')],
     [job('a.yml', 'Flaky', { conclusion: 'failure' })],

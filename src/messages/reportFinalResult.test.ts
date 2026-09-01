@@ -25,9 +25,6 @@ test('non-passing → setFailed with list', () => {
 });
 
 test('a name that never reported is not this function\'s verdict to give', () => {
-  // `describeDivergence` fails the gate on set membership before the run ever
-  // gets here, so by this point the only question left is whether what ran
-  // passed. See describeDivergence.test.ts for the missing-name cases.
   const e = effects();
   reportFinalResult({ ...base, missingNames: ['Test (20)'], matched: ['a.yml'] }, e);
   expect(e.setFailed).not.toHaveBeenCalled();

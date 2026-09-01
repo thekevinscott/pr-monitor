@@ -7,15 +7,8 @@ import type {
 import { isPassingConclusion } from './isPassingConclusion';
 
 /**
- * Compare what GitHub actually created against what willfire predicted.
- *
- * Set membership is judged on check names — the string a required status check
- * keys on — so a renamed, deleted, or no-longer-expanded job is divergence even
- * when its workflow still runs and still goes green.
- *
- * Whether a check *passed* is still judged on the run. A job's own conclusion
- * lies about `continue-on-error: true` (job fails, run succeeds, the check
- * reports green), and a `startup_failure` run has no jobs to ask.
+ * Membership is judged on check names; whether one passed is judged on the run, because a
+ * job's own conclusion lies about `continue-on-error: true`.
  */
 export function compareObserved(
   runs: ReadonlyArray<WorkflowRunSummary>,
@@ -53,8 +46,6 @@ export function compareObserved(
       seenNames.add(name);
       continue;
     }
-    // The whole run is already reported as unpredicted; listing each of its jobs
-    // again says nothing new.
     if (!expectedRuns.has(workflowPath)) continue;
     unexpectedNames.add(`${workflowPath} :: ${name}`);
   }

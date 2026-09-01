@@ -8,7 +8,6 @@ export interface PromotionTarget {
   selfWorkflowPath: string | null;
 }
 
-/** The I/O `decide` is deliberately kept away from, supplied by the caller. */
 export interface PromotionIO {
   fetchJobs: (sha: string) => Promise<WorkflowJobSummary[]>;
   compare: (tag: string, sha: string) => Promise<TagRelation>;

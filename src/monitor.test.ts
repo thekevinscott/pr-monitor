@@ -16,22 +16,13 @@ const PINNED = '.github/workflows/pinned.yml';
 const SCAN = '.github/workflows/scan.yml';
 const HEAD_SHA = 'head-sha';
 
-/**
- * The base branch, its tip, and the PR's test merge commit. GitHub evaluates a
- * `pull_request` at the test merge rather than the head, so willfire reads that
- * commit — and walks its first parent to tell a plain PR from a stacked one.
- */
 const BASE_REF = 'main';
 const BASE_SHA = 'base-sha';
 const MERGE_SHA = 'merge-sha';
 
-/** The repo the caller's `uses:` reaches into, and the mutable tag it names. */
 const CALLEE_REPO = 'shared';
 const CALLEE_PATH = '.github/workflows/reusable.yml';
 const CALLEE_TAG = 'v0';
-
-
-// ------------------------------------------------------------------ fixtures
 
 const step = '    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n';
 
@@ -46,12 +37,7 @@ const VERSION_INPUT =
 const DISPATCH_ON = `on:\n  pull_request:\n  workflow_dispatch:\n${VERSION_INPUT}`;
 const CALL_ON = `on:\n  workflow_call:\n${VERSION_INPUT}`;
 
-/**
- * The matrix is what makes the `if:` observable. Bound, `inputs.version` is
- * empty on a `pull_request`, the job skips, and a skipped job never expands its
- * matrix — one check, bare name. Unbound, the `if:` is undecidable, the matrix
- * expands, and the prediction names `(a)` and `(b)` GitHub never creates.
- */
+// A skipped job never expands its matrix, which is what makes the `if:` observable.
 const gatedJob = (id: string) =>
   `  ${id}:\n    if: inputs.version != ''\n    strategy:\n      matrix:\n        leg: [a, b]\n${step}`;
 
@@ -59,21 +45,13 @@ const YAML: Record<string, string> = {
   [SELF_PATH]: wf('PR Monitor', plainJob('monitor')),
   [TESTS]: wf('Tests', plainJob('unit')),
   [CONVENTIONS]: wf('Conventions', plainJob('conventions')),
-  // paths filter that no fixture PR touches → willfire predicts `no-dispatch`
   [DOCS]: wf('Docs', plainJob('docs'), 'on:\n  pull_request:\n    paths:\n      - docs/**'),
-  // narrowed `types:` → the dispatch verdict depends on the real event action;
-  // the fixture PR's single commit makes willfire's fallback infer `opened`
   [REOPEN]: wf('Reopen', plainJob('greet'), 'on:\n  pull_request:\n    types: [reopened]'),
-  // static matrix → two check names willfire can resolve up front
   [LEGS]: wf(
     'Legs',
     `  spread:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        node: [20, 22]\n    steps:\n      - run: echo hi\n`,
   ),
-  // a cross-repo `uses:` pinned to a moving tag — the only shape whose
-  // prediction can go stale without the PR changing
   [CALLER]: wf('Caller', `  call:\n    uses: o/${CALLEE_REPO}/${CALLEE_PATH}@${CALLEE_TAG}\n`),
-  // matrix built from another job's output → reading alone cannot name the
-  // checks; an execution grant for `setup` resolves them (real steps, real bash)
   [DYNAMIC]: wf(
     'Dynamic',
     `  setup:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: \${{ steps.emit.outputs.matrix }}\n    steps:\n      - id: emit\n        run: echo 'matrix=["x"]' >> "$GITHUB_OUTPUT"\n` +
@@ -88,23 +66,12 @@ const YAML: Record<string, string> = {
   [SCAN]: wf('Scan', gatedJob('scan_hermetic'), CALL_ON),
 };
 
-/**
- * A one-file tree as `repos.downloadTarballArchive` serves it — single root
- * directory, gzipped tar — for the executor to materialize as the granted
- * job's working tree. The fixture jobs never read it, but execution always
- * starts from a real tree at the predicted commit.
- */
+// A one-file tree as `repos.downloadTarballArchive` serves it: single root dir, gzipped tar.
 const TARBALL = Buffer.from(
   'H4sIAAAAAAAAA+3RsQrCMBDG8c4+RV4gmNMmmQU7uvgGASN1KqQp+Pi2nbToILQq+P8td9xyH3yNTrqO4aTbOqyLZZie93acvekcd9k6s/HOlMNdjIgUyi6U50HX5pCU+sSrX9Tc93+sdvtDNfuPoWDnytf9i532750tlJk9yRN/3v/5cs1diiqnGFffDgMAAAAAAAAAAAAAAADgLTfCu2JoACgAAA==',
   'base64',
 );
 
-/**
- * The callee program at each commit `v0` can name. Moving the tag swaps the
- * jobs the reusable workflow defines, so the checks the caller reports change
- * with it — the same divergence a caller would see with nothing wrong on
- * either side.
- */
 const CALLEE_AT: Record<string, string> = {
   'callee-a': wf('Reusable', plainJob('alpha') + plainJob('extra'), 'on:\n  workflow_call:'),
   'callee-b': wf('Reusable', plainJob('alpha'), 'on:\n  workflow_call:'),
@@ -113,7 +80,6 @@ const CALLEE_AT: Record<string, string> = {
 
 const ALL_WORKFLOWS = Object.keys(YAML);
 
-/** The check names each workflow's run reports, absent a scenario override. */
 const CHECKS: Record<string, string[]> = {
   [SELF_PATH]: ['monitor'],
   [TESTS]: ['unit'],
@@ -128,25 +94,14 @@ const CHECKS: Record<string, string[]> = {
 };
 
 interface Scenario {
-  /** Workflow files the repo exposes; defaults to the gate plus Tests. */
   workflows?: string[];
-  /** Files the PR changes. */
   files?: string[];
-  /** Head commit message — carries `[skip ci]` in the skip case. */
   message?: string;
-  /** Check names a workflow's run reports, overriding `CHECKS`. */
   checks?: Record<string, string[]>;
-  /** Whether the gate may execute jobs; off by default. */
   execute?: MonitorParams['execute'];
-  /** Stands in for willfire's live executor; see `MonitorParams.executor`. */
   executor?: MonitorParams['executor'];
-  /** The event's `action` field; absent by default, as in the other fixtures. */
   eventAction?: string;
-  /**
-   * The commits `CALLEE_TAG` resolves to, one per resolution, the last
-   * repeating. A second, different entry is a tag move between the prediction
-   * and the re-resolution; `null` is a ref that stops resolving at all.
-   */
+  /** One entry per resolution of `CALLEE_TAG`, the last repeating; `null` stops resolving. */
   refShas?: Array<string | null>;
   /** One entry per poll; the last entry repeats. */
   polls: WorkflowRunSummary[][];
@@ -164,7 +119,6 @@ function run(path: string, over: Partial<WorkflowRunSummary> = {}): WorkflowRunS
   };
 }
 
-/** The gate's own run — same workflow file the action is executing from. */
 const self = run(SELF_PATH, { id: SELF_RUN_ID, status: 'in_progress', conclusion: null });
 
 function makeGithub(
@@ -172,8 +126,6 @@ function makeGithub(
   counter: { polls: number; predicts: number } = { polls: 0, predicts: 0 },
 ) {
   const paths = scenario.workflows ?? [SELF_PATH, TESTS];
-  // One entry consumed per resolution of the callee tag, so a scenario can say
-  // "it answered A, then B" without knowing who asked or when.
   const refShas = scenario.refShas ?? ['callee-a'];
   let refReads = 0;
   const list = async () => {
@@ -197,8 +149,6 @@ function makeGithub(
     },
     repos: {
       getCommit: async ({ ref }: { ref: string }) => {
-        // The test merge sits on the base tip, which is what makes this fixture
-        // a plain PR rather than a stacked one.
         if (ref === MERGE_SHA) {
           return {
             data: {
@@ -211,10 +161,6 @@ function makeGithub(
         if (ref === BASE_REF) {
           return { data: { sha: BASE_SHA, parents: [], commit: { message: 'the base tip' } } };
         }
-        // Only the callee tag moves. Everything else is asked for by commit and
-        // answers as itself, so the sequence below stays keyed to the thing
-        // under test rather than to however many refs willfire happens to
-        // resolve on the way — which changed in 0.1.31.
         if (ref !== CALLEE_TAG) {
           return {
             data: {
@@ -234,8 +180,6 @@ function makeGithub(
         path: string;
         ref: string;
       }) => {
-        // Callee files are served by the commit that named them, so a moved tag
-        // hands back a different program.
         if (from === CALLEE_REPO) {
           if (path !== CALLEE_PATH || !(ref in CALLEE_AT)) throw new Error(`404 ${path}@${ref}`);
           return { data: CALLEE_AT[ref] };
@@ -288,22 +232,17 @@ function makeContext(eventAction?: string): MonitorParams['context'] {
 interface GateResult {
   failures: string[];
   polls: number;
-  /** How many times the gate predicted; a reconciliation is the second. */
   predicts: number;
-  /** Everything the gate logged, joined — provenance and moves are reported here. */
   log: string;
 }
 
-/** Run the gate; report what it failed on, said, and how far it got. */
 async function gate(scenario: Scenario): Promise<GateResult> {
   const setFailed = vi.fn();
   const counter = { polls: 0, predicts: 0 };
   const github = makeGithub(scenario, counter);
   await monitor({
     github,
-    // The fake already answers in willfire's shape — raw text from
-    // `getContent`, unwrapped list endpoints — so one object serves both roles
-    // here. In production they are two different clients; see `run.ts`.
+    // The fake already answers in willfire's shape, so one object serves both roles here.
     predictClient: github as unknown as MonitorParams['predictClient'],
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
@@ -321,7 +260,6 @@ async function gate(scenario: Scenario): Promise<GateResult> {
 
 beforeEach(() => {
   vi.spyOn(console, 'log').mockImplementation(() => {});
-  // Collapse the poll interval so the loop runs at test speed.
   vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
     cb();
     return 0;
@@ -342,8 +280,6 @@ describe('predicted check set', () => {
   });
 
   test('waits for a predicted run that has not registered yet', async () => {
-    // Poll 1 shows only the gate. Tests is known to be coming, so it is waited on
-    // — a check name cannot report before the run that creates its job exists.
     const { failures, polls } = await gate({
       polls: [[self], [self], [self, run(TESTS)]],
     });
@@ -369,13 +305,11 @@ describe('predicted check set', () => {
   });
 
   test('a run nobody predicted -> red naming it', async () => {
-    // conventions.yml is not among the repo's workflows, so no entry predicts it.
     const { failures } = await gate({ polls: [[self, run(TESTS), run(CONVENTIONS)]] });
     expect(failures[0]).toMatch(/conventions\.yml/);
   });
 
   test('a renamed job -> red, even though the workflow ran and went green', async () => {
-    // The path-level comparison this replaced saw nothing wrong here.
     const { failures } = await gate({
       checks: { [TESTS]: ['unit-renamed'] },
       polls: [[self, run(TESTS)]],
@@ -404,9 +338,6 @@ describe('predicted check set', () => {
   });
 
   test('the real event action decides a narrowed `types:` dispatch', async () => {
-    // reopen.yml fires on `reopened` only. The fixture PR has one commit, so
-    // willfire's fallback would infer `opened` and call the run unexpected;
-    // the payload's actual action is what predicts it.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, TESTS, REOPEN],
       eventAction: 'reopened',
@@ -417,7 +348,6 @@ describe('predicted check set', () => {
   });
 
   test('a workflow predicted no-dispatch is not required', async () => {
-    // docs.yml filters on docs/**; the PR touches src/, so it must not be waited on.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, TESTS, DOCS],
       files: ['src/index.ts'],
@@ -428,8 +358,6 @@ describe('predicted check set', () => {
   });
 
   test('a check name willfire cannot resolve -> red before the first poll', async () => {
-    // A dynamic matrix leaves a hole in the predicted set. No observation fills
-    // it, so the gate says so rather than polling or quietly exempting it.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
       polls: [[self, run(DYNAMIC)]],
@@ -440,10 +368,7 @@ describe('predicted check set', () => {
   });
 
   test('execution resolves the dynamic matrix and the gate keys on its legs', async () => {
-    // Same workflow as above; `execute` lets willfire run `setup`, so `spread`
-    // expands and the gate requires the leg by name. What running means is the
-    // seam: willfire's own executor clones and shells out to docker, so the
-    // stub stands where `setup` would have written to `$GITHUB_OUTPUT`.
+    // The stub stands where `setup` would write `$GITHUB_OUTPUT`; the live executor uses docker.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
       execute: true,
@@ -549,8 +474,6 @@ describe('a callee tag that moves mid-flight', () => {
   const caller = { workflows: [SELF_PATH, CALLER] };
 
   test('records the commits the prediction was read from', async () => {
-    // "willfire said these checks" is only reconcilable against a run if it also
-    // says which commits it read to say it.
     const { failures, log } = await gate({
       ...caller,
       refShas: ['callee-a'],
@@ -562,9 +485,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('a move that explains an unpredicted check -> green, naming the move', async () => {
-    // Predicted against callee-a (alpha only after the tag moved off it is not
-    // the point) — the tag moved to callee-c, which adds `gamma`. GitHub
-    // scheduled the new program; willfire described the old one. Nobody erred.
     const { failures, log, predicts, polls } = await gate({
       ...caller,
       refShas: ['callee-b', 'callee-c', 'callee-c'],
@@ -579,8 +499,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('a move that explains a check that never reported -> green', async () => {
-    // The mirror case, and the one the terminal path sees: callee-a defines
-    // `extra`, callee-b does not, so the predicted name simply never reports.
     const { failures, log } = await gate({
       ...caller,
       refShas: ['callee-a', 'callee-b', 'callee-b'],
@@ -593,9 +511,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('nothing moved -> the divergence stands, and nothing is re-predicted', async () => {
-    // The tag resolves to the same commit it did at prediction time, so the
-    // extra check is real divergence. Re-predicting would execute granted jobs
-    // a second time for no reason.
     const { failures, predicts } = await gate({
       ...caller,
       refShas: ['callee-a'],
@@ -608,8 +523,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('a move that does not explain the divergence -> still red', async () => {
-    // callee-c adds `gamma`, but `rogue` is in neither program. Reconciling once
-    // is not a licence to keep looking until something agrees.
     const { failures } = await gate({
       ...caller,
       refShas: ['callee-a', 'callee-c', 'callee-c'],
@@ -620,8 +533,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('a ref that stops resolving -> red, never green', async () => {
-    // Deleted tag, rate limit, network. The gate cannot name the commits behind
-    // its own answer, so it fails closed rather than assuming nothing moved.
     const { failures } = await gate({
       ...caller,
       refShas: ['callee-a', null],
@@ -634,15 +545,9 @@ describe('a callee tag that moves mid-flight', () => {
 });
 
 describe('the execute input as the execution switch', () => {
-  // willfire 0.1.31 runs jobs by default. What keeps that from reaching every
-  // consumer is `monitor` passing `executor: null` when execution is off, so
-  // these pin the switch rather than the prediction it feeds.
   const logged = () =>
     vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
 
-  // The TESTS fixture has no dynamic matrix, so nothing should ask to run. The
-  // stub is here so that if something ever does, it fails in-process instead
-  // of reaching for the network the way willfire's live executor would.
   const NEVER_CALLED: MonitorParams['executor'] = {
     executeJob: async (jobId: string) => ({ ok: false, reason: `unexpected execution of ${jobId}` }),
   };

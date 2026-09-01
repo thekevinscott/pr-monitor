@@ -90,9 +90,6 @@ test('prediction gets willfire’s own client, not the octokit one', async () =>
   await run();
   expect(makeGithubClient).toHaveBeenCalledTimes(1);
   const params = vi.mocked(monitor).mock.calls[0][0];
-  // The two are not interchangeable — willfire's client hands back raw file
-  // text and unwrapped lists where octokit returns JSON and an envelope — so
-  // handing prediction the polling client would fail on every workflow read.
   expect(params.predictClient).not.toBe(params.github);
 });
 

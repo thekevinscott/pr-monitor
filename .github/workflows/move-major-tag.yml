@@ -1,14 +1,8 @@
 name: Promote v1 tag
 
-# Consumers pin `@v1`, so the tag is the release. It advances only to a commit
-# whose whole CI surface on `main` is green, and otherwise stays where it is.
-# The rule itself lives in `src/promote/decide.ts`, under test.
-
 on:
   workflow_run:
-    # Every workflow that runs on push to `main` belongs here, or it can be the
-    # last to finish and `v1` never advances. This trigger is only permission to
-    # look: it fires once per completion, so the gate re-reads the whole surface.
+    # Every workflow that runs on push to `main` belongs here, or `v1` never advances.
     workflows:
       - Tests
       - Testing Conventions
