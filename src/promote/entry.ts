@@ -1,14 +1,9 @@
 import { run } from './run';
 
-/**
- * The only place the process exit code is set. Exported so both branches are
- * unit-tested; the call below wires them to the tsx runtime.
- */
 export function exit(code: number): void {
   process.exit(code);
 }
 
-/** An unexpected throw is a red, never a quiet skip that leaves the tag stale. */
 export function fail(err: unknown): void {
   console.log(`::error::${err instanceof Error ? err.message : String(err)}`);
   process.exit(1);

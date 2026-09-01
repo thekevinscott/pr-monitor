@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-// Importing ./entry runs `run().then(exit).catch(fail)` at module load; a promise
-// that never settles keeps the load inert so both branches are tested directly.
 vi.mock('./run', async () => {
   const actual = await vi.importActual<typeof import('./run')>('./run');
   return { ...actual, run: vi.fn(() => new Promise<number>(() => undefined)) };

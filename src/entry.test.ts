@@ -5,8 +5,6 @@ vi.mock('@actions/core', async () => {
   return { ...actual, setFailed: vi.fn() };
 });
 
-// Importing ./entry runs `run().catch(reportFailure)` at module load; keep run() a
-// resolved no-op so the load has no side effects and the branch is tested directly.
 vi.mock('./run', async () => {
   const actual = await vi.importActual<typeof import('./run')>('./run');
   return { ...actual, run: vi.fn(() => Promise.resolve()) };

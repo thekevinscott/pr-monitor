@@ -50,8 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      # Pinned release + checksum rather than a third-party action: a `uses:`
-      # pinned to a former owner name runs whoever claims that name next.
+      # Pinned release + checksum: a `uses:` on a former owner name runs whoever claims it next.
       - name: Install actionlint
         env:
           VERSION: 1.7.12
@@ -60,8 +59,6 @@ jobs:
           curl -fsSL -o "$RUNNER_TEMP/actionlint.tar.gz" "https://github.com/rhysd/actionlint/releases/download/v$VERSION/actionlint_${VERSION}_linux_amd64.tar.gz"
           echo "$SHA256  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum -c -
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
-      # shellcheck is preinstalled on ubuntu-latest; actionlint picks it up for
-      # inline `run:` blocks.
       - name: Lint workflows
         run: |
           "$RUNNER_TEMP/actionlint" -color
