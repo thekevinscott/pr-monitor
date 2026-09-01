@@ -3,7 +3,7 @@ import { context } from '@actions/github';
 import { Octokit } from '@octokit/rest';
 import { makeGithubClient } from 'willfire';
 import { monitor } from './monitor';
-import { parseExecute } from './predict';
+import { parseExecute } from './predict/parseExecute';
 
 export async function run(): Promise<void> {
   const token = process.env.GITHUB_TOKEN;

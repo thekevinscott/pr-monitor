@@ -22,30 +22,3 @@ coverage = { lines = 100, branches = 100, functions = 100, statements = 100 }
 path = "types.ts"
 rules = ["colocated-test", "co-change"]
 reason = "type-only declarations; no runtime code to test"
-
-# Per-directory re-export barrels: no logic of their own; each forwarded symbol is
-# unit-tested in its own colocated file.
-[[typescript.exempt]]
-path = "checks/index.ts"
-rules = ["colocated-test", "co-change"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "github/index.ts"
-rules = ["colocated-test", "co-change"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "messages/index.ts"
-rules = ["colocated-test", "co-change"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "predict/index.ts"
-rules = ["colocated-test", "co-change"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"
-
-[[typescript.exempt]]
-path = "timing/index.ts"
-rules = ["colocated-test", "co-change"]
-reason = "re-export barrel; forwarded symbols are tested in their own files"

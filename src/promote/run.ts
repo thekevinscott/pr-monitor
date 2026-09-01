@@ -1,11 +1,9 @@
 import { Octokit } from '@octokit/rest';
-import {
-  compareToTag,
-  fetchWorkflowRunJobs,
-  fetchWorkflowRuns,
-  moveTag,
-  resolveSelfWorkflowPath,
-} from '../github';
+import { compareToTag } from '../github/compareToTag';
+import { fetchWorkflowRunJobs } from '../github/fetchWorkflowRunJobs';
+import { fetchWorkflowRuns } from '../github/fetchWorkflowRuns';
+import { moveTag } from '../github/moveTag';
+import { resolveSelfWorkflowPath } from '../github/resolveSelfWorkflowPath';
 import { promote } from './promote';
 import { requireEnv } from './requireEnv';
 

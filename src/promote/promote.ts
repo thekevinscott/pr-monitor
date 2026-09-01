@@ -1,5 +1,5 @@
 import { decide } from './decide';
-import type { TagRelation } from '../github';
+import type { TagRelation } from '../github/compareToTag';
 import type { WorkflowJobSummary } from '../types';
 
 export interface PromotionTarget {

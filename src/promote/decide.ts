@@ -1,5 +1,5 @@
-import { isPassingConclusion } from '../checks';
-import type { TagRelation } from '../github';
+import { isPassingConclusion } from '../checks/isPassingConclusion';
+import type { TagRelation } from '../github/compareToTag';
 import type { WorkflowJobSummary } from '../types';
 
 export interface PromotionFacts {
