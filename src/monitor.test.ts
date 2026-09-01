@@ -161,6 +161,8 @@ function makeGithub(
         if (ref === BASE_REF) {
           return { data: { sha: BASE_SHA, parents: [], commit: { message: 'the base tip' } } };
         }
+        // Everything but the callee tag answers as itself, so `refShas` stays a sequence keyed to
+        // the thing under test, not to how many refs willfire resolves — which changed in 0.1.31.
         if (ref !== CALLEE_TAG) {
           return {
             data: {

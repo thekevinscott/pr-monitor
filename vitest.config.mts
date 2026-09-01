@@ -9,6 +9,7 @@ export default mergeConfig(
       include: ['**/*.test.ts'],
       coverage: {
         // mergeConfig concatenates, so these add to the base's excludes rather than replace them.
+        // The testing-conventions CLI ignores them; they only scope the local `test:coverage` report.
         exclude: [
           '**/*.test.ts',
           '**/types.ts',
