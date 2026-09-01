@@ -55,29 +55,20 @@ export async function monitor({
 
   const slug = `${owner}/${repo}`;
 
-  // willfire 0.1.31 builds a live sandboxed executor when `executor` is
-  // omitted, so the default would start running PR-authored job steps in every
-  // repo that consumes this action. The `execute` input stays the switch: a
-  // consumer that granted nothing gets no executor, which is what it has today.
-  if (execute.length > 0) {
+  if (execute) {
     console.log(
-      `Execution enabled by the execute input for: ${execute.map((g) => g.repo).join(', ')}`,
+      'Execution enabled by the execute input: every job this prediction reaches may run its steps for real.',
     );
-    // willfire no longer accepts job ids, so a grant that named one now permits
-    // every job the prediction needs. Say so rather than letting the narrower
-    // spelling imply a limit nothing applies.
-    const named = execute.flatMap((g) => g.jobs);
-    if (named.length > 0) {
-      console.log(
-        `Note: per-job grants are gone in willfire 0.1.31, so naming ${JSON.stringify(named)} no longer restricts which jobs run.`,
-      );
-    }
   }
 
   // Shared with `reconcile`, so the second prediction is made under exactly the
   // options the first one was.
   const options = {
-    executor: execute.length > 0 ? executor : null,
+    // willfire 0.1.31 builds a live sandboxed executor when `executor` is
+    // omitted, so the default would start running PR-authored job steps in
+    // every repo that consumes this action. The explicit `null` is what keeps
+    // execution off unless the consumer asked for it.
+    executor: execute ? executor : null,
     action: resolveEventAction(context),
   };
   const prediction = await predict(predictClient, slug, pullNumber, options);

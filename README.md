@@ -60,21 +60,23 @@ Keep this in its own workflow with no other jobs — the action excludes its own
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
-| `execute` | Jobs willfire may execute to resolve a dynamic matrix | No | `''` (nothing) |
+| `execute` | Whether willfire may execute jobs to resolve a dynamic matrix | No | `false` |
 
 That is the whole surface. There is nothing to tune — `execute` is a permission, not a knob.
 
-**`execute`** — whitespace-separated grants of the form `owner/repo:job1,job2`, where `owner/repo` is the repo the workflow *file* lives in (for a reusable workflow, the callee):
+**`execute`** — one switch for the whole prediction, off by default:
 
 ```yaml
       - uses: thekevinscott/pr-monitor@v1
         with:
-          execute: thekevinscott/testing-conventions:detect
+          execute: true
 ```
 
-A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. Nothing runs without a grant, and a granted job runs the PR's version of itself, so grant only jobs whose code you trust under this gate. A malformed grant fails the gate immediately, named; an execution that fails leaves the matrix unresolved, which is also red.
+A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. Nothing runs unless `execute` is `true`, and what runs is the PR's version of itself, so turn it on only where you trust the code this gate will reach. An execution that fails leaves the matrix unresolved, which is red; a value that is neither `true` nor `false` fails the gate immediately, named.
 
-**The job names are no longer enforced.** willfire 0.1.31 removed per-job grants — execution there is one switch for the whole prediction, run inside a docker sandbox. This action keeps `execute` as the switch, so a repo that grants nothing still executes nothing. But a grant that names one job now permits every job the prediction needs to run, not only that one. The names are still parsed, still validated, and logged back so the run says what was meant; they just no longer narrow anything. Grant on the basis of the whole workflow, not the single job you named.
+**There is nothing narrower to set.** willfire 0.1.31 removed per-repo and per-job grants, and its executor fixes its workspace to the PR's own repo at the predicted commit — so there is no repo to name and no job to name. `true` permits every job the prediction reaches, including jobs whose steps come from a workflow file in another repo. Decide on the basis of the whole workflow set, not one job in it.
+
+**The old spelling still works.** Before this, `execute` took whitespace-separated grants of the form `owner/repo:job1,job2`. Neither half ever narrowed anything under willfire 0.1.31, so such a value is read as `true` and logs a warning saying so. Replace it with `execute: true` when convenient.
 
 ## How it works
 
@@ -99,16 +101,16 @@ A required status check keys on the **job's check name**, not the workflow file.
 
 Runs still drive the waiting and the pass/fail conclusion. A run stays non-terminal until *all* of its jobs finish, including `needs:`-gated jobs and reusable-workflow (`workflow_call`) children, so "the run finished" already means "every job finished," with no transient gaps to race against. And a job's own conclusion is the wrong thing to judge: a `continue-on-error: true` job reports `failure` while its check reports green.
 
-**Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or grant execution of the job that computes it (the `execute` input above).
+**Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. Either give the job a statically expandable matrix, or set `execute: true` so willfire runs the job that computes it (the `execute` input above).
 
 **A callee tag that moved.** A `uses:` naming a moving tag — `owner/repo/.github/workflows/x.yml@v0` — can resolve to one commit when GitHub schedules the run and another when the gate predicts. The observed checks then come from one program and the predicted checks from another, with nothing wrong on either side.
 
-So the gate records which commits each prediction was read from, and on divergence re-resolves those refs **once**. If any moved, it predicts again at the new commits and judges the same observation against the fresh expectation; the move is named in the log. If nothing moved, the divergence is real and stands — and no second prediction runs, so granted jobs are never executed twice to confirm a tag that held still. A move that still does not explain the observation is red, and so is a ref that stopped resolving: the gate will not vouch for a check set whose commits it cannot name.
+So the gate records which commits each prediction was read from, and on divergence re-resolves those refs **once**. If any moved, it predicts again at the new commits and judges the same observation against the fresh expectation; the move is named in the log. If nothing moved, the divergence is real and stands — and no second prediction runs, so jobs are never executed twice to confirm a tag that held still. A move that still does not explain the observation is red, and so is a ref that stopped resolving: the gate will not vouch for a check set whose commits it cannot name.
 
 ## Limitations
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
-- **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job — unless you grant execution of the job that computes it (the `execute` input).
+- **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time, so the gate fails naming the job — unless `execute: true` lets willfire run the job that computes it.
 - **Event actions willfire does not model.** The gate hands willfire the real `pull_request` action when it is `opened`, `synchronize`, or `reopened`. Run it on any other type (`labeled`, `ready_for_review`, …) and willfire falls back to inferring the action from the PR's commit count ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), which can flip a dispatch verdict on workflows that narrow `types:`.
 - **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`. Reconciliation does not help here: it runs on divergence, and waiting is not divergence.
 - **Reconciliation is a single attempt.** One re-resolve and at most one re-prediction per gate run. A tag that moves twice mid-flight, or moves after the reconciliation, stays red — repeating would be a search for a prediction that agrees rather than a gate on one.

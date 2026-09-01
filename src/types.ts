@@ -2,7 +2,6 @@ import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
 import type { GithubClient, JobExecutor } from 'willfire';
-import type { ExecutionGrant } from './predict/parseGrants';
 
 /**
  * The client the action polls runs and jobs with. Separate from the one
@@ -30,15 +29,16 @@ export interface MonitorParams {
   context: GitHubContextType;
   core: CoreModule;
   /**
-   * Jobs willfire may execute to resolve a dynamic matrix, already parsed.
-   * Empty means predict statically only — grants are the caller's to give,
+   * Whether willfire may execute jobs to resolve a dynamic matrix. One switch
+   * for the whole prediction, because willfire 0.1.31 exposes no narrower unit.
+   * `false` predicts statically only — permission is the caller's to give,
    * never assumed.
    */
-  execute: ExecutionGrant[];
+  execute: boolean;
   /**
    * A stand-in executor, which willfire documents as a test seam rather than
-   * configuration. Production omits it, so a grant builds willfire's live
-   * sandboxed executor: that one clones over the network and runs steps in
+   * configuration. Production omits it, so `execute: true` builds willfire's
+   * live sandboxed executor: that one clones over the network and runs steps in
    * docker, neither of which belongs in a unit test. `execute` still decides
    * whether any executor is built at all — this only says which.
    */
