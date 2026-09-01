@@ -1,8 +1,3 @@
-/**
- * Something GitHub created that willfire did not predict means the two disagree
- * about the check set, so the gate cannot vouch for it. Name what turned up and
- * the likely causes rather than waiting it out.
- */
 export function formatUnexpectedFailure(runs: string[], names: string[]): string {
   const parts: string[] = [];
   if (runs.length > 0) parts.push(`Unpredicted workflow runs: ${JSON.stringify(runs)}.`);

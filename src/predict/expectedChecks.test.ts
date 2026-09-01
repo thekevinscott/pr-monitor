@@ -11,16 +11,8 @@ function prediction(...entries: Entry[]): Prediction {
   return { entries, checkNames: [...new Set(checkNames)].sort(), skip: null, sources: [] };
 }
 
-// willfire brands job names so that `"*"` cannot be written into the job-level
-// variant. The brand is a compile-time fiction — willfire's `jobName` is the
-// identity at runtime — and `expectedChecks` imports willfire for types only,
-// so the fixture mints one here rather than pulling a runtime collaborator into
-// a unit test.
 const asJobName = (id: string) => id as JobEntry['job'];
 
-// Two builders, not one, because willfire's Entry is two variants and the whole
-// point of that split is that a fixture cannot straddle them. A workflow-level
-// verdict has no name and cannot be `unknown`; a job-level one carries both.
 const jobEntry = (
   workflow: string,
   id: string,
@@ -55,7 +47,6 @@ test('matrix legs are separate check names under one workflow', () => {
 });
 
 test('a skipped job still reports a check, so its name is expected', () => {
-  // GitHub creates the check and concludes it `skipped`; the name shows up either way.
   const result = expectedChecks(prediction(jobEntry('a.yml', 'build', 'Build', 'skipped')), SELF);
   expect(result.names).toEqual(['Build']);
 });
@@ -71,8 +62,6 @@ test('no-dispatch expects nothing at all, not even the run', () => {
 });
 
 test('a workflow-level verdict requires the run but names no check', () => {
-  // willfire is speaking about the file, not a job in it — a startup_failure run
-  // creates no jobs, so the run is the only thing there is to require.
   const result = expectedChecks(prediction(wfEntry('a.yml', 'run')), SELF);
   expect(result).toEqual({ names: [], workflows: ['a.yml'], unresolved: [] });
 });
@@ -84,7 +73,6 @@ test('a job willfire cannot name is unresolved, and names the reason', () => {
   );
   expect(result.unresolved).toEqual(['a.yml :: test (dynamic matrix)']);
   expect(result.names).toEqual([]);
-  // The run is still required; the gate fails on `unresolved` before polling.
   expect(result.workflows).toEqual(['a.yml']);
 });
 

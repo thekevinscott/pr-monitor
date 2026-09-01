@@ -5,13 +5,6 @@ export interface ResultEffects {
   setFailed: (msg: string) => void;
 }
 
-/**
- * The verdict once every predicted run has finished.
- *
- * Set membership is already settled by then — `describeDivergence` fails the
- * gate before it gets here — so the only question left is whether what ran
- * passed.
- */
 export function reportFinalResult(comparison: GateComparison, effects: ResultEffects): void {
   if (comparison.nonPassing.length > 0) {
     effects.setFailed(`Non-passing runs: ${JSON.stringify(comparison.nonPassing)}`);
