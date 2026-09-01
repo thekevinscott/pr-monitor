@@ -136,7 +136,7 @@ interface Scenario {
   message?: string;
   /** Check names a workflow's run reports, overriding `CHECKS`. */
   checks?: Record<string, string[]>;
-  /** Execution grants handed to the gate; nothing is granted by default. */
+  /** Whether the gate may execute jobs; off by default. */
   execute?: MonitorParams['execute'];
   /** Stands in for willfire's live executor; see `MonitorParams.executor`. */
   executor?: MonitorParams['executor'];
@@ -307,7 +307,7 @@ async function gate(scenario: Scenario): Promise<GateResult> {
     predictClient: github as unknown as MonitorParams['predictClient'],
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
-    execute: scenario.execute ?? [],
+    execute: scenario.execute ?? false,
     executor: scenario.executor,
   });
   const logged = vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
@@ -439,14 +439,14 @@ describe('predicted check set', () => {
     expect(polls).toBe(0);
   });
 
-  test('a granted job resolves the dynamic matrix and the gate keys on its legs', async () => {
-    // Same workflow as above; the grant lets willfire run `setup`, so `spread`
+  test('execution resolves the dynamic matrix and the gate keys on its legs', async () => {
+    // Same workflow as above; `execute` lets willfire run `setup`, so `spread`
     // expands and the gate requires the leg by name. What running means is the
     // seam: willfire's own executor clones and shells out to docker, so the
     // stub stands where `setup` would have written to `$GITHUB_OUTPUT`.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
-      execute: [{ repo: 'o/r', jobs: ['setup'] }],
+      execute: true,
       executor: {
         executeJob: async (jobId: string) =>
           jobId === 'setup'
@@ -491,7 +491,7 @@ describe('predicted check set', () => {
       predictClient: github as unknown as MonitorParams['predictClient'],
       context: makeContext(),
       core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
-      execute: [],
+      execute: false,
     });
     expect(usedSha).toBe(HEAD_SHA);
   });
@@ -517,7 +517,7 @@ describe('predicted check set', () => {
         runId: SELF_RUN_ID,
       } as unknown as MonitorParams['context'],
       core: { setFailed } as unknown as MonitorParams['core'],
-      execute: [],
+      execute: false,
     });
     expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
   });
@@ -635,35 +635,42 @@ describe('a callee tag that moves mid-flight', () => {
 
 describe('the execute input as the execution switch', () => {
   // willfire 0.1.31 runs jobs by default. What keeps that from reaching every
-  // consumer is `monitor` passing `executor: null` when nothing was granted,
-  // so these pin the switch rather than the prediction it feeds.
+  // consumer is `monitor` passing `executor: null` when execution is off, so
+  // these pin the switch rather than the prediction it feeds.
   const logged = () =>
     vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
 
-  const GRANT = [{ repo: 'o/r', jobs: ['detect'] }];
-  // These fixtures have no dynamic matrix, so nothing should ask to run. The
+  // The TESTS fixture has no dynamic matrix, so nothing should ask to run. The
   // stub is here so that if something ever does, it fails in-process instead
   // of reaching for the network the way willfire's live executor would.
   const NEVER_CALLED: MonitorParams['executor'] = {
     executeJob: async (jobId: string) => ({ ok: false, reason: `unexpected execution of ${jobId}` }),
   };
 
-  test('a grant turns execution on and names the repo it came from', async () => {
-    await gate({ polls: [[self, run(TESTS)]], execute: GRANT, executor: NEVER_CALLED });
+  test('execute true turns execution on and says so', async () => {
+    await gate({ polls: [[self, run(TESTS)]], execute: true, executor: NEVER_CALLED });
     expect(logged()).toContainEqual(
-      expect.stringContaining('Execution enabled by the execute input for: o/r'),
+      expect.stringContaining('Execution enabled by the execute input'),
     );
   });
 
-  test('naming a job no longer restricts execution to it, and the log says so', async () => {
-    await gate({ polls: [[self, run(TESTS)]], execute: GRANT, executor: NEVER_CALLED });
-    expect(logged()).toContainEqual(
-      expect.stringContaining('no longer restricts which jobs run'),
-    );
-  });
-
-  test('no grant leaves execution off, silently', async () => {
+  test('execute false leaves execution off, silently', async () => {
     await gate({ polls: [[self, run(TESTS)]] });
     expect(logged()).not.toContainEqual(expect.stringContaining('Execution enabled'));
+  });
+
+  test('execute false passes no executor, even when one is on hand', async () => {
+    // The enforcement, not the log. willfire builds its live sandboxed executor
+    // whenever `executor` is omitted, so `monitor` must pass an explicit `null`
+    // — a working executor sitting right there must still not be reached.
+    const { failures } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      execute: false,
+      executor: {
+        executeJob: async () => ({ ok: true, outputs: { matrix: '["x"]' } }),
+      },
+      polls: [[self, run(DYNAMIC)]],
+    });
+    expect(failures[0]).toMatch(/Unresolvable check names/);
   });
 });
