@@ -3,7 +3,7 @@ import { context } from '@actions/github';
 import { Octokit } from '@octokit/rest';
 import { makeGithubClient } from 'willfire';
 import { monitor } from './monitor';
-import { parseGrants } from './predict';
+import { parseExecute } from './predict';
 
 export async function run(): Promise<void> {
   const token = process.env.GITHUB_TOKEN;
@@ -11,15 +11,17 @@ export async function run(): Promise<void> {
     core.setFailed('GITHUB_TOKEN env var is required');
     return;
   }
-  // A grant is permission to execute code, so a malformed one fails the gate
-  // here, named, rather than being dropped and resurfacing as a red about
-  // dynamic matrices.
-  const parsed = parseGrants(process.env.PR_MONITOR_EXECUTE ?? '');
+  const parsed = parseExecute(process.env.PR_MONITOR_EXECUTE ?? '');
   if ('malformed' in parsed) {
     core.setFailed(
-      `execute input entry '${parsed.malformed}' is not owner/repo:job1,job2`,
+      `execute input value '${parsed.malformed}' is neither true nor false`,
     );
     return;
+  }
+  if (parsed.legacy !== null) {
+    core.warning(
+      `execute: ${parsed.legacy} uses the retired owner/repo:job1,job2 spelling; neither the repo nor the job in it scopes anything. Reading it as execute: true — write that instead.`,
+    );
   }
   await monitor({
     github: new Octokit({ auth: token }),
@@ -28,6 +30,6 @@ export async function run(): Promise<void> {
     predictClient: makeGithubClient(),
     context,
     core,
-    execute: parsed.grants,
+    execute: parsed.execute,
   });
 }
