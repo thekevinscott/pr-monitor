@@ -17,7 +17,7 @@ import { formatSources } from './messages/formatSources';
 import { formatUnresolvedFailure } from './messages/formatUnresolvedFailure';
 import { reportFinalResult } from './messages/reportFinalResult';
 
-const POLL_INTERVAL_MS = 5_000;
+const POLL_INTERVAL_MS = 30_000;
 // Rate-limited reads don't cost quota to retry, so a fixed wait is cheap and needs no header math.
 const RATE_LIMIT_RETRY_MS = 60_000;
 

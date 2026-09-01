@@ -293,6 +293,7 @@ describe('predicted check set', () => {
     });
     expect(failures).toEqual([]);
     expect(polls).toBe(3);
+    expect(vi.mocked(sleep)).toHaveBeenCalledWith(30_000);
   });
 
   test('waits for a predicted run that is still in progress', async () => {
