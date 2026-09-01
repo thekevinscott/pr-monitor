@@ -1,0 +1,39 @@
+name: Check v1 drift
+
+# `move-major-tag.yml` exits green when it holds, so a dead event chain looks
+# exactly like a healthy one. This is the alarm; it does not move the tag.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Shared with the promoter: reading the tag mid-write would give a torn answer.
+  group: promote-v1
+  cancel-in-progress: false
+
+jobs:
+  drift:
+    name: Check v1 drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check v1 drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRIFT_OWNER: ${{ github.repository_owner }}
+          DRIFT_REPO: ${{ github.event.repository.name }}
+          DRIFT_BRANCH: main
+          DRIFT_TAG: v1
+          DRIFT_LIMIT: '3'
+        run: pnpm run drift
