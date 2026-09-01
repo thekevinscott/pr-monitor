@@ -1,6 +1,9 @@
 import { isPassingConclusion } from '../checks/isPassingConclusion';
 import type { TagRelation } from '../github/compareToTag';
-import type { WorkflowJobSummary } from '../types';
+import type { Decision, WorkflowJobSummary } from '../types';
+import { advance } from './advance';
+import { block } from './block';
+import { hold } from './hold';
 
 export interface PromotionFacts {
   tag: string;
@@ -11,31 +14,6 @@ export interface PromotionFacts {
   jobs: ReadonlyArray<WorkflowJobSummary>;
   relation: TagRelation;
 }
-
-export interface Decision {
-  move: boolean;
-  exitCode: number;
-  /** Workflow commands, written verbatim by the caller. */
-  lines: string[];
-}
-
-const advance = (message: string): Decision => ({
-  move: true,
-  exitCode: 0,
-  lines: [`::notice::${message}`],
-});
-
-const hold = (message: string): Decision => ({
-  move: false,
-  exitCode: 0,
-  lines: [`::notice::${message}`],
-});
-
-const block = (message: string): Decision => ({
-  move: false,
-  exitCode: 1,
-  lines: [`::error::${message}`],
-});
 
 const BY_RELATION: Record<TagRelation, (tag: string, sha: string) => Decision> = {
   missing: (tag, sha) => advance(`${tag} created at ${sha}`),

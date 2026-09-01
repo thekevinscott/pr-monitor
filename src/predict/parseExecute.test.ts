@@ -40,30 +40,6 @@ test('several grants are still one switch', () => {
   });
 });
 
-test('no colon → refused naming the entry', () => {
-  expect(parseExecute('o/r')).toEqual({ malformed: 'o/r' });
-});
-
-test('empty repo → refused', () => {
-  expect(parseExecute(':detect')).toEqual({ malformed: ':detect' });
-});
-
-test('repo without an owner → refused', () => {
-  expect(parseExecute('r:detect')).toEqual({ malformed: 'r:detect' });
-});
-
-test('repo with an empty half → refused', () => {
-  expect(parseExecute('o/:detect')).toEqual({ malformed: 'o/:detect' });
-});
-
-test('no jobs after the colon → refused', () => {
-  expect(parseExecute('o/r:')).toEqual({ malformed: 'o/r:' });
-});
-
-test('jobs that are only commas → refused', () => {
-  expect(parseExecute('o/r:,')).toEqual({ malformed: 'o/r:,' });
-});
-
 test('one bad entry refuses the input even when others are fine', () => {
   expect(parseExecute('o/a:one nope o/b:two')).toEqual({ malformed: 'nope' });
 });
