@@ -11,12 +11,9 @@ const step = '    runs-on: ubuntu-latest\n    steps:\n      - run: echo hi\n';
 const job = (id: string) => `  ${id}:\n${step}`;
 const reusable = (jobs: string) => `name: Reusable\non:\n  workflow_call:\njobs:\n${jobs}`;
 
-/** The callee program at each commit the tag can name. */
 const CALLEE_AT: Record<string, string> = {
   'callee-a': reusable(job('alpha')),
   'callee-b': reusable(job('alpha') + job('beta')),
-  // A matrix computed by another job: nothing here can name its checks without
-  // an execution grant, and none is given.
   'callee-dynamic': reusable(
     `  setup:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: \${{ steps.emit.outputs.matrix }}\n    steps:\n      - id: emit\n        run: echo 'matrix=["x"]' >> "$GITHUB_OUTPUT"\n` +
       `  spread:\n    needs: setup\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        leg: \${{ fromJSON(needs.setup.outputs.matrix) }}\n${step}`,
@@ -31,7 +28,6 @@ const OWN: Record<string, string> = {
 const callee = { owner: 'o', repo: 'shared', ref: 'v0', sha: 'callee-a' };
 const head = { owner: 'o', repo: 'r', ref: HEAD, sha: HEAD };
 
-/** `tagSha` is what `v0` resolves to now; null means it stopped resolving. */
 function makeGithub(tagSha: string | null) {
   const listRepoWorkflows = vi.fn(async () => ({
     data: Object.keys(OWN).map((path) => ({ path, state: 'active' })),
@@ -78,8 +74,6 @@ function params(github: PredictClient) {
 }
 
 test('every ref still names its commit -> nothing to reconcile, and no re-prediction', async () => {
-  // Predicting again would execute any granted job a second time to confirm a
-  // tag that never moved.
   const { github, listRepoWorkflows } = makeGithub('callee-a');
   expect(await reconcile(params(github))).toEqual({ kind: 'unchanged' });
   expect(listRepoWorkflows).not.toHaveBeenCalled();
@@ -106,8 +100,6 @@ test('a ref that stopped resolving -> failed, naming it, without predicting', as
 });
 
 test('a move onto a program with a hole in it -> failed, naming the hole', async () => {
-  // Reconciling is not a way past an unresolvable entry; the fresh prediction
-  // has to be complete or the gate still cannot compare against it.
   const { github } = makeGithub('callee-dynamic');
   const outcome = await reconcile(params(github));
   expect(outcome.kind).toBe('failed');

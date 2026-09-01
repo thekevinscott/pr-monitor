@@ -15,8 +15,6 @@ test('resolves a ref to the commit it names', async () => {
 });
 
 test('a ref that cannot be read is null, never the ref itself', async () => {
-  // Deleted tag, private repo, rate limit, network: one answer, and it is not a
-  // guess at the commit.
   const failing = github(async () => {
     throw new Error('404');
   });

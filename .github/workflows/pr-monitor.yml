@@ -7,29 +7,22 @@ on:
       - main
 
 concurrency:
-  # A superseded gate run polls a stale SHA until it finishes. Cancel it.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   actions: read
   contents: read
-  # willfire reads the PR and its changed files to predict which workflows dispatch.
   pull-requests: read
 
 jobs:
   monitor:
     name: 'CI Gate'
     runs-on: ubuntu-latest
-    # The action has no timeout of its own — this is the backstop. If a predicted
-    # run never dispatches, the gate waits here until the job is killed.
+    # The action has no timeout of its own; this is the backstop.
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
-      # Dogfood: run this repo's own action (`./`) as the aggregate gate. It
-      # predicts the runs this PR should produce (Tests, Testing Conventions),
-      # excludes its own workflow, and waits for exactly that set to finish.
-      # Execution resolves testing-conventions' dynamic language matrix.
       - uses: ./
         with:
           execute: true
