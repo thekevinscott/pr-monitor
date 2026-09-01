@@ -1,8 +1,9 @@
 import { predict } from 'willfire';
-import type { MonitorParams } from './types';
+import type { MonitorParams, WorkflowJobSummary, WorkflowRunSummary } from './types';
 import { sleep } from './timing/sleep';
 import { fetchWorkflowRunJobs } from './github/fetchWorkflowRunJobs';
 import { fetchWorkflowRuns } from './github/fetchWorkflowRuns';
+import { isRateLimited } from './github/isRateLimited';
 import { resolveCommitSha } from './github/resolveCommitSha';
 import { resolveEventAction } from './github/resolveEventAction';
 import { resolvePullNumber } from './github/resolvePullNumber';
@@ -17,6 +18,8 @@ import { formatUnresolvedFailure } from './messages/formatUnresolvedFailure';
 import { reportFinalResult } from './messages/reportFinalResult';
 
 const POLL_INTERVAL_MS = 5_000;
+// Rate-limited reads don't cost quota to retry, so a fixed wait is cheap and needs no header math.
+const RATE_LIMIT_RETRY_MS = 60_000;
 
 export async function monitor({
   github,
@@ -71,10 +74,19 @@ export async function monitor({
   let reconciled = false;
 
   while (true) {
-    const runs = (await fetchWorkflowRuns(github, owner, repo, sha)).filter(
-      (r) => r.event === 'pull_request' && r.path !== selfPath,
-    );
-    const jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
+    let runs: WorkflowRunSummary[];
+    let jobs: WorkflowJobSummary[];
+    try {
+      runs = (await fetchWorkflowRuns(github, owner, repo, sha)).filter(
+        (r) => r.event === 'pull_request' && r.path !== selfPath,
+      );
+      jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
+    } catch (err) {
+      if (!isRateLimited(err)) throw err;
+      console.log(`GitHub API rate limited; retrying in ${RATE_LIMIT_RETRY_MS / 1000}s`);
+      await sleep(RATE_LIMIT_RETRY_MS);
+      continue;
+    }
     let comparison = compareObserved(runs, jobs, expected);
     let divergence = describeDivergence(comparison);
 
