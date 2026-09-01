@@ -37,11 +37,11 @@ test('an unreadable self path blocks rather than guessing', () => {
 });
 
 test("this gate's own jobs are excluded, so a run judging only itself blocks", () => {
-  const decision = decide(facts({ jobs: [job({ workflowPath: SELF })] }));
-
-  expect(decision.move).toBe(false);
-  expect(decision.exitCode).toBe(1);
-  expect(decision.lines[0]).toContain('no other checks reported for abc123');
+  expect(decide(facts({ jobs: [job({ workflowPath: SELF })] }))).toEqual({
+    move: false,
+    exitCode: 1,
+    lines: ['::error::no other checks reported for abc123; refusing to move v1 on an empty result'],
+  });
 });
 
 test('an empty job list blocks', () => {
@@ -103,17 +103,17 @@ test('a tag already on this commit is left alone', () => {
 });
 
 test('an older commit never drags the tag backwards', () => {
-  const decision = decide(facts({ relation: 'behind' }));
-
-  expect(decision.move).toBe(false);
-  expect(decision.exitCode).toBe(0);
-  expect(decision.lines[0]).toContain('is behind v1');
+  expect(decide(facts({ relation: 'behind' }))).toEqual({
+    move: false,
+    exitCode: 0,
+    lines: ['::notice::abc123 is behind v1; leaving v1 where it is'],
+  });
 });
 
 test('a tag off this history blocks and asks for a look', () => {
-  const decision = decide(facts({ relation: 'diverged' }));
-
-  expect(decision.move).toBe(false);
-  expect(decision.exitCode).toBe(1);
-  expect(decision.lines[0]).toContain('not a descendant of v1');
+  expect(decide(facts({ relation: 'diverged' }))).toEqual({
+    move: false,
+    exitCode: 1,
+    lines: ['::error::abc123 is not a descendant of v1; v1 points off this history'],
+  });
 });

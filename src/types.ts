@@ -98,3 +98,11 @@ export interface GateComparison {
   inProgress: string[];
   nonPassing: string[];
 }
+
+/** What the promotion gate decided about the tag, and what to print. */
+export interface Decision {
+  move: boolean;
+  exitCode: number;
+  /** Workflow commands, written verbatim by the caller. */
+  lines: string[];
+}
