@@ -11,9 +11,6 @@ export async function run(): Promise<void> {
     core.setFailed('GITHUB_TOKEN env var is required');
     return;
   }
-  // `execute` is permission to run code, so a value that means nothing fails
-  // the gate here, named, rather than being dropped and resurfacing as a red
-  // about dynamic matrices.
   const parsed = parseExecute(process.env.PR_MONITOR_EXECUTE ?? '');
   if ('malformed' in parsed) {
     core.setFailed(
@@ -23,7 +20,7 @@ export async function run(): Promise<void> {
   }
   if (parsed.legacy !== null) {
     core.warning(
-      `execute: ${parsed.legacy} uses the retired owner/repo:job1,job2 spelling, and neither the repo nor the job in it scopes anything — willfire 0.1.31 executes for the whole prediction, in this PR's own repo at the predicted commit. Reading it as execute: true. Write execute: true instead.`,
+      `execute: ${parsed.legacy} uses the retired owner/repo:job1,job2 spelling; neither the repo nor the job in it scopes anything. Reading it as execute: true — write that instead.`,
     );
   }
   await monitor({

@@ -660,9 +660,6 @@ describe('the execute input as the execution switch', () => {
   });
 
   test('execute false passes no executor, even when one is on hand', async () => {
-    // The enforcement, not the log. willfire builds its live sandboxed executor
-    // whenever `executor` is omitted, so `monitor` must pass an explicit `null`
-    // — a working executor sitting right there must still not be reached.
     const { failures } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
       execute: false,

@@ -64,10 +64,8 @@ export async function monitor({
   // Shared with `reconcile`, so the second prediction is made under exactly the
   // options the first one was.
   const options = {
-    // willfire 0.1.31 builds a live sandboxed executor when `executor` is
-    // omitted, so the default would start running PR-authored job steps in
-    // every repo that consumes this action. The explicit `null` is what keeps
-    // execution off unless the consumer asked for it.
+    // willfire builds a live sandboxed executor when this is omitted, so the
+    // explicit null is what keeps execution off.
     executor: execute ? executor : null,
     action: resolveEventAction(context),
   };

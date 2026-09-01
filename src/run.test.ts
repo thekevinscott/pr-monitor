@@ -51,8 +51,6 @@ test('with GITHUB_TOKEN → builds an authenticated octokit and calls monitor', 
   await run();
   expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
   expect(monitor).toHaveBeenCalledTimes(1);
-  // No PR_MONITOR_EXECUTE → execution stays off, which is the default that
-  // keeps willfire's live executor from running PR-authored steps.
   expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(false);
   expect(core.setFailed).not.toHaveBeenCalled();
 });
@@ -81,8 +79,6 @@ test('the retired grant spelling still runs, and warns that neither half scoped 
   await run();
   expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(true);
   const warned = vi.mocked(core.warning).mock.calls[0][0] as string;
-  // The whole point of the warning: the value names a repo and a job, and
-  // neither one narrows what may run.
   expect(warned).toContain('o/conventions:detect');
   expect(warned).toMatch(/neither the repo nor the job/);
   expect(warned).toMatch(/execute: true/);
@@ -104,8 +100,6 @@ test('malformed PR_MONITOR_EXECUTE → setFailed naming the value, monitor not c
   process.env.GITHUB_TOKEN = 'tok';
   process.env.PR_MONITOR_EXECUTE = 'detect';
   await run();
-  // Permission to execute code is never dropped silently: an input that means
-  // nothing recognisable fails the gate rather than defaulting either way.
   expect(core.setFailed).toHaveBeenCalledWith(
     "execute input value 'detect' is neither true nor false",
   );

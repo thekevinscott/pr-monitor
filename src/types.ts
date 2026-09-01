@@ -28,12 +28,7 @@ export interface MonitorParams {
   predictClient: GithubClient;
   context: GitHubContextType;
   core: CoreModule;
-  /**
-   * Whether willfire may execute jobs to resolve a dynamic matrix. One switch
-   * for the whole prediction, because willfire 0.1.31 exposes no narrower unit.
-   * `false` predicts statically only — permission is the caller's to give,
-   * never assumed.
-   */
+  /** Whether willfire may execute jobs; one switch for the whole prediction. */
   execute: boolean;
   /**
    * A stand-in executor, which willfire documents as a test seam rather than

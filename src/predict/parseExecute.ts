@@ -1,16 +1,9 @@
-/**
- * The `execute` input, read.
- *
- * `legacy` carries the retired `owner/repo:job1,job2` spelling back to the
- * caller so the warning can quote what was written. `null` means the input was
- * spelled as the boolean it is.
- */
 export interface ExecuteInput {
   execute: boolean;
+  /** The retired `owner/repo:job1,job2` spelling, verbatim, for the caller to warn about. */
   legacy: string | null;
 }
 
-/** `owner/repo:job1,job2` — the spelling willfire's `--execute` flag once took. */
 function isGrant(spec: string): boolean {
   const colon = spec.indexOf(':');
   if (colon < 1) return false;
@@ -20,18 +13,10 @@ function isGrant(spec: string): boolean {
 }
 
 /**
- * Parse the action's `execute` input into the one switch willfire exposes.
+ * Read the action's `execute` input, accepting the retired grant spelling as `true`.
  *
- * willfire 0.1.31 removed per-repo and per-job grants: execution is on or off
- * for the whole prediction, and the executor's workspace is the PR's own repo
- * at the predicted commit. So the input is a boolean, and the older
- * whitespace-separated `owner/repo:job1,job2` spelling is accepted only for
- * compatibility — every well-formed one of those meant `true` already.
- *
- * Permission to run code is never dropped silently: a value that is neither is
- * refused rather than defaulted, and comes back for the caller to name. The
- * alternative is a gate that goes red about an unresolved dynamic matrix,
- * pointing away from the typo that caused it.
+ * Permission to run code is never dropped silently, so an unrecognized value is
+ * refused rather than defaulted, and comes back for the caller to name.
  */
 export function parseExecute(raw: string): ExecuteInput | { malformed: string } {
   const value = raw.trim();
