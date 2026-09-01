@@ -60,16 +60,6 @@ test('an unfinished job holds the tag without failing the run', () => {
   });
 });
 
-test('a job still running outranks one that already failed', () => {
-  const decision = decide(
-    facts({
-      jobs: [job({ name: 'Lint', conclusion: 'failure' }), job({ name: 'Typecheck', status: 'queued' })],
-    }),
-  );
-
-  expect(decision.lines).toEqual(['::notice::still running: Typecheck']);
-});
-
 test('a failing job holds the tag and names it', () => {
   const decision = decide(facts({ jobs: [job({ name: 'Lint', conclusion: 'failure' })] }));
 

@@ -8,7 +8,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "backstop": "tsx src/backstop/entry.ts",
+    "drift": "tsx src/drift/entry.ts",
     "promote": "tsx src/promote/entry.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
