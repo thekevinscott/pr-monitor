@@ -3,7 +3,10 @@ import { monitor } from './monitor';
 import { sleep } from './timing/sleep';
 import type { WorkflowRunSummary, MonitorParams } from './types';
 
-vi.mock('./timing/sleep', () => ({ sleep: vi.fn(() => Promise.resolve()) }));
+vi.mock('./timing/sleep', async () => {
+  const actual = await vi.importActual<typeof import('./timing/sleep')>('./timing/sleep');
+  return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
+});
 
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
