@@ -39,6 +39,7 @@ test('a source already pinned to its commit is not asked about', async () => {
 
 test('reports only the sources that moved', async () => {
   const other = { owner: 'o', repo: 'other', ref: 'main', sha: 'x' };
-  const { github: gh } = github({ 'shared@v0': 'callee-a', 'other@main': 'y' });
+  const { github: gh, getCommit } = github({ 'shared@v0': 'callee-a', 'other@main': 'y' });
   expect(await findSourceMoves(gh, [head, callee, other])).toEqual([{ source: other, sha: 'y' }]);
+  expect(getCommit).toHaveBeenCalledTimes(2);
 });

@@ -91,7 +91,9 @@ test('a ref that moved -> the checks the new commit predicts', async () => {
   expect(outcome.kind).toBe('repredicted');
   if (outcome.kind !== 'repredicted') return;
   expect(outcome.expected.names).toEqual(['call / alpha', 'call / beta']);
-  expect(outcome.detail).toContain('o/shared@v0 callee-a -> callee-b');
+  expect(outcome.detail).toBe(
+    'Refs behind the prediction moved: o/shared@v0 callee-a -> callee-b. Re-predicted at the new commits.',
+  );
 });
 
 test('a ref that stopped resolving -> failed, naming it, without predicting', async () => {

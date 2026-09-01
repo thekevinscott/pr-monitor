@@ -610,13 +610,14 @@ describe('a callee tag that moves mid-flight', () => {
   test('a move that does not explain the divergence -> still red', async () => {
     // callee-c adds `gamma`, but `rogue` is in neither program. Reconciling once
     // is not a licence to keep looking until something agrees.
-    const { failures } = await gate({
+    const { failures, predicts } = await gate({
       ...caller,
       refShas: ['callee-a', 'callee-c', 'callee-c'],
       checks: { [CALLER]: ['call / alpha', 'call / gamma', 'call / rogue'] },
       polls: [[self, run(CALLER)]],
     });
     expect(failures[0]).toMatch(/rogue/);
+    expect(predicts).toBe(2);
   });
 
   test('a ref that stops resolving -> red, never green', async () => {

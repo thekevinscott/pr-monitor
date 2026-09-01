@@ -1,5 +1,5 @@
 import type { WorkflowSource } from 'willfire';
-import { resolveSourceSha } from '../github';
+import { resolveSourceSha } from '../github/resolveSourceSha';
 import type { PredictClient } from '../types';
 
 export interface SourceMove {

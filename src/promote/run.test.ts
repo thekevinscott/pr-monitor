@@ -60,6 +60,7 @@ test('returns the decided exit code', async () => {
   vi.mocked(promote).mockResolvedValue({ exitCode: 1, lines: [] });
 
   expect(await run()).toBe(1);
+  expect(console.log).not.toHaveBeenCalled();
 });
 
 test('a missing variable fails before any request is made', async () => {

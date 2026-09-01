@@ -1,22 +1,20 @@
 import { predict } from 'willfire';
 import type { MonitorParams } from './types';
-import { sleep } from './timing';
-import {
-  fetchWorkflowRunJobs,
-  fetchWorkflowRuns,
-  resolveCommitSha,
-  resolveEventAction,
-  resolvePullNumber,
-  resolveSelfWorkflowPath,
-} from './github';
-import { compareObserved, describeDivergence } from './checks';
-import { expectedChecks, reconcile } from './predict';
-import {
-  formatProgressLog,
-  formatSources,
-  formatUnresolvedFailure,
-  reportFinalResult,
-} from './messages';
+import { sleep } from './timing/sleep';
+import { fetchWorkflowRunJobs } from './github/fetchWorkflowRunJobs';
+import { fetchWorkflowRuns } from './github/fetchWorkflowRuns';
+import { resolveCommitSha } from './github/resolveCommitSha';
+import { resolveEventAction } from './github/resolveEventAction';
+import { resolvePullNumber } from './github/resolvePullNumber';
+import { resolveSelfWorkflowPath } from './github/resolveSelfWorkflowPath';
+import { compareObserved } from './checks/compareObserved';
+import { describeDivergence } from './checks/describeDivergence';
+import { expectedChecks } from './predict/expectedChecks';
+import { reconcile } from './predict/reconcile';
+import { formatProgressLog } from './messages/formatProgressLog';
+import { formatSources } from './messages/formatSources';
+import { formatUnresolvedFailure } from './messages/formatUnresolvedFailure';
+import { reportFinalResult } from './messages/reportFinalResult';
 
 const POLL_INTERVAL_MS = 5_000;
 

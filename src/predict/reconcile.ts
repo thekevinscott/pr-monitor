@@ -1,6 +1,7 @@
 import { predict, type PredictOptions, type WorkflowSource } from 'willfire';
 import type { ExpectedChecks, PredictClient } from '../types';
-import { formatSourceMoves, formatUnresolvedFailure } from '../messages';
+import { formatSourceMoves } from '../messages/formatSourceMoves';
+import { formatUnresolvedFailure } from '../messages/formatUnresolvedFailure';
 import { expectedChecks } from './expectedChecks';
 import { findSourceMoves } from './findSourceMoves';
 

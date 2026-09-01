@@ -1,5 +1,6 @@
 import type { GateComparison } from '../types';
-import { formatMissingNames, formatUnexpectedFailure } from '../messages';
+import { formatMissingNames } from '../messages/formatMissingNames';
+import { formatUnexpectedFailure } from '../messages/formatUnexpectedFailure';
 
 /**
  * Say how the observed check set differs from the predicted one, or null when

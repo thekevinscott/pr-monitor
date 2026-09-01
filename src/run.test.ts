@@ -51,7 +51,10 @@ test('with GITHUB_TOKEN → builds an authenticated octokit and calls monitor', 
   await run();
   expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
   expect(monitor).toHaveBeenCalledTimes(1);
-  expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(false);
+  const params = vi.mocked(monitor).mock.calls[0][0];
+  expect(params.execute).toBe(false);
+  expect(params.core).toBe(core);
+  expect(params.context.repo).toEqual({ owner: 'o', repo: 'r' });
   expect(core.setFailed).not.toHaveBeenCalled();
 });
 

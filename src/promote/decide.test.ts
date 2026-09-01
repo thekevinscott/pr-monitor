@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest';
 import { decide } from './decide';
 import type { PromotionFacts } from './decide';
-import type { TagRelation } from '../github';
+import type { TagRelation } from '../github/compareToTag';
 import type { WorkflowJobSummary } from '../types';
 
 const SELF = '.github/workflows/move-major-tag.yml';
