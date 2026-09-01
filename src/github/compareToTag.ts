@@ -4,26 +4,26 @@ import { isNotFound } from './isNotFound';
 /** Where a commit sits relative to a tag; `missing` means the tag does not exist. */
 export type TagRelation = 'missing' | 'ahead' | 'behind' | 'identical' | 'diverged';
 
-/**
- * Ancestry, not timestamps: whether the commit is a descendant of the tag holds
- * under re-runs, retries, and out-of-order queueing, which wall-clock order does
- * not.
- *
- * The tag is named rather than resolved to a SHA so the compare endpoint does the
- * dereferencing — an annotated tag's ref points at a tag object, which `compare`
- * would reject.
- */
+export interface TagComparison {
+  relation: TagRelation;
+  /** Commits `sha` sits ahead of the tag by; 0 when the tag does not exist yet. */
+  aheadBy: number;
+}
+
+// Ancestry, not timestamps: descendancy survives re-runs and out-of-order queueing.
+// The tag is named rather than resolved so compare dereferences it — an annotated
+// tag's ref points at a tag object, which compare would reject.
 export async function compareToTag(
   github: Octokit,
   owner: string,
   repo: string,
   tag: string,
   sha: string,
-): Promise<TagRelation> {
+): Promise<TagComparison> {
   try {
     await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
   } catch (err) {
-    if (isNotFound(err)) return 'missing';
+    if (isNotFound(err)) return { relation: 'missing', aheadBy: 0 };
     throw err;
   }
 
@@ -32,5 +32,5 @@ export async function compareToTag(
     repo,
     basehead: `${tag}...${sha}`,
   });
-  return data.status;
+  return { relation: data.status, aheadBy: data.ahead_by };
 }

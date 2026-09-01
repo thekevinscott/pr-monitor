@@ -1,8 +1,10 @@
 export { compareToTag } from './compareToTag';
-export type { TagRelation } from './compareToTag';
+export type { TagComparison, TagRelation } from './compareToTag';
 export { fetchWorkflowRuns } from './fetchWorkflowRuns';
 export { fetchWorkflowRunJobs } from './fetchWorkflowRunJobs';
 export { isNotFound } from './isNotFound';
+export { MAX_COMMITS, listBranchCommits } from './listBranchCommits';
+export type { CommitNode } from './listBranchCommits';
 export { moveTag } from './moveTag';
 export { resolveCommitSha } from './resolveCommitSha';
 export { resolveEventAction } from './resolveEventAction';

@@ -1,0 +1,40 @@
+name: Backstop v1 tag
+
+# `move-major-tag.yml` promotes on `workflow_run` and goes green when it holds, so
+# a stalled event chain looks identical to a healthy one. This is the alarm.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: promote-v1
+  cancel-in-progress: false
+
+jobs:
+  backstop:
+    name: Backstop v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Backstop v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BACKSTOP_OWNER: ${{ github.repository_owner }}
+          BACKSTOP_REPO: ${{ github.event.repository.name }}
+          BACKSTOP_BRANCH: main
+          BACKSTOP_TAG: v1
+          BACKSTOP_DEPTH: '20'
+          BACKSTOP_MAX_DRIFT: '3'
+        run: pnpm run backstop
