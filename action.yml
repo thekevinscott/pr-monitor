@@ -11,10 +11,9 @@ inputs:
     default: ${{ github.token }}
   resolve-outputs:
     description: >-
-      Resolver commands, one per line. Each line is trimmed (blank lines are
-      dropped) and passed to willfire as one `--callback "<command>"`: a command
-      whose stdout is a JSON map answering job outputs the sandbox cannot
-      compute (thekevinscott/willfire#153).
+      Resolver commands, one per line. Each becomes one willfire
+      `--callback "<command>"`, whose stdout is a JSON map answering job outputs
+      the sandbox cannot compute.
     required: false
     default: ''
 
@@ -24,8 +23,8 @@ runs:
     - name: Resolve pnpm version
       id: pnpm-version
       shell: bash
-      # Under local use (`uses: ./`) `github.action_path` ends in `/.`, which
-      # pnpm/action-setup's `package_json_file` read cannot handle. Node normalizes it.
+      # Local use (`uses: ./`) ends `github.action_path` in `/.`, which
+      # pnpm/action-setup's `package_json_file` read rejects. Node normalizes it.
       run: |
         pm=$(node -p "require('${{ github.action_path }}/package.json').packageManager")
         v="${pm#pnpm@}"
