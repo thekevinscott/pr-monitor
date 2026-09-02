@@ -395,7 +395,7 @@ describe('predicted check set', () => {
   test('an unresolved name with a resolver declared -> red pointing at the resolver', async () => {
     const { failures } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
-      callbacks: ['npx a resolve'],
+      callbacks: ['echo {}'],
       executor: { executeJob: async () => ({ ok: false, reason: 'sandbox unavailable' }) },
       polls: [[self, run(DYNAMIC)]],
     });
