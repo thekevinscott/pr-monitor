@@ -76,7 +76,7 @@ That is the whole surface. There is nothing to tune.
       npx testing-conventions resolve
 ```
 
-Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). The forwarding is inert until willfire ships that flag; today the input changes nothing.
+Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). willfire ships that flag as of 0.1.47, so the input takes effect.
 
 ## How it works
 

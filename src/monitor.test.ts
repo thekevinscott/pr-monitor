@@ -409,12 +409,12 @@ describe('predicted check set', () => {
 
   test('resolver callbacks ride the predict options', async () => {
     const { failures } = await gate({
-      callbacks: ['npx a resolve', 'npx b resolve'],
+      callbacks: ['echo {}', 'printf {}'],
       polls: [[self, run(TESTS)]],
     });
     expect(failures).toEqual([]);
     expect(predictSpy.mock.calls.at(-1)?.[3]).toMatchObject({
-      callbacks: ['npx a resolve', 'npx b resolve'],
+      callbacks: ['echo {}', 'printf {}'],
     });
   });
 

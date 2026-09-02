@@ -14,8 +14,7 @@ inputs:
       Resolver commands, one per line. Each line is trimmed (blank lines are
       dropped) and passed to willfire as one `--callback "<command>"`: a command
       whose stdout is a JSON map answering job outputs the sandbox cannot
-      compute (thekevinscott/willfire#153). Inert until willfire ships that
-      flag.
+      compute (thekevinscott/willfire#153).
     required: false
     default: ''
 
