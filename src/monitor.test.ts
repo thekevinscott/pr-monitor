@@ -388,7 +388,19 @@ describe('predicted check set', () => {
     });
     expect(failures[0]).toMatch(/Unresolvable check names/);
     expect(failures[0]).toMatch(/dynamic\.yml :: spread/);
+    expect(failures[0]).toContain('No resolver is declared');
     expect(polls).toBe(0);
+  });
+
+  test('an unresolved name with a resolver declared -> red pointing at the resolver', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      callbacks: ['npx a resolve'],
+      executor: { executeJob: async () => ({ ok: false, reason: 'sandbox unavailable' }) },
+      polls: [[self, run(DYNAMIC)]],
+    });
+    expect(failures[0]).toContain('A resolver is declared');
+    expect(failures[0]).not.toContain('No resolver is declared');
   });
 
   test('a dynamic matrix resolves with no switch: execution is always on', async () => {

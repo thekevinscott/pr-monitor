@@ -1,5 +1,5 @@
 import { predict, type PredictOptions, type WorkflowSource } from 'willfire';
-import type { ExpectedChecks, PredictClient } from '../types';
+import type { ExpectedChecks, MonitorParams, PredictClient } from '../types';
 import { formatSourceMoves } from '../messages/formatSourceMoves';
 import { formatUnresolvedFailure } from '../messages/formatUnresolvedFailure';
 import { expectedChecks } from './expectedChecks';
@@ -9,7 +9,7 @@ export interface ReconcileParams {
   github: PredictClient;
   slug: string;
   pullNumber: number;
-  options: PredictOptions;
+  options: PredictOptions & Pick<MonitorParams, 'callbacks'>;
   selfPath: string;
   sources: ReadonlyArray<WorkflowSource>;
 }
@@ -43,7 +43,10 @@ export async function reconcile({
   const expected = expectedChecks(prediction, selfPath);
   const moved = `Refs behind the prediction moved: ${formatSourceMoves(moves)}.`;
   if (expected.unresolved.length > 0) {
-    return { kind: 'failed', detail: `${moved} ${formatUnresolvedFailure(expected.unresolved)}` };
+    return {
+      kind: 'failed',
+      detail: `${moved} ${formatUnresolvedFailure(expected.unresolved, options.callbacks)}`,
+    };
   }
   return {
     kind: 'repredicted',
