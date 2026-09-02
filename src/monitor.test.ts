@@ -393,6 +393,21 @@ describe('predicted check set', () => {
     expect(polls).toBe(1);
   });
 
+  test('a dynamic matrix resolves with no switch: execution is always on', async () => {
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      executor: {
+        executeJob: async (jobId: string) =>
+          jobId === 'setup'
+            ? { ok: true, outputs: { matrix: '["x"]' } }
+            : { ok: false, reason: `no stub for ${jobId}` },
+      },
+      polls: [[self, run(DYNAMIC)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+  });
+
   test('[skip ci] head commit -> nothing predicted, nothing required', async () => {
     const { failures } = await gate({ message: 'docs tweak [skip ci]', polls: [[self]] });
     expect(failures).toEqual([]);

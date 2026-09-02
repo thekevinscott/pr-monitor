@@ -88,6 +88,20 @@ test('the retired grant spelling still runs, and warns that neither half scoped 
   expect(core.setFailed).not.toHaveBeenCalled();
 });
 
+test('a leftover PR_MONITOR_EXECUTE value is ignored, whatever it says', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  process.env.PR_MONITOR_EXECUTE = 'detect';
+  await run();
+  expect(core.setFailed).not.toHaveBeenCalled();
+  expect(monitor).toHaveBeenCalledTimes(1);
+});
+
+test('monitor takes no execute flag', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  await run();
+  expect(vi.mocked(monitor).mock.calls[0][0]).not.toHaveProperty('execute');
+});
+
 test('prediction gets willfire’s own client, not the octokit one', async () => {
   process.env.GITHUB_TOKEN = 'tok';
   await run();
