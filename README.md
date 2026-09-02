@@ -78,6 +78,8 @@ That is the whole surface. There is nothing to tune.
 
 Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). willfire ships that flag as of 0.1.47, so the input takes effect.
 
+Each command runs from the workspace root — the same directory a `run:` step starts in — so write it against your repo the way you would write any other step.
+
 The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qualified, no ref or sha, so one map answers wherever the workflow is reached from. Each key holds a list of `{ inputs, outputs }` entries, and an entry matches when every input it names equals the invocation's. Four parts of that contract bite:
 
 - **Two lines cannot claim the same key.** willfire refuses the pair rather than merging them or picking one, and the prediction dies before it lists a single workflow. The gate fails with `'<key>' is answered by two callbacks: '<command a>' and '<command b>'`, naming both lines — every check in the repo goes unresolvable at once. Split the keys, or emit them from one resolver.
