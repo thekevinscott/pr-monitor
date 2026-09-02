@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: false
+
+minimumReleaseAgeExclude:
+  - willfire
+  - testing-conventions
