@@ -38,6 +38,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.GITHUB_TOKEN;
   delete process.env.PR_MONITOR_EXECUTE;
+  delete process.env.PR_MONITOR_RESOLVE_OUTPUTS;
 });
 
 test('missing GITHUB_TOKEN → setFailed and does not call monitor', async () => {
@@ -69,6 +70,22 @@ test('monitor takes no execute flag', async () => {
   process.env.GITHUB_TOKEN = 'tok';
   await run();
   expect(vi.mocked(monitor).mock.calls[0][0]).not.toHaveProperty('execute');
+});
+
+test('resolve-outputs lines become callbacks: trimmed, blanks dropped, order kept', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  process.env.PR_MONITOR_RESOLVE_OUTPUTS = '  npx a resolve  \n\n   \nnpx b resolve\n';
+  await run();
+  expect(vi.mocked(monitor).mock.calls[0][0].callbacks).toEqual([
+    'npx a resolve',
+    'npx b resolve',
+  ]);
+});
+
+test('no resolve-outputs input means no callbacks', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  await run();
+  expect(vi.mocked(monitor).mock.calls[0][0].callbacks).toEqual([]);
 });
 
 test('prediction gets willfire’s own client, not the octokit one', async () => {
