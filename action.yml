@@ -24,8 +24,6 @@ runs:
     - name: Resolve pnpm version
       id: pnpm-version
       shell: bash
-      # Under local use (`uses: ./`) `github.action_path` ends in `/.`, which
-      # pnpm/action-setup's `package_json_file` read cannot handle. Node normalizes it.
       run: |
         pm=$(node -p "require('${{ github.action_path }}/package.json').packageManager")
         v="${pm#pnpm@}"
@@ -40,7 +38,6 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: '24'
-        # No pnpm store cache: cache-dependency-path rejects the `/.` local use carries.
 
     - name: Install runtime dependencies
       shell: bash
