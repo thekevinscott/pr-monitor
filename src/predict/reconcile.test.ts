@@ -62,12 +62,12 @@ function makeGithub(tagSha: string | null) {
   return { github, listRepoWorkflows };
 }
 
-function params(github: PredictClient) {
+function params(github: PredictClient, callbacks?: readonly string[]) {
   return {
     github,
     slug: 'o/r',
     pullNumber: 5,
-    options: { action: 'opened' as const },
+    options: { action: 'opened' as const, callbacks },
     selfPath: SELF,
     sources: [head, callee],
   };
@@ -106,4 +106,13 @@ test('a move onto a program with a hole in it -> failed, naming the hole', async
   if (outcome.kind !== 'failed') return;
   expect(outcome.detail).toContain('callee-dynamic');
   expect(outcome.detail).toContain('Unresolvable check names');
+  expect(outcome.detail).toContain('No resolver is declared');
+});
+
+test('the hole is reported against the resolver when one was declared', async () => {
+  const { github } = makeGithub('callee-dynamic');
+  const outcome = await reconcile(params(github, ['npx a resolve']));
+  expect(outcome.kind).toBe('failed');
+  if (outcome.kind !== 'failed') return;
+  expect(outcome.detail).toContain('A resolver is declared');
 });

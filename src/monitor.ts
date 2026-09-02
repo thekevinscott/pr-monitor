@@ -57,7 +57,7 @@ export async function monitor({
   const sha = resolveCommitSha(context);
 
   if (expected.unresolved.length > 0) {
-    core.setFailed(formatUnresolvedFailure(expected.unresolved));
+    core.setFailed(formatUnresolvedFailure(expected.unresolved, callbacks));
     return;
   }
 
