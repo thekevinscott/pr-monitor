@@ -1,4 +1,4 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { defaultExclude, defineConfig, mergeConfig } from 'vitest/config';
 import { vitestConfig } from 'testing-conventions';
 
 export default mergeConfig(
@@ -7,6 +7,8 @@ export default mergeConfig(
     test: {
       // Root-relative: the testing-conventions CLI invokes Vitest with `src/` as root.
       include: ['**/*.test.ts'],
+      // Untracked agent worktrees under `.claude/` hold stale copies of this suite.
+      exclude: [...defaultExclude, '**/.claude/**'],
       coverage: {
         // mergeConfig concatenates, so these add to the base's excludes rather than replace them.
         // The testing-conventions CLI ignores them; they only scope the local `test:coverage` report.
