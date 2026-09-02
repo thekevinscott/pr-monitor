@@ -67,7 +67,7 @@ function params(github: PredictClient) {
     github,
     slug: 'o/r',
     pullNumber: 5,
-    options: { execute: [], action: 'opened' as const },
+    options: { action: 'opened' as const },
     selfPath: SELF,
     sources: [head, callee],
   };

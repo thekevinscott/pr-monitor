@@ -14,7 +14,7 @@ export interface MonitorParams {
   predictClient: GithubClient;
   context: GitHubContextType;
   core: CoreModule;
-  execute: boolean;
+  /** Test seam. Omitted in production, where willfire builds the live sandboxed executor. */
   executor?: JobExecutor;
 }
 
