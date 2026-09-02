@@ -111,7 +111,7 @@ test('a move onto a program with a hole in it -> failed, naming the hole', async
 
 test('the hole is reported against the resolver when one was declared', async () => {
   const { github } = makeGithub('callee-dynamic');
-  const outcome = await reconcile(params(github, ['npx a resolve']));
+  const outcome = await reconcile(params(github, ['echo {}']));
   expect(outcome.kind).toBe('failed');
   if (outcome.kind !== 'failed') return;
   expect(outcome.detail).toContain('A resolver is declared');
