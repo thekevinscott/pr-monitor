@@ -10,10 +10,15 @@ export async function run(): Promise<void> {
     core.setFailed('GITHUB_TOKEN env var is required');
     return;
   }
+  const callbacks = (process.env.PR_MONITOR_RESOLVE_OUTPUTS ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
   await monitor({
     github: new Octokit({ auth: token }),
     predictClient: makeGithubClient(),
     context,
     core,
+    callbacks,
   });
 }

@@ -60,10 +60,23 @@ Keep this in its own workflow with no other jobs — the action excludes its own
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `github-token` | GitHub token for API access | No | `${{ github.token }}` |
+| `resolve-outputs` | Resolver commands, one per line; each becomes one willfire `--callback` | No | none |
 
 That is the whole surface. There is nothing to tune.
 
 **Execution is always on.** A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. The job runs in willfire's hermetic docker sandbox: no network, no token, a read-only root, nothing kept. Code that can reach nothing and keep nothing needs no per-repo permission, which is why execution is default behavior rather than configuration — measured at ~1.3s marginal on a live PR. An execution that fails leaves the matrix unresolved, which is red.
+
+**`resolve-outputs`** — for outputs the sandbox cannot compute (a job that needs tooling or network the sandbox denies), name resolver commands, one per line:
+
+```yaml
+- uses: thekevinscott/pr-monitor@v1
+  with:
+    resolve-outputs: |
+      npx putitoutthere resolve
+      npx testing-conventions resolve
+```
+
+Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). The forwarding is inert until willfire ships that flag; today the input changes nothing.
 
 ## How it works
 
