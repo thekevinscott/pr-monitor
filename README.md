@@ -78,6 +78,13 @@ That is the whole surface. There is nothing to tune.
 
 Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). willfire ships that flag as of 0.1.47, so the input takes effect.
 
+The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qualified, no ref or sha, so one map answers wherever the workflow is reached from. Each key holds a list of `{ inputs, outputs }` entries, and an entry matches when every input it names equals the invocation's. Four parts of that contract bite:
+
+- **Two lines cannot claim the same key.** willfire refuses the pair rather than merging them or picking one, and the prediction dies before it lists a single workflow. The gate fails with `'<key>' is answered by two callbacks: '<command a>' and '<command b>'`, naming both lines — every check in the repo goes unresolvable at once. Split the keys, or emit them from one resolver.
+- **A claimed key that answers nothing is a failure, not a fallthrough.** A key your map never mentions still falls through to sandbox execution. A key it claims but cannot match for these inputs leaves the job's dependents `unknown` and fails the gate naming the job. Two entries under one key both matching is fatal to the whole prediction, like a duplicate key.
+- **Matching sees only the inputs willfire settled.** An input it could not decide is left out rather than guessed, so an entry conditioned on one never matches. This is the quiet one — the entry reads correctly and simply never fires.
+- **Resolvers get no GitHub credentials.** `GH_TOKEN` and `GITHUB_TOKEN` are deleted before the command runs. It runs outside the sandbox with the rest of the runner's environment, once per prediction, so a resolver that needs GitHub auth must carry its own token under another name.
+
 ## How it works
 
 1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself
