@@ -27,6 +27,7 @@ export async function monitor({
   context,
   core,
   executor,
+  callbacks,
 }: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
 
@@ -48,6 +49,8 @@ export async function monitor({
     // Undefined in production, so willfire builds its live sandboxed executor.
     executor,
     action: resolveEventAction(context),
+    // Inert until willfire ships #153: 0.1.31 ignores an options key it does not know.
+    callbacks,
   };
   const prediction = await predict(predictClient, slug, pullNumber, options);
   let expected = expectedChecks(prediction, selfPath);
