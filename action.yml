@@ -9,23 +9,15 @@ inputs:
       `pull-requests: read`.
     required: false
     default: ${{ github.token }}
-  execute:
+  resolve-outputs:
     description: >-
-      Whether willfire may execute jobs to resolve a dynamic matrix. `true`
-      turns execution on for the whole prediction; `false`, the default,
-      executes nothing.
-
-      There is no narrower setting, and no way to name a repo or a job. willfire
-      0.1.31 removed per-repo and per-job grants: its executor runs in a docker
-      sandbox, in this PR's own repo, at the predicted commit. So `true` permits
-      every job the prediction reaches to run its PR-authored steps for real.
-      Set it on the basis of the whole workflow set, not one job in it.
-
-      The retired `owner/repo:job1,job2` spelling is still accepted and still
-      means `true`, with a warning saying that neither half of it scoped
-      anything. Any other value fails the gate, named.
+      Resolver commands, one per line. Each line is trimmed (blank lines are
+      dropped) and passed to willfire as one `--callback "<command>"`: a command
+      whose stdout is a JSON map answering job outputs the sandbox cannot
+      compute (thekevinscott/willfire#153). Inert until willfire ships that
+      flag.
     required: false
-    default: 'false'
+    default: ''
 
 runs:
   using: 'composite'
@@ -61,7 +53,7 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        PR_MONITOR_EXECUTE: ${{ inputs.execute }}
+        PR_MONITOR_RESOLVE_OUTPUTS: ${{ inputs.resolve-outputs }}
       run: ./node_modules/.bin/tsx src/entry.ts
 
 branding:

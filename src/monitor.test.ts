@@ -8,6 +8,20 @@ vi.mock('./timing/sleep', async () => {
   return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
 });
 
+// A recorder, not a mock: `predict` stays real so every scenario still exercises willfire.
+const { predictSpy } = vi.hoisted(() => ({ predictSpy: vi.fn() }));
+
+vi.mock('willfire', async () => {
+  const actual = await vi.importActual<typeof import('willfire')>('willfire');
+  return {
+    ...actual,
+    predict: (...args: Parameters<typeof actual.predict>) => {
+      predictSpy(...args);
+      return actual.predict(...args);
+    },
+  };
+});
+
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
 const TESTS = '.github/workflows/test.yml';
@@ -104,8 +118,8 @@ interface Scenario {
   files?: string[];
   message?: string;
   checks?: Record<string, string[]>;
-  execute?: MonitorParams['execute'];
   executor?: MonitorParams['executor'];
+  callbacks?: MonitorParams['callbacks'];
   eventAction?: string;
   /** One entry per resolution of `CALLEE_TAG`, the last repeating; `null` stops resolving. */
   refShas?: Array<string | null>;
@@ -254,8 +268,8 @@ async function gate(scenario: Scenario): Promise<GateResult> {
     predictClient: github as unknown as MonitorParams['predictClient'],
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
-    execute: scenario.execute ?? false,
     executor: scenario.executor,
+    callbacks: scenario.callbacks,
   });
   const logged = vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
   return {
@@ -366,9 +380,10 @@ describe('predicted check set', () => {
     expect(polls).toBe(1);
   });
 
-  test('a check name willfire cannot resolve -> red before the first poll', async () => {
+  test('a check name execution cannot resolve -> red before the first poll', async () => {
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
+      executor: { executeJob: async () => ({ ok: false, reason: 'sandbox unavailable' }) },
       polls: [[self, run(DYNAMIC)]],
     });
     expect(failures[0]).toMatch(/Unresolvable check names/);
@@ -376,11 +391,10 @@ describe('predicted check set', () => {
     expect(polls).toBe(0);
   });
 
-  test('execution resolves the dynamic matrix and the gate keys on its legs', async () => {
+  test('a dynamic matrix resolves with no switch: execution is always on', async () => {
     // The stub stands where `setup` would write `$GITHUB_OUTPUT`; the live executor uses docker.
     const { failures, polls } = await gate({
       workflows: [SELF_PATH, DYNAMIC],
-      execute: true,
       executor: {
         executeJob: async (jobId: string) =>
           jobId === 'setup'
@@ -391,6 +405,17 @@ describe('predicted check set', () => {
     });
     expect(failures).toEqual([]);
     expect(polls).toBe(1);
+  });
+
+  test('resolver callbacks ride the predict options', async () => {
+    const { failures } = await gate({
+      callbacks: ['npx a resolve', 'npx b resolve'],
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(predictSpy.mock.calls.at(-1)?.[3]).toMatchObject({
+      callbacks: ['npx a resolve', 'npx b resolve'],
+    });
   });
 
   test('[skip ci] head commit -> nothing predicted, nothing required', async () => {
@@ -425,7 +450,6 @@ describe('predicted check set', () => {
       predictClient: github as unknown as MonitorParams['predictClient'],
       context: makeContext(),
       core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
-      execute: false,
     });
     expect(usedSha).toBe(HEAD_SHA);
   });
@@ -451,7 +475,6 @@ describe('predicted check set', () => {
         runId: SELF_RUN_ID,
       } as unknown as MonitorParams['context'],
       core: { setFailed } as unknown as MonitorParams['core'],
-      execute: false,
     });
     expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
   });
@@ -554,39 +577,6 @@ describe('a callee tag that moves mid-flight', () => {
   });
 });
 
-describe('the execute input as the execution switch', () => {
-  const logged = () =>
-    vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
-
-  const NEVER_CALLED: MonitorParams['executor'] = {
-    executeJob: async (jobId: string) => ({ ok: false, reason: `unexpected execution of ${jobId}` }),
-  };
-
-  test('execute true turns execution on and says so', async () => {
-    await gate({ polls: [[self, run(TESTS)]], execute: true, executor: NEVER_CALLED });
-    expect(logged()).toContainEqual(
-      expect.stringContaining('Execution enabled by the execute input'),
-    );
-  });
-
-  test('execute false leaves execution off, silently', async () => {
-    await gate({ polls: [[self, run(TESTS)]] });
-    expect(logged()).not.toContainEqual(expect.stringContaining('Execution enabled'));
-  });
-
-  test('execute false passes no executor, even when one is on hand', async () => {
-    const { failures } = await gate({
-      workflows: [SELF_PATH, DYNAMIC],
-      execute: false,
-      executor: {
-        executeJob: async () => ({ ok: true, outputs: { matrix: '["x"]' } }),
-      },
-      polls: [[self, run(DYNAMIC)]],
-    });
-    expect(failures[0]).toMatch(/Unresolvable check names/);
-  });
-});
-
 describe('a rate-limited read', () => {
   const RATE_LIMIT_ERROR = Object.assign(new Error('API rate limit exceeded for installation'), {
     status: 403,
@@ -609,7 +599,6 @@ describe('a rate-limited read', () => {
       predictClient: github as unknown as MonitorParams['predictClient'],
       context: makeContext(),
       core: { setFailed } as unknown as MonitorParams['core'],
-      execute: false,
     });
     expect(setFailed).not.toHaveBeenCalled();
     expect(vi.mocked(console.log).mock.calls.map((c) => String(c[0]))).toContainEqual(
@@ -634,7 +623,6 @@ describe('a rate-limited read', () => {
       predictClient: github as unknown as MonitorParams['predictClient'],
       context: makeContext(),
       core: { setFailed } as unknown as MonitorParams['core'],
-      execute: false,
     });
     expect(setFailed).not.toHaveBeenCalled();
     expect(vi.mocked(sleep)).toHaveBeenCalledWith(60_000);
@@ -652,7 +640,6 @@ describe('a rate-limited read', () => {
         predictClient: github as unknown as MonitorParams['predictClient'],
         context: makeContext(),
         core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
-        execute: false,
       }),
     ).rejects.toThrow('socket hang up');
     expect(vi.mocked(sleep)).not.toHaveBeenCalled();

@@ -19,7 +19,7 @@ export type Reconciliation =
   | { kind: 'failed'; detail: string }
   | { kind: 'repredicted'; expected: ExpectedChecks; detail: string };
 
-/** Re-predicting executes granted jobs, so re-resolve first and predict only if something moved. */
+/** Re-predicting executes jobs again, so re-resolve first and predict only if something moved. */
 export async function reconcile({
   github,
   slug,

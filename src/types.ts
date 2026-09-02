@@ -14,8 +14,10 @@ export interface MonitorParams {
   predictClient: GithubClient;
   context: GitHubContextType;
   core: CoreModule;
-  execute: boolean;
+  /** Test seam. Omitted in production, where willfire builds the live sandboxed executor. */
   executor?: JobExecutor;
+  /** Resolver commands, forwarded to willfire one `--callback` each (willfire#153). */
+  callbacks?: readonly string[];
 }
 
 export interface WorkflowRunSummary {

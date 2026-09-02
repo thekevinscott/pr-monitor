@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 vi.mock('@actions/core', async () => {
   const actual = await vi.importActual<typeof import('@actions/core')>('@actions/core');
-  return { ...actual, setFailed: vi.fn(), warning: vi.fn() };
+  return { ...actual, setFailed: vi.fn() };
 });
 
 vi.mock('@actions/github', async () => {
@@ -38,6 +38,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.GITHUB_TOKEN;
   delete process.env.PR_MONITOR_EXECUTE;
+  delete process.env.PR_MONITOR_RESOLVE_OUTPUTS;
 });
 
 test('missing GITHUB_TOKEN → setFailed and does not call monitor', async () => {
@@ -52,40 +53,39 @@ test('with GITHUB_TOKEN → builds an authenticated octokit and calls monitor', 
   expect(Octokit).toHaveBeenCalledWith({ auth: 'tok' });
   expect(monitor).toHaveBeenCalledTimes(1);
   const params = vi.mocked(monitor).mock.calls[0][0];
-  expect(params.execute).toBe(false);
   expect(params.core).toBe(core);
   expect(params.context.repo).toEqual({ owner: 'o', repo: 'r' });
   expect(core.setFailed).not.toHaveBeenCalled();
 });
 
-test('PR_MONITOR_EXECUTE=true → execution on, no warning', async () => {
+test('a leftover PR_MONITOR_EXECUTE value is ignored, whatever it says', async () => {
   process.env.GITHUB_TOKEN = 'tok';
-  process.env.PR_MONITOR_EXECUTE = 'true';
+  process.env.PR_MONITOR_EXECUTE = 'detect';
   await run();
-  expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(true);
-  expect(core.warning).not.toHaveBeenCalled();
   expect(core.setFailed).not.toHaveBeenCalled();
+  expect(monitor).toHaveBeenCalledTimes(1);
 });
 
-test('PR_MONITOR_EXECUTE=false → execution off', async () => {
+test('monitor takes no execute flag', async () => {
   process.env.GITHUB_TOKEN = 'tok';
-  process.env.PR_MONITOR_EXECUTE = 'false';
   await run();
-  expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(false);
-  expect(core.warning).not.toHaveBeenCalled();
-  expect(core.setFailed).not.toHaveBeenCalled();
+  expect(vi.mocked(monitor).mock.calls[0][0]).not.toHaveProperty('execute');
 });
 
-test('the retired grant spelling still runs, and warns that neither half scoped anything', async () => {
+test('resolve-outputs lines become callbacks: trimmed, blanks dropped, order kept', async () => {
   process.env.GITHUB_TOKEN = 'tok';
-  process.env.PR_MONITOR_EXECUTE = 'o/conventions:detect';
+  process.env.PR_MONITOR_RESOLVE_OUTPUTS = '  npx a resolve  \n\n   \nnpx b resolve\n';
   await run();
-  expect(vi.mocked(monitor).mock.calls[0][0].execute).toBe(true);
-  const warned = vi.mocked(core.warning).mock.calls[0][0] as string;
-  expect(warned).toContain('o/conventions:detect');
-  expect(warned).toMatch(/neither the repo nor the job/);
-  expect(warned).toMatch(/execute: true/);
-  expect(core.setFailed).not.toHaveBeenCalled();
+  expect(vi.mocked(monitor).mock.calls[0][0].callbacks).toEqual([
+    'npx a resolve',
+    'npx b resolve',
+  ]);
+});
+
+test('no resolve-outputs input means no callbacks', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  await run();
+  expect(vi.mocked(monitor).mock.calls[0][0].callbacks).toEqual([]);
 });
 
 test('prediction gets willfire’s own client, not the octokit one', async () => {
@@ -96,12 +96,3 @@ test('prediction gets willfire’s own client, not the octokit one', async () =>
   expect(params.predictClient).not.toBe(params.github);
 });
 
-test('malformed PR_MONITOR_EXECUTE → setFailed naming the value, monitor not called', async () => {
-  process.env.GITHUB_TOKEN = 'tok';
-  process.env.PR_MONITOR_EXECUTE = 'detect';
-  await run();
-  expect(core.setFailed).toHaveBeenCalledWith(
-    "execute input value 'detect' is neither true nor false",
-  );
-  expect(monitor).not.toHaveBeenCalled();
-});

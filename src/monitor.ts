@@ -26,8 +26,8 @@ export async function monitor({
   predictClient,
   context,
   core,
-  execute,
   executor,
+  callbacks,
 }: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
 
@@ -45,16 +45,12 @@ export async function monitor({
 
   const slug = `${owner}/${repo}`;
 
-  if (execute) {
-    console.log(
-      'Execution enabled by the execute input: every job this prediction reaches may run its steps for real.',
-    );
-  }
-
   const options = {
-    // `null`, not omitted: willfire builds a live sandboxed executor by default.
-    executor: execute ? executor : null,
+    // Undefined in production, so willfire builds its live sandboxed executor.
+    executor,
     action: resolveEventAction(context),
+    // Inert until willfire ships #153: 0.1.31 ignores an options key it does not know.
+    callbacks,
   };
   const prediction = await predict(predictClient, slug, pullNumber, options);
   let expected = expectedChecks(prediction, selfPath);
