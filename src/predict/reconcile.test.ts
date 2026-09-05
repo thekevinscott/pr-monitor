@@ -3,6 +3,10 @@ import { expect, test, vi } from 'vitest';
 import { reconcile } from './reconcile';
 import type { PredictClient, PredictPr } from '../types';
 
+vi.mock('willfire', async () => ({
+  ...(await vi.importActual<typeof import('willfire')>('willfire')),
+}));
+
 const HEAD = 'head-sha';
 const SELF = '.github/workflows/pr-monitor.yml';
 const CALLER = '.github/workflows/caller.yml';

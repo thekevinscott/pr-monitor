@@ -9,6 +9,10 @@ vi.mock('./timing/sleep', async () => {
   return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
 });
 
+vi.mock('willfire', async () => ({
+  ...(await vi.importActual<typeof import('willfire')>('willfire')),
+}));
+
 const predictSpy = vi.fn();
 
 /**

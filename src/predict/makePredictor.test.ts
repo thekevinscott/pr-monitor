@@ -1,91 +1,100 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { expect, test } from 'vitest';
+import { execFile } from 'node:child_process';
+import { expect, test, vi } from 'vitest';
 import { makePredictor } from './makePredictor';
 
-const PREDICTION = {
-  entries: [
-    {
-      workflow: '.github/workflows/test.yml',
-      job: 'unit',
-      checkName: 'unit',
-      status: 'run',
-      reason: 'trigger matched',
-    },
-  ],
-  checkNames: ['unit'],
-  skip: null,
-  sources: [{ owner: 'o', repo: 'r', ref: 'head-sha', sha: 'head-sha' }],
-};
+vi.mock('node:child_process', async () => ({
+  ...(await vi.importActual<typeof import('node:child_process')>('node:child_process')),
+  execFile: vi.fn(),
+}));
 
-const PRINT_PREDICTION = `console.log(${JSON.stringify(JSON.stringify(PREDICTION))});`;
+const CLI = '/w/willfire/dist/cli.js';
+const PREDICTION = { entries: [], checkNames: [], skip: null, sources: [] };
 
-/** Stands in for willfire's CLI: `node <file>` is the whole contract this side owns. */
-async function stubCli(body: string): Promise<string> {
-  const cli = join(await mkdtemp(join(tmpdir(), 'pr-monitor-cli-')), 'cli.cjs');
-  await writeFile(cli, body);
-  return cli;
+interface Spawned {
+  file: string;
+  args: string[];
+  options: { env: NodeJS.ProcessEnv; cwd?: string; maxBuffer: number };
 }
 
-/** A stub that reports one expression to `probe` before answering normally. */
-async function probing(expression: string): Promise<{ cli: string; read: () => Promise<string> }> {
-  const probe = join(await mkdtemp(join(tmpdir(), 'pr-monitor-probe-')), 'probe');
-  const write = `require('node:fs').writeFileSync(${JSON.stringify(probe)}, String(${expression}));`;
-  return { cli: await stubCli(write + PRINT_PREDICTION), read: () => readFile(probe, 'utf8') };
+/** Answers the callback the way `promisify(execFile)` reads it, and records the call. */
+function spawnAnswers(failure: unknown, stdout = ''): () => Spawned {
+  const seen: Spawned[] = [];
+  vi.mocked(execFile).mockImplementation(((
+    file: string,
+    args: string[],
+    options: Spawned['options'],
+    done: (err: unknown, value: { stdout: string }) => void,
+  ) => {
+    seen.push({ file, args, options });
+    done(failure, { stdout });
+  }) as unknown as typeof execFile);
+  return () => seen[0];
 }
 
 test('the JSON the CLI prints is the prediction the gate reads', async () => {
-  const prediction = await makePredictor(await stubCli(PRINT_PREDICTION), 'tok')('o/r', 5, {});
-  expect(prediction).toEqual(PREDICTION);
+  spawnAnswers(null, JSON.stringify(PREDICTION));
+  await expect(makePredictor(CLI, 'tok')('o/r', 5, {})).resolves.toEqual(PREDICTION);
 });
 
-test('the CLI is invoked with the flags predictArgs builds', async () => {
-  const { cli, read } = await probing('process.argv.slice(2).join(" ")');
-  await makePredictor(cli, 'tok')('o/r', 5, { action: 'opened', callbacks: ['echo {}'] });
-  expect(await read()).toBe('--repo o/r --pr 5 --action opened --callback echo {} --json');
+test('node runs the resolved CLI with the flags predictArgs builds', async () => {
+  const call = spawnAnswers(null, JSON.stringify(PREDICTION));
+  await makePredictor(CLI, 'tok')('o/r', 5, { action: 'opened', callbacks: ['echo {}'] });
+  expect(call().file).toBe(process.execPath);
+  expect(call().args).toEqual([
+    CLI,
+    '--repo',
+    'o/r',
+    '--pr',
+    '5',
+    '--action',
+    'opened',
+    '--callback',
+    'echo {}',
+    '--json',
+  ]);
 });
 
-test('the configured token reaches the CLI as GH_TOKEN', async () => {
-  const { cli, read } = await probing('process.env.GH_TOKEN');
-  await makePredictor(cli, 'configured')('o/r', 5, {});
-  expect(await read()).toBe('configured');
+test('the configured token is handed over as GH_TOKEN, which willfire reads first', async () => {
+  const call = spawnAnswers(null, JSON.stringify(PREDICTION));
+  await makePredictor(CLI, 'configured')('o/r', 5, {});
+  expect(call().options.env.GH_TOKEN).toBe('configured');
 });
 
-test('the configured token outranks a GH_TOKEN already in the environment', async () => {
-  const { cli, read } = await probing('process.env.GH_TOKEN');
-  process.env.GH_TOKEN = 'ambient';
-  try {
-    await makePredictor(cli, 'configured')('o/r', 5, {});
-  } finally {
-    delete process.env.GH_TOKEN;
-  }
-  expect(await read()).toBe('configured');
+test('the rest of the environment carries through for the callbacks to inherit', async () => {
+  const call = spawnAnswers(null, JSON.stringify(PREDICTION));
+  await makePredictor(CLI, 'tok')('o/r', 5, {});
+  expect(call().options.env.PATH).toBe(process.env.PATH);
 });
 
 test('no cwd is pinned, so a resolver callback still inherits the workspace', async () => {
-  const { cli, read } = await probing('process.cwd()');
-  await makePredictor(cli, 'tok')('o/r', 5, {});
-  expect(await read()).toBe(process.cwd());
+  const call = spawnAnswers(null, JSON.stringify(PREDICTION));
+  await makePredictor(CLI, 'tok')('o/r', 5, {});
+  expect(call().options.cwd).toBeUndefined();
+});
+
+test('a prediction larger than execFile’s 1MB default is still read whole', async () => {
+  const call = spawnAnswers(null, JSON.stringify(PREDICTION));
+  await makePredictor(CLI, 'tok')('o/r', 5, {});
+  expect(call().options.maxBuffer).toBeGreaterThan(1024 * 1024);
 });
 
 test('a CLI that fails is reported with what it said, not swallowed', async () => {
-  const cli = await stubCli('console.error("no such pull request");process.exit(1);');
-  await expect(makePredictor(cli, 'tok')('o/r', 5, {})).rejects.toThrow('no such pull request');
-});
-
-test('a CLI that fails silently is still reported', async () => {
-  const cli = await stubCli('process.exit(3);');
-  await expect(makePredictor(cli, 'tok')('o/r', 5, {})).rejects.toThrow(/Command failed/);
-});
-
-test('a CLI that cannot be started is reported rather than read as an empty prediction', async () => {
-  await expect(makePredictor('/nonexistent/cli.cjs', 'tok')('o/r', 5, {})).rejects.toThrow(
-    /Cannot find module/,
+  spawnAnswers({ stderr: '  GH_TOKEN or GITHUB_TOKEN must be set\n' });
+  await expect(makePredictor(CLI, 'tok')('o/r', 5, {})).rejects.toThrow(
+    'willfire prediction failed: GH_TOKEN or GITHUB_TOKEN must be set',
   );
 });
 
-test('output that is not a prediction is reported, never parsed into an empty gate', async () => {
-  const cli = await stubCli('console.log("not json at all");');
-  await expect(makePredictor(cli, 'tok')('o/r', 5, {})).rejects.toThrow('not json at all');
+test('a CLI that fails silently is reported by what went wrong instead', async () => {
+  spawnAnswers(new Error('Command failed: node cli.js'));
+  await expect(makePredictor(CLI, 'tok')('o/r', 5, {})).rejects.toThrow(
+    /willfire prediction failed: .*Command failed/,
+  );
+});
+
+test('output that is not a prediction is reported, never read as an empty gate', async () => {
+  spawnAnswers(null, '\n  not json at all\n');
+  await expect(makePredictor(CLI, 'tok')('o/r', 5, {})).rejects.toThrow(
+    'willfire printed no prediction: not json at all',
+  );
 });
