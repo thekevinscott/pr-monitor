@@ -62,3 +62,37 @@ test('defaults null name/path/event/status/conclusion to safe values', async () 
 
   expect(result).toEqual([{ id: 3, name: '', path: '', event: '', status: '', conclusion: null }]);
 });
+
+test('an error-shaped body fails with the upstream status, not a TypeError', async () => {
+  const listWorkflowRunsForRepo = vi.fn().mockResolvedValue({
+    status: 200,
+    data: { message: 'Server Error', documentation_url: 'https://docs.github.com/rest' },
+  });
+  const github = { rest: { actions: { listWorkflowRunsForRepo } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRuns(github, 'o', 'r', 'abc')).rejects.toThrow(
+    'GitHub returned 200 listing workflow runs for abc: expected an array at data.workflow_runs, got {"message":"Server Error","documentation_url":"https://docs.github.com/rest"}',
+  );
+});
+
+test('a non-2xx with no body fails with the upstream status', async () => {
+  const listWorkflowRunsForRepo = vi.fn().mockResolvedValue({ status: 502, data: undefined });
+  const github = { rest: { actions: { listWorkflowRunsForRepo } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRuns(github, 'o', 'r', 'abc')).rejects.toThrow(
+    'GitHub returned 502 listing workflow runs for abc: expected an array at data.workflow_runs, got undefined',
+  );
+});
+
+test('a failed later page rejects instead of returning the pages already read', async () => {
+  const fullPage = Array.from({ length: 100 }, (_, i) => makeRun(i + 1));
+  const listWorkflowRunsForRepo = vi
+    .fn()
+    .mockResolvedValueOnce({ status: 200, data: { total_count: 101, workflow_runs: fullPage } })
+    .mockResolvedValueOnce({ status: 502, data: { message: 'Server Error' } });
+  const github = { rest: { actions: { listWorkflowRunsForRepo } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRuns(github, 'o', 'r', 'abc')).rejects.toThrow(
+    'GitHub returned 502 listing workflow runs for abc: expected an array at data.workflow_runs, got {"message":"Server Error"}',
+  );
+});

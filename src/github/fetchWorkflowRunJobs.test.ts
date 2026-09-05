@@ -92,3 +92,37 @@ test('defaults null name/status/conclusion to safe values', async () => {
     { id: 3, name: '', workflowPath: 'a.yml', status: '', conclusion: null },
   ]);
 });
+
+test('an error-shaped body fails with the upstream status, not a TypeError', async () => {
+  const listJobsForWorkflowRun = vi.fn().mockResolvedValue({
+    status: 200,
+    data: { message: 'Server Error', documentation_url: 'https://docs.github.com/rest' },
+  });
+  const github = { rest: { actions: { listJobsForWorkflowRun } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRunJobs(github, 'o', 'r', [run(42, 'a.yml')])).rejects.toThrow(
+    'GitHub returned 200 listing jobs for run 42: expected an array at data.jobs, got {"message":"Server Error","documentation_url":"https://docs.github.com/rest"}',
+  );
+});
+
+test('a non-2xx with no body fails with the upstream status', async () => {
+  const listJobsForWorkflowRun = vi.fn().mockResolvedValue({ status: 502, data: undefined });
+  const github = { rest: { actions: { listJobsForWorkflowRun } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRunJobs(github, 'o', 'r', [run(42, 'a.yml')])).rejects.toThrow(
+    'GitHub returned 502 listing jobs for run 42: expected an array at data.jobs, got undefined',
+  );
+});
+
+test('a failed later page rejects instead of returning the pages already read', async () => {
+  const fullPage = Array.from({ length: 100 }, (_, i) => makeJob(i + 1, `job-${i + 1}`));
+  const listJobsForWorkflowRun = vi
+    .fn()
+    .mockResolvedValueOnce({ status: 200, data: { total_count: 101, jobs: fullPage } })
+    .mockResolvedValueOnce({ status: 502, data: { message: 'Server Error' } });
+  const github = { rest: { actions: { listJobsForWorkflowRun } } } as unknown as Octokit;
+
+  await expect(fetchWorkflowRunJobs(github, 'o', 'r', [run(42, 'a.yml')])).rejects.toThrow(
+    'GitHub returned 502 listing jobs for run 42: expected an array at data.jobs, got {"message":"Server Error"}',
+  );
+});
