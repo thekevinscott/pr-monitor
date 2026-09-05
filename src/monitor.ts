@@ -1,4 +1,3 @@
-import { predict } from 'willfire';
 import type { MonitorParams, WorkflowJobSummary, WorkflowRunSummary } from './types';
 import { sleep } from './timing/sleep';
 import { fetchWorkflowRunJobs } from './github/fetchWorkflowRunJobs';
@@ -24,9 +23,9 @@ const RATE_LIMIT_RETRY_MS = 60_000;
 export async function monitor({
   github,
   predictClient,
+  predict,
   context,
   core,
-  executor,
   callbacks,
 }: MonitorParams): Promise<void> {
   const { owner, repo } = context.repo;
@@ -45,13 +44,8 @@ export async function monitor({
 
   const slug = `${owner}/${repo}`;
 
-  const options = {
-    // Undefined in production, so willfire builds its live sandboxed executor.
-    executor,
-    action: resolveEventAction(context),
-    callbacks,
-  };
-  const prediction = await predict(predictClient, slug, pullNumber, options);
+  const inputs = { action: resolveEventAction(context), callbacks };
+  const prediction = await predict(slug, pullNumber, inputs);
   let expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 
@@ -89,9 +83,10 @@ export async function monitor({
       reconciled = true;
       const outcome = await reconcile({
         github: predictClient,
+        predict,
         slug,
         pullNumber,
-        options,
+        inputs,
         selfPath,
         sources: prediction.sources,
       });

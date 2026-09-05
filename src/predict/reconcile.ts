@@ -1,5 +1,5 @@
-import { predict, type PredictOptions, type WorkflowSource } from 'willfire';
-import type { ExpectedChecks, MonitorParams, PredictClient } from '../types';
+import type { WorkflowSource } from 'willfire';
+import type { ExpectedChecks, PredictClient, PredictInputs, PredictPr } from '../types';
 import { formatSourceMoves } from '../messages/formatSourceMoves';
 import { formatUnresolvedFailure } from '../messages/formatUnresolvedFailure';
 import { expectedChecks } from './expectedChecks';
@@ -7,9 +7,10 @@ import { findSourceMoves } from './findSourceMoves';
 
 export interface ReconcileParams {
   github: PredictClient;
+  predict: PredictPr;
   slug: string;
   pullNumber: number;
-  options: PredictOptions & Pick<MonitorParams, 'callbacks'>;
+  inputs: PredictInputs;
   selfPath: string;
   sources: ReadonlyArray<WorkflowSource>;
 }
@@ -22,9 +23,10 @@ export type Reconciliation =
 /** Re-predicting executes jobs again, so re-resolve first and predict only if something moved. */
 export async function reconcile({
   github,
+  predict,
   slug,
   pullNumber,
-  options,
+  inputs,
   selfPath,
   sources,
 }: ReconcileParams): Promise<Reconciliation> {
@@ -39,13 +41,13 @@ export async function reconcile({
     };
   }
 
-  const prediction = await predict(github, slug, pullNumber, options);
+  const prediction = await predict(slug, pullNumber, inputs);
   const expected = expectedChecks(prediction, selfPath);
   const moved = `Refs behind the prediction moved: ${formatSourceMoves(moves)}.`;
   if (expected.unresolved.length > 0) {
     return {
       kind: 'failed',
-      detail: `${moved} ${formatUnresolvedFailure(expected.unresolved, options.callbacks)}`,
+      detail: `${moved} ${formatUnresolvedFailure(expected.unresolved, inputs.callbacks)}`,
     };
   }
   return {

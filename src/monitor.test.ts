@@ -1,3 +1,4 @@
+import { predict as willfirePredict, type JobExecutor } from 'willfire';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { monitor } from './monitor';
 import { sleep } from './timing/sleep';
@@ -8,19 +9,28 @@ vi.mock('./timing/sleep', async () => {
   return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
 });
 
-// A recorder, not a mock: `predict` stays real so every scenario still exercises willfire.
-const { predictSpy } = vi.hoisted(() => ({ predictSpy: vi.fn() }));
+const predictSpy = vi.fn();
 
-vi.mock('willfire', async () => {
-  const actual = await vi.importActual<typeof import('willfire')>('willfire');
-  return {
-    ...actual,
-    predict: (...args: Parameters<typeof actual.predict>) => {
-      predictSpy(...args);
-      return actual.predict(...args);
-    },
+/**
+ * Production spawns willfire's CLI, which has no seam for a fake GitHub or a
+ * stub executor. Here the same prediction is taken from the library against the
+ * fake client, so every scenario still runs willfire's real expansion.
+ */
+function makePredict(
+  client: MonitorParams['predictClient'],
+  executor?: JobExecutor,
+): MonitorParams['predict'] {
+  return (slug, pullNumber, inputs) => {
+    predictSpy(slug, pullNumber, inputs);
+    return willfirePredict(client, slug, pullNumber, { ...inputs, executor });
   };
-});
+}
+
+/** The fake answers in willfire's shape too, so one object serves both roles. */
+function wiring(github: MonitorParams['github'], executor?: JobExecutor) {
+  const predictClient = github as unknown as MonitorParams['predictClient'];
+  return { github, predictClient, predict: makePredict(predictClient, executor) };
+}
 
 const SELF_RUN_ID = 999;
 const SELF_PATH = '.github/workflows/pr-monitor.yml';
@@ -118,7 +128,7 @@ interface Scenario {
   files?: string[];
   message?: string;
   checks?: Record<string, string[]>;
-  executor?: MonitorParams['executor'];
+  executor?: JobExecutor;
   callbacks?: MonitorParams['callbacks'];
   eventAction?: string;
   /** One entry per resolution of `CALLEE_TAG`, the last repeating; `null` stops resolving. */
@@ -263,12 +273,9 @@ async function gate(scenario: Scenario): Promise<GateResult> {
   const counter = { polls: 0, predicts: 0 };
   const github = makeGithub(scenario, counter);
   await monitor({
-    github,
-    // The fake already answers in willfire's shape, so one object serves both roles here.
-    predictClient: github as unknown as MonitorParams['predictClient'],
+    ...wiring(github, scenario.executor),
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],
-    executor: scenario.executor,
     callbacks: scenario.callbacks,
   });
   const logged = vi.mocked(console.log).mock.calls.map((c) => String(c[0]));
@@ -281,6 +288,7 @@ async function gate(scenario: Scenario): Promise<GateResult> {
 }
 
 beforeEach(() => {
+  predictSpy.mockClear();
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
     cb();
@@ -419,13 +427,13 @@ describe('predicted check set', () => {
     expect(polls).toBe(1);
   });
 
-  test('resolver callbacks ride the predict options', async () => {
+  test('resolver callbacks reach the prediction in the order declared', async () => {
     const { failures } = await gate({
       callbacks: ['echo {}', 'printf {}'],
       polls: [[self, run(TESTS)]],
     });
     expect(failures).toEqual([]);
-    expect(predictSpy.mock.calls.at(-1)?.[3]).toMatchObject({
+    expect(predictSpy.mock.calls.at(-1)?.[2]).toMatchObject({
       callbacks: ['echo {}', 'printf {}'],
     });
   });
@@ -458,8 +466,7 @@ describe('predicted check set', () => {
       return original(params);
     };
     await monitor({
-      github,
-      predictClient: github as unknown as MonitorParams['predictClient'],
+      ...wiring(github),
       context: makeContext(),
       core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
     });
@@ -476,10 +483,7 @@ describe('predicted check set', () => {
   test('no pull_request payload -> red, since there is nothing to predict against', async () => {
     const setFailed = vi.fn();
     await monitor({
-      github: makeGithub({ polls: [[self, run(TESTS)]] }),
-      predictClient: makeGithub({
-        polls: [[self, run(TESTS)]],
-      }) as unknown as MonitorParams['predictClient'],
+      ...wiring(makeGithub({ polls: [[self, run(TESTS)]] })),
       context: {
         repo: { owner: 'o', repo: 'r' },
         sha: 'merge-sha',
@@ -607,8 +611,7 @@ describe('a rate-limited read', () => {
     };
     const setFailed = vi.fn();
     await monitor({
-      github,
-      predictClient: github as unknown as MonitorParams['predictClient'],
+      ...wiring(github),
       context: makeContext(),
       core: { setFailed } as unknown as MonitorParams['core'],
     });
@@ -631,8 +634,7 @@ describe('a rate-limited read', () => {
     };
     const setFailed = vi.fn();
     await monitor({
-      github,
-      predictClient: github as unknown as MonitorParams['predictClient'],
+      ...wiring(github),
       context: makeContext(),
       core: { setFailed } as unknown as MonitorParams['core'],
     });
@@ -648,8 +650,7 @@ describe('a rate-limited read', () => {
     };
     await expect(
       monitor({
-        github,
-        predictClient: github as unknown as MonitorParams['predictClient'],
+        ...wiring(github),
         context: makeContext(),
         core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
       }),

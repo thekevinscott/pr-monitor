@@ -3,6 +3,8 @@ import { context } from '@actions/github';
 import { Octokit } from '@octokit/rest';
 import { makeGithubClient } from 'willfire';
 import { monitor } from './monitor';
+import { makePredictor } from './predict/makePredictor';
+import { willfireCliPath } from './predict/willfireCliPath';
 
 export async function run(): Promise<void> {
   const token = process.env.GITHUB_TOKEN;
@@ -16,7 +18,9 @@ export async function run(): Promise<void> {
     .filter((line) => line !== '');
   await monitor({
     github: new Octokit({ auth: token }),
+    // Reconciliation re-resolves refs in process; only prediction goes out to the CLI.
     predictClient: makeGithubClient(),
+    predict: makePredictor(willfireCliPath(), token),
     context,
     core,
     callbacks,

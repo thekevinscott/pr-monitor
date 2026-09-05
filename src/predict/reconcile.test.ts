@@ -1,6 +1,7 @@
+import { predict as willfirePredict } from 'willfire';
 import { expect, test, vi } from 'vitest';
 import { reconcile } from './reconcile';
-import type { PredictClient } from '../types';
+import type { PredictClient, PredictPr } from '../types';
 
 const HEAD = 'head-sha';
 const SELF = '.github/workflows/pr-monitor.yml';
@@ -63,11 +64,16 @@ function makeGithub(tagSha: string | null) {
 }
 
 function params(github: PredictClient, callbacks?: readonly string[]) {
+  // Production spawns willfire's CLI; taking the same prediction from the library
+  // against the fake client keeps the re-prediction real without a network.
+  const predict: PredictPr = (slug, pullNumber, inputs) =>
+    willfirePredict(github, slug, pullNumber, inputs);
   return {
     github,
+    predict,
     slug: 'o/r',
     pullNumber: 5,
-    options: { action: 'opened' as const, callbacks },
+    inputs: { action: 'opened' as const, callbacks },
     selfPath: SELF,
     sources: [head, callee],
   };

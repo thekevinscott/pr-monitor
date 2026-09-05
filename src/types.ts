@@ -1,7 +1,7 @@
 import type * as Core from '@actions/core';
 import type { context as GitHubContext } from '@actions/github';
 import type { Octokit as RestOctokit } from '@octokit/rest';
-import type { GithubClient, JobExecutor } from 'willfire';
+import type { GithubClient, PredictOptions, Prediction } from 'willfire';
 
 export type Octokit = RestOctokit;
 /** Not interchangeable with `Octokit`: hands back raw file text and unwrapped lists. */
@@ -9,13 +9,25 @@ export type PredictClient = GithubClient;
 export type GitHubContextType = typeof GitHubContext;
 export type CoreModule = typeof Core;
 
+/**
+ * What the gate asks a prediction for. Narrower than willfire's own options by
+ * one field: `executor` is a library seam the CLI has no flag for.
+ */
+export type PredictInputs = Pick<PredictOptions, 'action' | 'callbacks'>;
+
+/** One willfire prediction. `run` wires the implementation that spawns the CLI. */
+export type PredictPr = (
+  slug: string,
+  pullNumber: number,
+  inputs: PredictInputs,
+) => Promise<Prediction>;
+
 export interface MonitorParams {
   github: Octokit;
   predictClient: GithubClient;
+  predict: PredictPr;
   context: GitHubContextType;
   core: CoreModule;
-  /** Test seam. Omitted in production, where willfire builds the live sandboxed executor. */
-  executor?: JobExecutor;
   /** Resolver commands, forwarded to willfire one `--callback` each (willfire#153). */
   callbacks?: readonly string[];
 }

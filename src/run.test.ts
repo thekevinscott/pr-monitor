@@ -88,11 +88,21 @@ test('no resolve-outputs input means no callbacks', async () => {
   expect(vi.mocked(monitor).mock.calls[0][0].callbacks).toEqual([]);
 });
 
-test('prediction gets willfire’s own client, not the octokit one', async () => {
+test('reconciliation gets willfire’s own client, not the octokit one', async () => {
   process.env.GITHUB_TOKEN = 'tok';
   await run();
   expect(makeGithubClient).toHaveBeenCalledTimes(1);
   const params = vi.mocked(monitor).mock.calls[0][0];
   expect(params.predictClient).not.toBe(params.github);
+});
+
+test('prediction is wired to willfire’s CLI, not to its library API', async () => {
+  process.env.GITHUB_TOKEN = 'tok';
+  await run();
+  // An empty repo is refused by the CLI's own parser, before it reads anything,
+  // so its usage line coming back is proof the real binary was invoked.
+  await expect(vi.mocked(monitor).mock.calls[0][0].predict('', 5, {})).rejects.toThrow(
+    /usage: predict --repo owner\/name --pr N/,
+  );
 });
 
