@@ -6,9 +6,6 @@ import { predictArgs } from './predictArgs';
 
 const execFileAsync = promisify(execFile);
 
-// A prediction over a repo with many matrix legs runs well past execFile's 1MB default.
-const MAX_OUTPUT = 32 * 1024 * 1024;
-
 /**
  * Predicts by spawning willfire's CLI. The token is placed in `GH_TOKEN`, which
  * willfire reads ahead of `GITHUB_TOKEN`, so the action's configured token wins
@@ -23,7 +20,8 @@ export function makePredictor(cli: string, token: string): PredictPr {
       // the workspace the monitor was started in (#78).
       ({ stdout } = await execFileAsync(process.execPath, args, {
         env: { ...process.env, GH_TOKEN: token },
-        maxBuffer: MAX_OUTPUT,
+        // A prediction over a repo with many matrix legs runs well past execFile's 1MB default.
+        maxBuffer: 32 * 1024 * 1024,
       }));
     } catch (err) {
       const said = (err as { stderr?: string }).stderr?.trim();
