@@ -29,37 +29,28 @@ const callee = { owner: 'o', repo: 'shared', ref: 'v0', sha: 'callee-a' };
 const head = { owner: 'o', repo: 'r', ref: HEAD, sha: HEAD };
 
 function makeGithub(tagSha: string | null) {
-  const listRepoWorkflows = vi.fn(async () => ({
-    data: Object.keys(OWN).map((path) => ({ path, state: 'active' })),
-  }));
-  const rest = {
-    pulls: {
-      get: async () => ({ data: { commits: 1, base: { ref: 'main' }, head: { sha: HEAD } } }),
-      listFiles: async () => ({ data: [{ filename: 'src/index.ts' }] }),
-    },
-    repos: {
-      getCommit: async ({ ref }: { ref: string }) => {
-        if (ref === HEAD) return { data: { sha: HEAD, commit: { message: 'a normal commit' } } };
-        if (tagSha === null) throw new Error('404');
-        return { data: { sha: tagSha, commit: { message: 'the callee' } } };
-      },
-      getContent: async ({ repo, path, ref }: { repo: string; path: string; ref: string }) => {
-        if (repo === 'shared') {
-          if (path !== CALLEE_PATH || !(ref in CALLEE_AT)) throw new Error('404');
-          return { data: CALLEE_AT[ref] };
-        }
-        if (!(path in OWN)) throw new Error('404');
-        return { data: OWN[path] };
-      },
-    },
-    actions: { listRepoWorkflows },
-  };
+  const listWorkflows = vi.fn(async () =>
+    Object.keys(OWN).map((path) => ({ path, state: 'active' })),
+  );
   const github = {
-    rest,
-    paginate: async (fn: (p: unknown) => Promise<{ data: unknown }>, params: unknown) =>
-      (await fn(params)).data,
+    getPull: async () => ({ commits: 1, base: { ref: 'main' }, head: { sha: HEAD } }),
+    listPullFiles: async () => [{ filename: 'src/index.ts' }],
+    getCommit: async ({ ref }: { ref: string }) => {
+      if (ref === HEAD) return { sha: HEAD, commit: { message: 'a normal commit' } };
+      if (tagSha === null) throw new Error('404');
+      return { sha: tagSha, commit: { message: 'the callee' } };
+    },
+    getContent: async ({ repo, path, ref }: { repo: string; path: string; ref: string }) => {
+      if (repo === 'shared') {
+        if (path !== CALLEE_PATH || !(ref in CALLEE_AT)) throw new Error('404');
+        return CALLEE_AT[ref];
+      }
+      if (!(path in OWN)) throw new Error('404');
+      return OWN[path];
+    },
+    listWorkflows,
   } as unknown as PredictClient;
-  return { github, listRepoWorkflows };
+  return { github, listWorkflows };
 }
 
 function params(github: PredictClient, callbacks?: readonly string[]) {
@@ -74,9 +65,9 @@ function params(github: PredictClient, callbacks?: readonly string[]) {
 }
 
 test('every ref still names its commit -> nothing to reconcile, and no re-prediction', async () => {
-  const { github, listRepoWorkflows } = makeGithub('callee-a');
+  const { github, listWorkflows } = makeGithub('callee-a');
   expect(await reconcile(params(github))).toEqual({ kind: 'unchanged' });
-  expect(listRepoWorkflows).not.toHaveBeenCalled();
+  expect(listWorkflows).not.toHaveBeenCalled();
 });
 
 test('a ref that moved -> the checks the new commit predicts', async () => {
@@ -91,12 +82,12 @@ test('a ref that moved -> the checks the new commit predicts', async () => {
 });
 
 test('a ref that stopped resolving -> failed, naming it, without predicting', async () => {
-  const { github, listRepoWorkflows } = makeGithub(null);
+  const { github, listWorkflows } = makeGithub(null);
   const outcome = await reconcile(params(github));
   expect(outcome.kind).toBe('failed');
   if (outcome.kind !== 'failed') return;
   expect(outcome.detail).toContain('o/shared@v0 callee-a -> could not be re-resolved');
-  expect(listRepoWorkflows).not.toHaveBeenCalled();
+  expect(listWorkflows).not.toHaveBeenCalled();
 });
 
 test('a move onto a program with a hole in it -> failed, naming the hole', async () => {

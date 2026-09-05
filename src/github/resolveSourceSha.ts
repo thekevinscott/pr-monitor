@@ -10,8 +10,8 @@ export async function resolveSourceSha(
   { owner, repo, ref }: SourceRef,
 ): Promise<string | null> {
   try {
-    const { data } = await github.rest.repos.getCommit({ owner, repo, ref });
-    return data.sha;
+    const commit = await github.getCommit({ owner, repo, ref });
+    return commit.sha;
   } catch {
     return null;
   }

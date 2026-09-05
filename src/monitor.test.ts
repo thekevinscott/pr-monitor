@@ -235,10 +235,20 @@ function makeGithub(
       },
     },
   };
+  // Two surfaces over one set of handlers: `rest`/`paginate` for the octokit role, and willfire's
+  // flat, unwrapped methods for the predict role. They stopped being the same shape in 0.1.51.
   return {
     rest,
     paginate: async (fn: (p: unknown) => Promise<{ data: unknown }>, params: unknown) =>
       (await fn(params)).data,
+    getPull: async () => (await rest.pulls.get()).data,
+    listPulls: async () => [],
+    listPullFiles: async () => (await rest.pulls.listFiles()).data,
+    getCommit: async (p: { ref: string }) => (await rest.repos.getCommit(p)).data,
+    getContent: async (p: { repo: string; path: string; ref: string }) =>
+      (await rest.repos.getContent(p)).data,
+    downloadTarball: async () => (await rest.repos.downloadTarballArchive()).data,
+    listWorkflows: async () => (await rest.actions.listRepoWorkflows()).data,
   } as unknown as MonitorParams['github'];
 }
 
@@ -264,7 +274,7 @@ async function gate(scenario: Scenario): Promise<GateResult> {
   const github = makeGithub(scenario, counter);
   await monitor({
     github,
-    // The fake already answers in willfire's shape, so one object serves both roles here.
+    // One object, both surfaces; see makeGithub.
     predictClient: github as unknown as MonitorParams['predictClient'],
     context: makeContext(scenario.eventAction),
     core: { setFailed } as unknown as MonitorParams['core'],

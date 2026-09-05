@@ -5,11 +5,11 @@ import type { PredictClient } from '../types';
 const source = { owner: 'o', repo: 'shared', ref: 'v0' };
 
 function github(getCommit: () => Promise<unknown>): PredictClient {
-  return { rest: { repos: { getCommit } } } as unknown as PredictClient;
+  return { getCommit } as unknown as PredictClient;
 }
 
 test('resolves a ref to the commit it names', async () => {
-  const getCommit = vi.fn(async () => ({ data: { sha: 'callee-a' } }));
+  const getCommit = vi.fn(async () => ({ sha: 'callee-a' }));
   expect(await resolveSourceSha(github(getCommit), source)).toBe('callee-a');
   expect(getCommit).toHaveBeenCalledWith({ owner: 'o', repo: 'shared', ref: 'v0' });
 });
