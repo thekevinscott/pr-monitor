@@ -16,9 +16,10 @@ inputs:
       whose stdout is a JSON map answering job outputs the sandbox cannot
       compute (thekevinscott/willfire#153). Keys are
       `owner/repo/.github/workflows/file.yml:job-id`; two lines claiming one key
-      is fatal to the whole prediction, not merged. Resolvers run from the
-      workspace root — the directory a `run:` step starts in — with `GH_TOKEN`
-      and `GITHUB_TOKEN` deleted.
+      is fatal to the whole prediction, not merged. A line is split on
+      whitespace and spawned directly, with no shell, so quoting and pipes have
+      no meaning. Resolvers run from the workspace root — the directory a `run:`
+      step starts in — with `GH_TOKEN` and `GITHUB_TOKEN` deleted.
     required: false
     default: ''
 
