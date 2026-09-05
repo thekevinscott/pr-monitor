@@ -1,8 +1,12 @@
-# testing-conventions config — enforces the colocated-test and coverage rules on
-# the TypeScript unit suite under `src/`. See https://github.com/thekevinscott/testing-conventions
+# testing-conventions config — refines the checks the CLI runs over the TypeScript
+# unit suite under `src/`. See https://github.com/thekevinscott/testing-conventions
 #
 # The coverage rule measures the whole `src/` tree against this floor — the CLI runs
 # Vitest itself, so `vitest.config.mts` only scopes the local developer report, not
 # what CI counts. No file is exempt from anything; keep it that way.
+#
+# One-function-per-file is deliberately unconfigured. The tree already passes at the
+# CLI's default one-line threshold, so any `max_lines` written here could only loosen
+# it, and a ceiling nothing can hit is indistinguishable from having no rule.
 [typescript]
 coverage = { lines = 100, branches = 100, functions = 100, statements = 100 }
