@@ -35,6 +35,6 @@
     "@actions/github": "^6.0.1",
     "@octokit/rest": "^22.0.1",
     "tsx": "^4.22.4",
-    "willfire": "^0.1.47"
+    "willfire": "^0.1.54"
   }
 }

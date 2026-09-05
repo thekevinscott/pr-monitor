@@ -9,9 +9,9 @@ function github(shas: Record<string, string | null>) {
   const getCommit = vi.fn(async ({ repo, ref }: { repo: string; ref: string }) => {
     const sha = shas[`${repo}@${ref}`];
     if (sha == null) throw new Error('404');
-    return { data: { sha } };
+    return { sha };
   });
-  return { github: { rest: { repos: { getCommit } } } as unknown as PredictClient, getCommit };
+  return { github: { getCommit } as unknown as PredictClient, getCommit };
 }
 
 test('a ref that still names the same commit is not a move', async () => {
