@@ -66,19 +66,33 @@ That is the whole surface. There is nothing to tune.
 
 **Execution is always on.** A matrix built from another job's outputs cannot be read into check names — willfire resolves it by running that job for real at the predicted commit and capturing what it writes to `$GITHUB_OUTPUT`. The job runs in willfire's hermetic docker sandbox: no network, no token, a read-only root, nothing kept. Code that can reach nothing and keep nothing needs no per-repo permission, which is why execution is default behavior rather than configuration — measured at ~1.3s marginal on a live PR. An execution that fails leaves the matrix unresolved, which is red.
 
-**`resolve-outputs`** — for outputs the sandbox cannot compute (a job that needs tooling or network the sandbox denies), name resolver commands, one per line:
+**`resolve-outputs`** — most repos need nothing here. The sandbox already resolves a dynamic matrix by running the job that computes it, so a matrix decidable from the committed tree needs no resolver. Reach for this input only when the sandbox cannot compute an output — a job needing tooling or network it denies. A resolver is not free insurance: willfire consults the map before it executes anything, so a key your map claims is answered from the map and never executed. Wiring one defensively pre-empts the execution that would have got the answer right.
+
+For the outputs that do need it, name resolver commands, one per line:
 
 ```yaml
+- uses: actions/checkout@v5
 - uses: thekevinscott/pr-monitor@v1
   with:
     resolve-outputs: |
-      npx putitoutthere resolve
-      npx testing-conventions resolve
+      cat .github/pr-monitor-outputs.json
 ```
+
+The map itself is checked in at `.github/pr-monitor-outputs.json`:
+
+```json
+{
+  "octocat/hello-world/.github/workflows/ci.yml:targets": [
+    { "inputs": {}, "outputs": { "matrix": "[\"linux\",\"darwin\"]" } }
+  ]
+}
+```
+
+Every value is a string, because `$GITHUB_OUTPUT` carries strings — a matrix is the JSON text the job would have written, not a nested array.
 
 Each line is trimmed, blank lines are dropped, and each survivor is forwarded to willfire as one `--callback "<command>"` — a command whose stdout is a JSON map answering job outputs ahead of execution ([willfire#153](https://github.com/thekevinscott/willfire/issues/153)). willfire ships that flag as of 0.1.47, so the input takes effect.
 
-Each command runs from the workspace root — the same directory a `run:` step starts in — so write it against your repo the way you would write any other step.
+A resolver line is not a `run:` step. willfire splits it on whitespace and spawns it directly with no shell, so quotes, pipes, redirection, `&&`, globs, and `$VAR` are literal argv text, and a line whose first word starts with `-` is refused outright. Anything needing a shell belongs in a script the line invokes. The command runs from the workspace root, so relative paths resolve against your repo — but the action does not check your repo out, so a resolver that reads a file needs `actions/checkout` in the job ahead of it.
 
 The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qualified, no ref or sha, so one map answers wherever the workflow is reached from. Each key holds a list of `{ inputs, outputs }` entries, and an entry matches when every input it names equals the invocation's. Four parts of that contract bite:
 
