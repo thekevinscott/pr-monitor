@@ -10,8 +10,10 @@ import { resolvePullNumber } from './github/resolvePullNumber';
 import { resolveSelfWorkflowPath } from './github/resolveSelfWorkflowPath';
 import { compareObserved } from './checks/compareObserved';
 import { describeDivergence } from './checks/describeDivergence';
+import { isStalled } from './checks/isStalled';
 import { expectedChecks } from './predict/expectedChecks';
 import { reconcile } from './predict/reconcile';
+import { formatNeverStarted } from './messages/formatNeverStarted';
 import { formatProgressLog } from './messages/formatProgressLog';
 import { formatSources } from './messages/formatSources';
 import { formatUnresolvedFailure } from './messages/formatUnresolvedFailure';
@@ -20,6 +22,9 @@ import { reportFinalResult } from './messages/reportFinalResult';
 const POLL_INTERVAL_MS = 30_000;
 // Rate-limited reads don't cost quota to retry, so a fixed wait is cheap and needs no header math.
 const RATE_LIMIT_RETRY_MS = 60_000;
+// GitHub creates every run an event matches in the same second, so an absent run is not a slow
+// one — this only covers the API being briefly inconsistent about a run it already created.
+const STALL_GRACE_MS = 60_000;
 
 export async function monitor({
   github,
@@ -67,6 +72,7 @@ export async function monitor({
   console.log(`Expected runs: ${JSON.stringify(expected.workflows)}`);
 
   let reconciled = false;
+  let stalledPolls = 0;
 
   while (true) {
     let runs: WorkflowRunSummary[];
@@ -119,6 +125,16 @@ export async function monitor({
         setFailed: (msg) => core.setFailed(msg),
       });
       return;
+    }
+
+    if (isStalled(comparison)) {
+      if (stalledPolls * POLL_INTERVAL_MS >= STALL_GRACE_MS) {
+        core.setFailed(formatNeverStarted(comparison.missing, STALL_GRACE_MS));
+        return;
+      }
+      stalledPolls++;
+    } else {
+      stalledPolls = 0;
     }
 
     console.log(formatProgressLog(comparison));

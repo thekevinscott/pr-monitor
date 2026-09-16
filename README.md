@@ -12,6 +12,7 @@ It no longer guesses. [willfire](https://github.com/thekevinscott/willfire) eval
 
 - Stay yellow until every predicted run exists and has finished
 - Go red if a predicted run finishes badly
+- Go red if a predicted run never starts — GitHub created no run for it, so nothing observed later can settle the verdict
 - Go red if a predicted check name never reports — a renamed job, a deleted one, or a matrix that stopped expanding to a combination
 - Go red if a check name reports that nothing predicted — the prediction and reality disagree, so the gate cannot vouch for the check set
 
@@ -53,7 +54,7 @@ Keep this in its own workflow with no other jobs — the action excludes its own
 
 **`permissions`** — if you set an explicit block, it needs all three of `actions: read`, `contents: read`, and `pull-requests: read`. The last one is new: willfire reads the PR and its changed files.
 
-**`timeout-minutes`** — the action has no timeout of its own. This is the backstop. If a predicted run never dispatches, the gate waits until the job is killed.
+**`timeout-minutes`** — the action has no timeout of its own. This is the backstop for a run that is slow, not for one that never starts. A predicted run GitHub never creates goes red about a minute after the last other predicted run finishes, so this only catches a lane that genuinely runs long.
 
 ## Inputs
 
@@ -113,8 +114,9 @@ The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qual
 5. Logs the commits the prediction was read from — the PR head, and every repo a `uses:` reached
 6. Fails immediately on a run or a check name outside the expected set
 7. Waits while a predicted run is missing or unfinished — a check name has no existence before the run that creates its job
-8. Fails on a predicted check name that never reported once every run has finished
-9. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
+8. Fails on a predicted run that never started, once every other predicted run has finished and 60 seconds have passed
+9. Fails on a predicted check name that never reported once every run has finished
+10. Passes when every run concluded `success`, `skipped`, `neutral`, or `stale`; fails otherwise
 
 A `[skip ci]` commit predicts nothing, so nothing is required and the gate passes.
 
@@ -126,6 +128,10 @@ Runs still drive the waiting and the pass/fail conclusion. A run stays non-termi
 
 **Unresolvable check names.** A matrix computed at runtime from another job's output cannot be expanded statically, so willfire returns the job with no name. The gate fails and names it. That is deliberate: with a hole in the predicted set, a name that never reported is indistinguishable from a leg that was never predicted, and an extra name from a leg that was — so the gate cannot honour its contract. Nothing observed later settles it, so it fails up front rather than exempting the workflow and hiding real divergence inside it. In practice this arises when willfire's sandbox cannot run the job that computes the matrix — the execution failed, or the job needs something the sandbox denies.
 
+**A run that never starts.** GitHub creates every run an event matches in the same second — `run_started_at` equals `created_at`, and the variance between lanes is in how long they take to finish, not in how long they take to appear. So a predicted run still absent once every other predicted run has finished is not late. The gate waits 60 seconds past that point for the API to stop disagreeing with itself about a run it already created, then goes red naming the workflow. Another run going in progress restarts that clock.
+
+Waiting longer buys nothing: no run exists, so no check name from it can ever report. The verdict is ambiguous in one direction — it can mean the repo's workflow is not receiving the events its triggers ask for, or it can mean the prediction should not have expected it to dispatch — and both are a defect worth a human look, which is why there is no input to downgrade it to a warning.
+
 **A callee tag that moved.** A `uses:` naming a moving tag — `owner/repo/.github/workflows/x.yml@v0` — can resolve to one commit when GitHub schedules the run and another when the gate predicts. The observed checks then come from one program and the predicted checks from another, with nothing wrong on either side.
 
 So the gate records which commits each prediction was read from, and on divergence re-resolves those refs **once**. If any moved, it predicts again at the new commits and judges the same observation against the fresh expectation; the move is named in the log. If nothing moved, the divergence is real and stands — and no second prediction runs, so jobs are never executed twice to confirm a tag that held still. A move that still does not explain the observation is red, and so is a ref that stopped resolving: the gate will not vouch for a check set whose commits it cannot name.
@@ -135,7 +141,7 @@ So the gate records which commits each prediction was read from, and on divergen
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.
 - **Dynamic matrices.** A `matrix:` built from another job's output cannot be expanded ahead of time. willfire runs the job that computes it in its sandbox; when that execution fails, the gate fails naming the job.
 - **Event actions willfire does not model.** The gate hands willfire the real `pull_request` action when it is `opened`, `synchronize`, or `reopened`. Run it on any other type (`labeled`, `ready_for_review`, …) and willfire falls back to inferring the action from the PR's commit count ([willfire#2](https://github.com/thekevinscott/willfire/issues/2)), which can flip a dispatch verdict on workflows that narrow `types:`.
-- **Over-prediction hangs.** A workflow predicted to dispatch that never does leaves the gate waiting for `timeout-minutes`. Reconciliation does not help here: it runs on divergence, and waiting is not divergence.
+- **Over-prediction is red, not diagnosed.** A workflow predicted to dispatch that never does fails the gate, naming the workflow, but the gate cannot tell you which side is wrong. Reconciliation does not narrow it: that runs on divergence, and an absent run is not divergence.
 - **Reconciliation is a single attempt.** One re-resolve and at most one re-prediction per gate run. A tag that moves twice mid-flight, or moves after the reconciliation, stays red — repeating would be a search for a prediction that agrees rather than a gate on one.
 
 ## Upgrading from the check-count gate
