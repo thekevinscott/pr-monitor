@@ -35,6 +35,7 @@ const GATED = '.github/workflows/gated.yml';
 const PINNED = '.github/workflows/pinned.yml';
 const SCAN = '.github/workflows/scan.yml';
 const HEAD_SHA = 'head-sha';
+const POLL_CAP = 50;
 
 const BASE_REF = 'main';
 const BASE_SHA = 'base-sha';
@@ -149,6 +150,9 @@ function makeGithub(
   const refShas = scenario.refShas ?? ['callee-a'];
   let refReads = 0;
   const list = async () => {
+    // The last `polls` entry repeats forever, so a gate that never terminates would spin
+    // here rather than fail. Cap it: not terminating is the bug class under test.
+    if (counter.polls >= POLL_CAP) throw new Error('poll cap exceeded; the gate did not settle');
     const runs = scenario.polls[Math.min(counter.polls, scenario.polls.length - 1)];
     counter.polls++;
     return { data: { total_count: runs.length, workflow_runs: runs } };
@@ -499,6 +503,48 @@ describe('predicted check set', () => {
       core: { setFailed } as unknown as MonitorParams['core'],
     });
     expect(setFailed.mock.calls[0]?.[0]).toMatch(/pull request/);
+  });
+});
+
+describe('a predicted run GitHub never starts', () => {
+  test('-> red naming it, instead of polling until the job is killed', async () => {
+    const { failures } = await gate({ polls: [[self]] });
+    expect(failures[0]).toMatch(/test\.yml/);
+    expect(failures[0]).toMatch(/never started/);
+  });
+
+  test('the verdict waits out the grace period, then stops polling', async () => {
+    const { polls } = await gate({ polls: [[self]] });
+    expect(polls).toBe(3);
+  });
+
+  test('a run that registers inside the grace period is not a stall', async () => {
+    const { failures, polls } = await gate({ polls: [[self], [self], [self, run(TESTS)]] });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(3);
+  });
+
+  test('another run still going restarts the grace', async () => {
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, TESTS, CONVENTIONS],
+      polls: [
+        [self],
+        [self, run(TESTS, { status: 'in_progress', conclusion: null })],
+        [self, run(TESTS)],
+      ],
+    });
+    expect(failures[0]).toMatch(/conventions\.yml/);
+    expect(failures[0]).not.toMatch(/test\.yml/);
+    expect(polls).toBe(5);
+  });
+
+  test('every predicted run absent -> red naming all of them', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, TESTS, CONVENTIONS],
+      polls: [[self]],
+    });
+    expect(failures[0]).toMatch(/conventions\.yml/);
+    expect(failures[0]).toMatch(/test\.yml/);
   });
 });
 
