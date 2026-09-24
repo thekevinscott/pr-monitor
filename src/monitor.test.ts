@@ -253,6 +253,7 @@ function makeGithub(
       (await rest.repos.getContent(p)).data,
     downloadTarball: async () => (await rest.repos.downloadTarballArchive()).data,
     listWorkflows: async () => (await rest.actions.listRepoWorkflows()).data,
+    listWorkflowFiles: async () => [],
   } as unknown as MonitorParams['github'];
 }
 
