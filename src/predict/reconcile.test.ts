@@ -49,6 +49,7 @@ function makeGithub(tagSha: string | null) {
       return OWN[path];
     },
     listWorkflows,
+    listWorkflowFiles: async () => [],
   } as unknown as PredictClient;
   return { github, listWorkflows };
 }
