@@ -463,6 +463,21 @@ describe('predicted check set', () => {
     expect(failures).toEqual([]);
   });
 
+  test('a pull_request_target run satisfies the check it reports', async () => {
+    const { failures, polls } = await gate({
+      polls: [[self, run(TESTS, { event: 'pull_request_target' })]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+  });
+
+  test('an unpredicted pull_request_target run -> red naming it', async () => {
+    const { failures } = await gate({
+      polls: [[self, run(TESTS), run(CONVENTIONS, { id: 78, event: 'pull_request_target' })]],
+    });
+    expect(failures[0]).toMatch(/conventions\.yml/);
+  });
+
   test('polls the PR head sha, not the merge sha', async () => {
     let usedSha = '';
     const github = makeGithub({ polls: [[self, run(TESTS)]] });
