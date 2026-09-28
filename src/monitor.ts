@@ -78,8 +78,12 @@ export async function monitor({
     let runs: WorkflowRunSummary[];
     let jobs: WorkflowJobSummary[];
     try {
+      // Both events attach to the PR. A `push` run shares the head SHA without attaching, and
+      // `merge_group` runs carry the queue's own commit, so neither reaches the comparison.
       runs = (await fetchWorkflowRuns(github, owner, repo, sha)).filter(
-        (r) => r.event === 'pull_request' && r.path !== selfPath,
+        (r) =>
+          (r.event === 'pull_request' || r.event === 'pull_request_target') &&
+          r.path !== selfPath,
       );
       jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
     } catch (err) {

@@ -110,7 +110,7 @@ The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qual
    - **check names** — every entry willfire can resolve to a name. Matrix legs expand, `name:` overrides apply, reusable-workflow callers prefix their children
    - **workflow files** — every workflow that will dispatch. Kept alongside the names because a run can conclude before it creates a single job: a `startup_failure` creates none, and a comparison made only of names cannot see it
    - **unresolvable entries** — a job willfire can see but cannot name. Fails immediately; see below
-4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` runs, and reads each surviving run's jobs
+4. Polls `listWorkflowRunsForRepo` for the PR head commit every 5 seconds, keeping only `pull_request` and `pull_request_target` runs, and reads each surviving run's jobs
 5. Logs the commits the prediction was read from — the PR head, and every repo a `uses:` reached
 6. Fails immediately on a run or a check name outside the expected set
 7. Waits while a predicted run is missing or unfinished — a check name has no existence before the run that creates its job
