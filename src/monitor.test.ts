@@ -38,6 +38,8 @@ const HEAD_SHA = 'head-sha';
 const POLL_CAP = 50;
 
 const BASE_REF = 'main';
+const HEAD_REF = 'topic';
+const PR_AUTHOR = 'someone';
 const BASE_SHA = 'base-sha';
 const MERGE_SHA = 'merge-sha';
 
@@ -162,8 +164,10 @@ function makeGithub(
       get: async () => ({
         data: {
           commits: 1,
+          draft: false,
+          user: { login: PR_AUTHOR },
           base: { ref: BASE_REF },
-          head: { sha: HEAD_SHA },
+          head: { sha: HEAD_SHA, ref: HEAD_REF, repo: { full_name: 'o/r' } },
           merge_commit_sha: MERGE_SHA,
         },
       }),
