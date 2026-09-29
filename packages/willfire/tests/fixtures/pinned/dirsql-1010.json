@@ -1,0 +1,20 @@
+{
+  "repo": "thekevinscott/dirsql",
+  "pr": 1010,
+  "commits": {
+    "head": "3e442c3c29a099a0b717ec66825488a3832a7128",
+    "merge": "9b234735be19edfa395583683b71a606f997b96c"
+  },
+  "dispatched": [
+    {
+      "workflow": ".github/workflows/docs-ci.yml",
+      "name": "build",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/pr-monitor.yml",
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ]
+}

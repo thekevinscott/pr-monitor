@@ -11,3 +11,9 @@ Do not merge PRs. Open the PR, get CI green, and stop — merging is Kevin's cal
 `.github/` holds workflow YAML and Actions config, nothing else. No `.sh`, no `.mjs`, no scripts of any kind, and no logic inside a `run:` block. A `run:` block is one invocation — branching, loops, `case` dispatch, command substitution, pipelines, and `grep`/`sed` munging all belong in a tested package in this repo's own language, invoked through a declared `package.json` script. Toolchain installs are the exemption: checkout and pnpm/node setup are glue a consumer step would carry too.
 
 Pass data into a run script through the step's `env:`, never inline `${{ }}`. Inline interpolation is substituted before the shell ever sees the script, which makes it an injection point rather than a variable.
+
+This is a pnpm workspace. The root is the Action; `packages/willfire` is the
+prediction engine it imports from source through `tsx`, with its own
+`AGENTS.md`, eslint config, tsconfig and Vitest major — run its suites with
+`pnpm --filter willfire run <script>`, never from the root. It is private and
+never published.

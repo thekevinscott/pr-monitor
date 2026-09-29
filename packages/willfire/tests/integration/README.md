@@ -1,0 +1,115 @@
+# Integration tests
+
+Recorded responses in, the check list GitHub dispatched out. No network.
+
+## Layout
+
+One directory per case: `fixtures/<owner>/<repo>/<pr>/`. Its `README.md` says
+why the case is here, and a subdirectory per covered integration case (`J1`,
+`R1`, …) holds that case's README. Those READMEs are the record of what is
+covered.
+
+## Fixtures
+
+A capture is two recordings taken from GitHub in one sitting, landed in
+`fixtures/<owner>/<repo>/<pr>/`:
+
+- `calls.json` — every `GithubClient` call a live prediction made, verbatim.
+- `fixture.json` — the check names GitHub actually dispatched: a bare JSON
+  array of strings, deduplicated and sorted. Ground truth, read from the
+  Actions API, never from willfire's own answer. Same format as
+  `tests/e2e/responses/`; both suites load it through `tests/getResponse.ts`.
+
+```json
+["CI Gate", "conventions / Static checks (typescript)"]
+```
+
+JSON has no `ArrayBuffer`, so a binary result (`downloadTarball`) is recorded
+in `calls.json` as `{ "$binary": "tarball-0.bin" }` with the bytes in a
+sibling file; `getCalls` reads the reference back into an `ArrayBuffer` at
+replay, and a missing sibling fails loudly.
+
+A case recorded under a non-default event action (`ready_for_review`,
+`labeled`, …) declares it in a sibling `action.json` holding a bare JSON
+string, e.g. `"ready_for_review"`; replay passes it as the prediction's
+`action`. Absent, the prediction falls back to its own default.
+
+Discovery keys on `fixture.json`, so a directory holding only READMEs is
+inert until the capture lands.
+
+Replay substitutes only the `GithubClient`: recorded tarballs stand in for
+downloaded repos, and a step the prediction must execute runs in the real
+docker sandbox.
+
+## Capturing a fixture
+
+### Pick the pull request
+
+It is frozen for good: the case is that pull request, not the repo's newest.
+Wait until every run on its head commit has concluded — a capture taken
+mid-run records a short list and pins it.
+
+### Record the calls
+
+Wrap the real client and keep what goes through it.
+
+```ts
+const real = makeGithubClient();
+const calls: RecordedCall[] = [];
+const recording = new Proxy(real, {
+  get: (t, method: string) => async (params: never) => {
+    let result: unknown;
+    try {
+      result = await (t as Record<string, (p: never) => Promise<unknown>>)[method](params);
+    } catch (error) {
+      const { status, message } = error as { status?: unknown; message?: unknown };
+      if (typeof status !== "number") throw error;
+      calls.push({ method, params, result: { $error: { status, message: String(message) } } });
+      throw error;
+    }
+    calls.push({ method, params, result });
+    return result;
+  },
+});
+await predict(recording, `${owner}/${repo}`, pr);
+```
+
+Record `params` exactly as passed. `replayClient` keys on the method plus its
+params sorted by key, so property order cannot decide whether a lookup hits;
+an unrecorded call throws rather than answering a default. A call the live
+client rejected (a 404 for a file absent at that ref) is recorded as
+`{ "$error": { status, message } }` and replayed as a rejection with `.status`
+set. Before writing `calls.json`, swap each `ArrayBuffer` result for a
+`$binary` reference and write the bytes beside it.
+
+### Read the dispatched list
+
+Runs hang off the pull request's **head** commit, not the test merge commit
+willfire reads workflow files from. Enumerate every run for the head SHA — a
+bare `event=pull_request` filter drops `pull_request_target` runs — then keep
+by event. willfire predicts the PR-attached check set: `pull_request` and
+`pull_request_target` runs are in; `push` runs on the PR branch do not attach
+to the PR and are out. `merge_group` runs land on the queue's own commit,
+never the head SHA.
+
+```sh
+gh api "repos/$OWNER/$REPO/actions/runs?head_sha=$HEAD_SHA" \
+  --paginate \
+  --jq '.workflow_runs[] | select(.event == "pull_request" or .event == "pull_request_target") | .id'
+gh api "repos/$OWNER/$REPO/actions/runs/$RUN_ID/jobs" \
+  --paginate --jq '.jobs[].name'
+```
+
+`fixture.json` is those job names, deduplicated and sorted.
+
+One head SHA can carry more than one dispatch: a draft PR marked ready fires
+`opened` and then `ready_for_review` on the same commit. A prediction answers
+one event, so the fixture is the runs that event produced, not the union.
+The runs API reports no activity type, so partition by workflow `.path` —
+each file's `types:` says which action could have dispatched it — and
+corroborate with `created_at`. Name the action in `action.json`.
+
+### Re-record, never edit
+
+A hand-edited fixture asserts what someone believed GitHub would answer. Re-run
+the capture and commit what came back.

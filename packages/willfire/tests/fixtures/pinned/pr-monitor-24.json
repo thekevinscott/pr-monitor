@@ -1,0 +1,65 @@
+{
+  "repo": "thekevinscott/pr-monitor",
+  "pr": 24,
+  "commits": {
+    "head": "33c2e461c24fe43c82cee341260cc11adf910190",
+    "merge": "bd34710b23a81c40c80680d45ca0bd6e76aeba86"
+  },
+  "dispatched": [
+    {
+      "workflow": ".github/workflows/pr-monitor.yml",
+      "name": "CI Gate",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/test.yml",
+      "name": "Lint",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/test.yml",
+      "name": "Test (100% coverage)",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/test.yml",
+      "name": "Typecheck",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Detect requested languages with sources",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / E2E attestation freshness (e2e verify)",
+      "conclusion": "skipped"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Packaging (no test files in the built artifact)",
+      "conclusion": "skipped"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Static checks (typescript)",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Unit mutation — changed lines (${{ matrix.language }})",
+      "conclusion": "skipped"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Unit-test coverage — changed lines (typescript)",
+      "conclusion": "success"
+    },
+    {
+      "workflow": ".github/workflows/testing-conventions.yml",
+      "name": "conventions / Unit-test coverage (typescript)",
+      "conclusion": "success"
+    }
+  ]
+}
