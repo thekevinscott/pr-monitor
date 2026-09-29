@@ -2,7 +2,6 @@
   "name": "willfire",
   "version": "0.1.0",
   "license": "MIT",
-  "packageManager": "pnpm@10.33.0",
   "author": "Kevin Scott <me@thekevinscott.com>",
   "repository": {
     "type": "git",
@@ -20,6 +19,7 @@
   "bin": {
     "willfire": "./src/cli.ts"
   },
+  "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=20"
   },
