@@ -33,7 +33,13 @@ function makeGithub(tagSha: string | null) {
     Object.keys(OWN).map((path) => ({ path, state: 'active' })),
   );
   const github = {
-    getPull: async () => ({ commits: 1, base: { ref: 'main' }, head: { sha: HEAD } }),
+    getPull: async () => ({
+      commits: 1,
+      draft: false,
+      user: { login: 'someone' },
+      base: { ref: 'main' },
+      head: { sha: HEAD, ref: 'topic', repo: { full_name: 'o/r' } },
+    }),
     listPullFiles: async () => [{ filename: 'src/index.ts' }],
     getCommit: async ({ ref }: { ref: string }) => {
       if (ref === HEAD) return { sha: HEAD, commit: { message: 'a normal commit' } };
