@@ -36,13 +36,30 @@ describe("jobDisplayName", () => {
     expect(d).toEqual({ name: "custom (linux)", resolved: true });
   });
 
+  it("trims a name whose expression read an axis the combination lacks", () => {
+    // Measured on probe PR #372 over `a: [x, y]`, `include: [{a: x, label: L}]`:
+    // run 36431257532 dispatched `build L` and `build`, run 36431257588
+    // dispatched `L build` and `build`. No edge space either side.
+    const combo = { values: { a: "y" }, displayKeys: ["a"] };
+    expect(jobDisplayName("m", { name: "build ${{ matrix.label }}" }, combo)).toEqual({
+      name: "build",
+      resolved: true,
+    });
+    expect(jobDisplayName("m", { name: "${{ matrix.label }} build" }, combo)).toEqual({
+      name: "build",
+      resolved: true,
+    });
+  });
+
   it("marks a name it cannot render as unresolved", () => {
     const d = jobDisplayName("a", { name: "x ${{ inputs.f }}" }, null);
     expect(d).toEqual({ name: "x ${{ inputs.f }}", resolved: false });
   });
 
-  it("caps the rendered name at GitHub's 100-character display limit", () => {
+  it("leaves a name past the 100-character display limit uncut", () => {
+    // Capping here would cut a reusable caller's segment too, which GitHub
+    // does not do (probe run 36429562958).
     const d = jobDisplayName("a", { name: "y".repeat(120) }, null);
-    expect(d).toEqual({ name: `${"y".repeat(97)}...`, resolved: true });
+    expect(d).toEqual({ name: "y".repeat(120), resolved: true });
   });
 });
