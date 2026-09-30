@@ -13,5 +13,8 @@ new one: the old path satisfies a `paths:` that names it, and it escapes a
 before this (#367).
 
 Also dispatched: `CI Gate` (pr-monitor.yml) and `prt-noop`
-(`pull_request_target`). `prt-noop` is absent from the prediction until #356
-lands.
+(`pull_request_target`).
+
+`getCommit` for `main` and the target pass's calls were recorded on
+2026-09-30, after the case first needed them. `main` had moved by then, but
+its `prt-noop.yml` is the same blob (`b043948`) as at capture time.
