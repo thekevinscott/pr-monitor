@@ -44,6 +44,7 @@ describe("root barrel", () => {
     // pr-monitor imports Entry, JobEntry, WorkflowEntry and Prediction from
     // here; the runtime names below are the rest of the contract.
     expect(Object.keys(barrel).sort()).toEqual([
+      "ReusableDepthError",
       "evalIf",
       "expandMatrix",
       "expandWorkflowJobs",
@@ -91,6 +92,7 @@ describe("root barrel", () => {
         mergeable: null,
         commits: 1,
         draft: false,
+        labels: [{ name: "skip-ci" }],
         head: { ref: "topic", sha: "abc", repo: { full_name: "o/r" } },
         user: { login: "octocat" },
       }),
@@ -115,6 +117,7 @@ describe("root barrel", () => {
       mergeable: null,
       commits: 1,
       draft: false,
+      labels: [{ name: "skip-ci" }],
       head: { ref: "topic", sha: "abc", repo: { full_name: "o/r" } },
       user: { login: "octocat" },
     });
@@ -167,6 +170,7 @@ describe("root barrel", () => {
         mergeable: boolean | null;
         commits: number;
         draft: boolean;
+        labels: { name: string }[];
         head: { ref: string; sha: string; repo: { full_name: string } | null };
         user: { login: string };
       }>;
