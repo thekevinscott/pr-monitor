@@ -1,6 +1,7 @@
 import type { Scope } from "../expr/val.js";
 import type { Workflow } from "../types.js";
 import { evalIf } from "./evalIf.js";
+import { jobScope } from "./jobScope.js";
 import { needsSettled } from "./needsSettled.js";
 
 /** A job's settled verdict, plus the `needs:` ids it was derived from. */
@@ -51,7 +52,7 @@ export function resolveStatuses(
     // mutation gate's per-test coverage never attributes to a test.
     const guarded = /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
     const settled = needsSettled(needs, Object.fromEntries(needs.map((n, i) => [n, upstream[i]])));
-    let status = evalIf(job.if, { ...scoped, needsSettled: settled });
+    let status = evalIf(job.if, { ...jobScope(job, scoped), needsSettled: settled });
     let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
     if (!guarded && status !== "skipped") {
       needs.forEach((n, i) => {

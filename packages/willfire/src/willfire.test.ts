@@ -117,6 +117,8 @@ interface Fixture {
   variables?: { name: string; value: string }[];
   /** Status `listRepoVariables` throws instead of answering. */
   variablesError?: number;
+  /** `base.repo.owner.type`; a `User` owner has no org-level variables. */
+  ownerType?: string;
   /** The PR's author login. */
   author?: string;
   /** The PR's head branch name. */
@@ -174,7 +176,13 @@ function fakeGithub(f: Fixture): GithubClient {
       }
       return {
         commits: f.commits ?? 1,
-        base: { ref: f.baseRef ?? "main", repo: { default_branch: f.defaultBranch ?? "main" } },
+        base: {
+          ref: f.baseRef ?? "main",
+          repo: {
+            default_branch: f.defaultBranch ?? "main",
+            owner: { type: f.ownerType ?? "Organization" },
+          },
+        },
         head: {
           sha: HEAD_SHA,
           ref: f.headRef ?? "topic",
@@ -892,9 +900,17 @@ describe("willfire", () => {
     ["[no ci]", "chore: docs [NO CI]"],
     ["[skip actions]", "chore: docs [skip actions]"],
     ["[actions skip]", "chore: docs [actions skip]"],
-  ])("suppresses everything on a %s head commit", async (_label, message) => {
+  ])("suppresses the pull_request run on a %s head commit", async (_label, message) => {
     expect(await run("on: pull_request\njobs:\n  a: {}\n", { message })).toEqual({
-      entries: [],
+      entries: [
+        {
+          workflow: WF,
+          job: "*",
+          checkName: null,
+          status: "no-dispatch",
+          reason: "head commit message contains a skip instruction",
+        },
+      ],
       checkNames: [],
       skip: "head commit message contains a skip instruction",
       // Even a suppressed prediction names the commit it read to decide that.
@@ -902,10 +918,18 @@ describe("willfire", () => {
     });
   });
 
-  it("suppresses everything on a skip-checks trailer", async () => {
+  it("suppresses the pull_request run on a skip-checks trailer", async () => {
     const message = "feat: thing\n\n\nskip-checks: true";
     expect(await run("on: pull_request\njobs:\n  a: {}\n", { message })).toEqual({
-      entries: [],
+      entries: [
+        {
+          workflow: WF,
+          job: "*",
+          checkName: null,
+          status: "no-dispatch",
+          reason: "head commit message contains a skip instruction",
+        },
+      ],
       checkNames: [],
       skip: "head commit message contains a skip instruction",
       // Even a suppressed prediction names the commit it read to decide that.
@@ -1010,14 +1034,11 @@ describe("the commit workflow files are read at", () => {
     ]);
   });
 
-  it("claims no merge commit on the skip path, which never reads one", async () => {
+  it("reads the workflows at the merge commit on the skip path too", async () => {
     const f = { mergeSha: MERGE_SHA, message: "chore: docs [skip ci]" };
-    expect(await run(AT_HEAD, f)).toEqual({
-      entries: [],
-      checkNames: [],
-      skip: "head commit message contains a skip instruction",
-      sources: [HEAD_SOURCE],
-    });
+    const { checkNames, sources } = await run(AT_HEAD, f);
+    expect(checkNames).toEqual([]);
+    expect(sources).toEqual([HEAD_SOURCE, MERGE_SOURCE]);
   });
 
   it("says which commit a missing workflow file was missing from", async () => {
@@ -1546,6 +1567,30 @@ describe("repo variables as a prediction-wide fact (#323)", () => {
     ]);
   });
 
+  it("skips on an unlisted name in a user-owned repo, which has no org level", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variables: [], ownerType: "User" }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "skipped"],
+      ["base", "run"],
+    ]);
+  });
+
+  it("stays unknown in a user-owned repo when the listing cannot be read", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variablesError: 403, ownerType: "User" }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "unknown"],
+      ["base", "run"],
+    ]);
+  });
+
   it.each([403, 404])("stays unknown when the listing answers %d", async (status) => {
     const { entries } = await willfire(
       fakeGithub({ contents: { [WF]: GUARDED }, variablesError: status }),
@@ -1780,6 +1825,17 @@ describe("pull_request_target workflows", () => {
       { workflow: WF, job: "label", checkName: "label", status: "run", reason: "trigger matched" },
     ]);
     expect(checkNames).toEqual(["label"]);
+  });
+
+  it("still predicts a pull_request_target workflow under a skip instruction", async () => {
+    // Probe #380 and #394: a skip instruction left the target run standing.
+    const { checkNames, skip } = await run(TARGET, {
+      ...resolved,
+      defaultContents: { [WF]: TARGET },
+      message: "chore: docs [skip ci]",
+    });
+    expect(checkNames).toEqual(["label"]);
+    expect(skip).toBe("head commit message contains a skip instruction");
   });
 
   it("reads the default branch copy of the workflow, not the PR's", async () => {
