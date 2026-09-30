@@ -14,6 +14,7 @@ import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
 import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
 import { isStartupFailure } from "./jobs/isStartupFailure.js";
+import { rejectedIfContext } from "./jobs/rejectedIfContext.js";
 import { emptyMatrixAxis } from "./matrix/emptyMatrixAxis.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
@@ -263,6 +264,13 @@ export async function willfire(
     jobExecutor: JobExecutor | undefined,
     reason: string,
   ): Promise<DraftEntry[]> => {
+    // A file GitHub refuses at startup is refused whole: the failure hangs off
+    // the push that introduced it, never the pull request, so no job in it is
+    // named. It is a property of the file, so it settles before expansion.
+    const rejected = rejectedIfContext(wf);
+    if (rejected !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: rejected }];
+    }
     // A literal empty matrix axis is rejected before any job is scheduled, so
     // no job in the file gets a check — the sibling included. The failure
     // hangs off the push and there is no `pull_request` run for the file at
