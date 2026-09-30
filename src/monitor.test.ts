@@ -165,6 +165,7 @@ function makeGithub(
         data: {
           commits: 1,
           draft: false,
+          labels: [],
           user: { login: PR_AUTHOR },
           base: { ref: BASE_REF },
           head: { sha: HEAD_SHA, ref: HEAD_REF, repo: { full_name: 'o/r' } },
