@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790803849,
+  "exit_code": 0,
+  "commit": "9e195104c9e6b67e6a80287f328ddebd87442c4c",
+  "branch": "migrate/capture/coerce-383"
+}
