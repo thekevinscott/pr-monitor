@@ -44,6 +44,7 @@ describe("root barrel", () => {
     // pr-monitor imports Entry, JobEntry, WorkflowEntry and Prediction from
     // here; the runtime names below are the rest of the contract.
     expect(Object.keys(barrel).sort()).toEqual([
+      "ReusableDepthError",
       "evalIf",
       "expandMatrix",
       "expandWorkflowJobs",
@@ -86,7 +87,7 @@ describe("root barrel", () => {
   it("pins GithubClient's ten methods — #174 changed this shape behind an unchanged name", async () => {
     const client: GithubClient = {
       getPull: async () => ({
-        base: { ref: "main" },
+        base: { ref: "main", repo: { default_branch: "main" } },
         merge_commit_sha: null,
         mergeable: null,
         commits: 1,
@@ -110,7 +111,7 @@ describe("root barrel", () => {
     // value pins the return shape. `getCommit` is the one pr-monitor's
     // resolveSourceSha.ts actually calls, and the one #174 broke.
     await expect(client.getPull({ owner: "o", repo: "r", pull_number: 1 })).resolves.toEqual({
-      base: { ref: "main" },
+      base: { ref: "main", repo: { default_branch: "main" } },
       merge_commit_sha: null,
       mergeable: null,
       commits: 1,
@@ -162,7 +163,7 @@ describe("root barrel", () => {
       getPull(
         params: Repo & { pull_number: number },
       ): Promise<{
-        base: { ref: string };
+        base: { ref: string; repo: { default_branch: string } };
         merge_commit_sha: string | null;
         mergeable: boolean | null;
         commits: number;

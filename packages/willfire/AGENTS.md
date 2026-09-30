@@ -49,6 +49,9 @@ not decide. Never guess a name to make an entry look decided; never emit an
 
 The e2e suite does not run in CI. A PR touching `src/**` lands a receipt in
 `e2e-attestations/` recording the command actually run and its real exit code.
+**Running it is the agent's job, never Kevin's** — do not ask, do not hand back
+a resume command and stop. A PR left red on the attestation gate is unfinished
+work, not a handoff.
 `tests/integration/attestations.test.ts` fails the suite on a nonzero one. Run
 it unpiped: `| tail` makes the shell report the pipe's status, and a receipt
 recording `exit_code: 0` for a run that printed `3 failed` defeats that check
@@ -66,6 +69,10 @@ receipt — an exclusion with no open issue is how they accumulate (#181).
 
 - Every PR is armed for auto-merge as soon as it is open, fixture and test PRs
   included: `gh pr merge <n> --auto --squash`. Arm it; don't ask.
+- **Except a PR that removes or edits an existing integration or e2e test** —
+  the test bodies, their fixtures, or the gates that run them. Those need
+  Kevin's explicit per-PR approval before merging or arming. Adding a test is
+  not an edit. See the root `AGENTS.md`; that rule governs this package too.
 - A scratch probe PR is the exception: never merged, never armed. It is closed
   unmerged, and the closed PR is the permanent record.
 - Every PR touching `src/**` carries an e2e attestation (see above). No
