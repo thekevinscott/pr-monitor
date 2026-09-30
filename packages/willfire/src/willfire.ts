@@ -12,7 +12,7 @@ import { jobName } from "./entries/jobName.js";
 import { errorStatus } from "./predict/errorStatus.js";
 import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
-import { expandJobs } from "./jobs/expandJobs.js";
+import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
 import { isStartupFailure } from "./jobs/isStartupFailure.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
@@ -274,12 +274,13 @@ export async function willfire(
         callbacks: callbackMap,
       });
     } catch (e) {
-      if (!isStartupFailure(e)) {
-        throw e;
+      // Past the nesting limit, or with a callee it cannot read, GitHub fails
+      // the whole run at startup — it exists but has zero jobs, legal siblings
+      // included — the same shape as the unparseable-file run above.
+      if (e instanceof ReusableDepthError || isStartupFailure(e)) {
+        return [{ workflow: path, job: "*", status: "run", reason: e.message }];
       }
-      // Same shape as the unparseable file above, reached a different way: the
-      // run exists and fails before any job is scheduled, so it names nothing.
-      return [{ workflow: path, job: "*", status: "run", reason: e.message }];
+      throw e;
     }
     return jobs.map((j) => ({
       workflow: path,
