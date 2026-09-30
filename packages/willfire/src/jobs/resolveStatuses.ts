@@ -1,6 +1,7 @@
 import type { Scope } from "../expr/val.js";
 import type { Workflow } from "../types.js";
 import { evalIf } from "./evalIf.js";
+import { needsSettled } from "./needsSettled.js";
 
 /** A job's settled verdict, plus the `needs:` ids it was derived from. */
 export interface JobVerdict {
@@ -42,20 +43,17 @@ export function resolveStatuses(
       };
     }
     const upstream = needs.map((n) => statusOf(n));
-    const cond = String(job.if);
-    // Every need settled and one was skipped: a status-function condition is
-    // decidable against that state (probe PR #341, run 36416679059), where a
-    // condition without one falls to the implicit success() gate below. The
-    // pattern stays inside the call because a module-level initializer runs at
-    // import time, which the mutation gate's per-test coverage never attributes
-    // to a test.
-    const settledSkip =
-      upstream.some((s) => s === "skipped") &&
-      upstream.every((s) => s !== "unknown") &&
-      /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
-    let status = evalIf(job.if, settledSkip ? { ...scoped, skippedNeed: true } : scoped);
+    const cond = String(job.if ?? "");
+    // A condition naming a status-check function replaces the implicit
+    // success() gate on `needs` rather than being ANDed with it, so the
+    // propagation loop below does not apply to it. The pattern stays inside the
+    // call because a module-level initializer runs at import time, which the
+    // mutation gate's per-test coverage never attributes to a test.
+    const guarded = /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
+    const settled = needsSettled(needs, Object.fromEntries(needs.map((n, i) => [n, upstream[i]])));
+    let status = evalIf(job.if, { ...scoped, needsSettled: settled });
     let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
-    if (!settledSkip && status !== "skipped" && !cond.includes("always()")) {
+    if (!guarded && status !== "skipped") {
       needs.forEach((n, i) => {
         if (upstream[i] === "skipped") {
           status = "skipped";

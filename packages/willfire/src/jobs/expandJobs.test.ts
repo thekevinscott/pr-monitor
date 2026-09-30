@@ -222,14 +222,21 @@ describe("job expansion", () => {
       expect(entries[1]).toMatchObject({ job: "b", status: "run" });
     });
 
-    it("leaves a status function unsettled when no need was skipped", async () => {
+    // Jobs `a`/`b`, `c`, `d` and `e` on probe PR #376, run 36430193559.
+    it("settles the status functions against needs that all ran", async () => {
       const entries = await expand({
         a: {},
         b: { needs: ["a"], if: "!cancelled()" },
+        c: { if: "success()" },
+        d: { needs: ["a"], if: "failure()" },
+        e: { needs: ["a"], if: "success() || failure()" },
       });
       expect(entries.map((e) => [e.job, e.status])).toEqual([
         ["a", "run"],
-        ["b", "unknown"],
+        ["b", "run"],
+        ["c", "run"],
+        ["d", "skipped"],
+        ["e", "run"],
       ]);
     });
 
@@ -254,7 +261,11 @@ describe("job expansion", () => {
       expect(entries[1]).toMatchObject({ job: "b", status: "unknown" });
     });
 
-    it("does not settle a status function while another need is unknown", async () => {
+    // A status-function condition replaces the implicit success() gate, so an
+    // undecided need cannot drag the job down: `!cancelled()` ran downstream of
+    // a skipped need (job `h`, probe PR #376, run 36430193559) and downstream of
+    // one that ran (job `b`, same run).
+    it("keeps a status function settled while another need is unknown", async () => {
       const entries = await expand({
         a: { if: false },
         u: { if: "github.ref == 'x'" },
@@ -262,8 +273,8 @@ describe("job expansion", () => {
       });
       expect(entries[2]).toMatchObject({
         job: "b",
-        status: "skipped",
-        reason: "needs 'a' which is skipped",
+        status: "run",
+        reason: 'if: "!cancelled()"',
       });
     });
 
@@ -290,6 +301,35 @@ describe("job expansion", () => {
         ["caller-first", "caller-first", "skipped"],
         ["gone", "gone", "skipped"],
       ]);
+    });
+
+    // Jobs `f` and `g` on probe PR #376, run 36430193559: `f (1)`/`f (2)` and
+    // `g / cj1`/`g / cj2` all dispatched under a `!cancelled()` guard.
+    it("expands a matrix and a callee tree under a status-function guard", async () => {
+      const callee = "on: { workflow_call: null }\njobs:\n  cj1: {}\n  cj2: {}\n";
+      const entries = await expand(
+        {
+          a: {},
+          f: { needs: ["a"], if: "!cancelled()", strategy: { matrix: { x: [1, 2] } } },
+          g: { needs: ["a"], if: "!cancelled()", uses: "./.github/workflows/sf-callee.yml" },
+        },
+        readerFor({ ".github/workflows/sf-callee.yml": callee }),
+      );
+      expect(entries.map((e) => e.checkName)).toEqual([
+        "a",
+        "f (1)",
+        "f (2)",
+        "g / cj1",
+        "g / cj2",
+      ]);
+    });
+
+    it("leaves success unknown while a need is unknown", async () => {
+      const entries = await expand({
+        u: { if: "github.ref == 'x'" },
+        b: { needs: ["u"], if: "success()" },
+      });
+      expect(entries[1]).toMatchObject({ job: "b", status: "unknown" });
     });
 
     it("leaves an already-skipped job alone rather than re-deriving it", async () => {
@@ -417,56 +457,75 @@ describe("reusable workflows", () => {
     ]);
   });
 
-  it("follows the nine reusable levels GitHub.com allows", async () => {
-    const entries = await expand(
-      { call: { uses: "./.github/workflows/n1.yml" } },
-      readerFor(chainOf(9)),
-    );
-    const name = `call / ${"j / ".repeat(8)}leaf`;
-    expect(entries).toEqual([{ job: name, checkName: name, status: "run", reason: "" }]);
-  });
-
-  it("gives up past the ninth reusable level", async () => {
-    // Not a self-imposed budget: a tenth level fails the run outright, so
-    // there is no check name to predict. That level is the first `uses:` we
-    // decline to follow, and the entry stops at the caller that made it.
+  it("follows the ten reusable levels GitHub.com allows", async () => {
+    // Ten, not the documented nine: willfire#342 run 36417316158 ran this chain.
     const entries = await expand(
       { call: { uses: "./.github/workflows/n1.yml" } },
       readerFor(chainOf(10)),
     );
-    expect(entries).toEqual([
-      {
-        job: `call${" / j".repeat(9)}`,
-        checkName: null,
-        status: "unknown",
-        reason: "reusable workflow nested deeper than 9 levels",
-      },
-    ]);
+    const name = `call / ${"j / ".repeat(9)}leaf`;
+    expect(entries).toEqual([{ job: name, checkName: name, status: "run", reason: "" }]);
   });
 
-  it("counts a cross-repo hop as one level, same as a local one", async () => {
+  it("throws past the tenth reusable level", async () => {
+    // An eleventh level fails the whole run at validation — zero jobs, zero
+    // checks (willfire#342 run 36417315398) — so there is no entry to emit and
+    // the caller turns the throw into a workflow-level verdict.
+    await expect(
+      expand({ call: { uses: "./.github/workflows/n1.yml" } }, readerFor(chainOf(11))),
+    ).rejects.toThrow("reusable workflow nested deeper than 10 levels");
+  });
+
+  it("counts a cross-repo hop as one level, and one deep branch fails the tree", async () => {
     // The chain alternates pinned owner/repo hops and `./` hops on its way to
-    // the bound, so the tenth being declined means both kinds were counted.
+    // the bound, so the eleventh throwing means both kinds were counted. The
+    // legal `leaf` sibling is lost with the rest: GitHub runs nothing from a
+    // tree that nests too deep anywhere (willfire#342 run 36417461106).
     const path = (i: number) => `.github/workflows/n${i}.yml`;
     const hop = (i: number) =>
       i % 2 === 1 ? `octo/repo/${path(i)}@${REMOTE_SHA}` : `./${path(i)}`;
     const files: Record<string, string> = {};
-    for (let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 10; i++) {
       const jobs =
-        i === 9 ? { leaf: {}, j: { uses: hop(10) } } : { j: { uses: hop(i + 1) } };
+        i === 10 ? { leaf: {}, j: { uses: hop(11) } } : { j: { uses: hop(i + 1) } };
       files[path(i)] = JSON.stringify({ on: { workflow_call: null }, jobs });
     }
-    const entries = await expand({ call: { uses: hop(1) } }, readerFor(files));
-    const p = `call${" / j".repeat(8)}`;
-    expect(entries).toEqual([
-      { job: `${p} / leaf`, checkName: `${p} / leaf`, status: "run", reason: "" },
-      {
-        job: `${p} / j`,
-        checkName: null,
-        status: "unknown",
-        reason: "reusable workflow nested deeper than 9 levels",
-      },
-    ]);
+    await expect(expand({ call: { uses: hop(1) } }, readerFor(files))).rejects.toThrow(
+      "reusable workflow nested deeper than 10 levels",
+    );
+  });
+
+  it("leaves an overlong caller segment uncut", async () => {
+    // Probe run 36429562958: a 130-character caller dispatched
+    // `<full 130 chars> / leaf-a`, 139 characters long. The 100-character cap
+    // is a leaf rule, and capping the prefix under-predicted both names.
+    const caller = "y".repeat(130);
+    const entries = await expand(
+      { call: { name: caller, uses: "./.github/workflows/sub.yml" } },
+      readerFor({
+        ".github/workflows/sub.yml": JSON.stringify({
+          on: { workflow_call: null },
+          jobs: { "leaf-a": {} },
+        }),
+      }),
+    );
+    const name = `${caller} / leaf-a`;
+    expect(entries).toEqual([{ job: name, checkName: name, status: "run", reason: "" }]);
+  });
+
+  it("still cuts an overlong callee job name", async () => {
+    const leaf = "z".repeat(130);
+    const entries = await expand(
+      { call: { uses: "./.github/workflows/sub.yml" } },
+      readerFor({
+        ".github/workflows/sub.yml": JSON.stringify({
+          on: { workflow_call: null },
+          jobs: { leaf: { name: leaf } },
+        }),
+      }),
+    );
+    const name = `call / ${"z".repeat(97)}...`;
+    expect(entries).toEqual([{ job: name, checkName: name, status: "run", reason: "" }]);
   });
 
   it("reports a dynamic matrix on the calling job as unknown", async () => {
@@ -658,12 +717,13 @@ describe("reusable workflows", () => {
     expect(fetched).toEqual([]);
   });
 
-  it("stops at a caller whose `if` it cannot decide, without expanding it", async () => {
+  it("names an undecided caller after itself, without expanding it", async () => {
     // GitHub may skip the whole call, so the callee's names must not surface
-    // as run (#269): the verdict stops at the caller, undecided.
+    // as run (#269) — but the caller's own check is dispatched when it skips
+    // (probe willfire#352), so it keeps its name.
     const fetched: string[] = [];
     const entries = await expand(
-      { call: { if: "${{ secrets.SOME_TOKEN != '' }}", uses: "./.github/workflows/sub.yml" } },
+      { call: { if: "${{ vars.ABSENT != '' }}", uses: "./.github/workflows/sub.yml" } },
       readerOf(async (path) => {
         fetched.push(path);
         return JSON.stringify({ on: { workflow_call: null }, jobs: { inner: {} } });
@@ -672,12 +732,43 @@ describe("reusable workflows", () => {
     expect(entries).toEqual([
       {
         job: "call",
-        checkName: null,
+        checkName: "call",
         status: "unknown",
-        reason: `if: "\${{ secrets.SOME_TOKEN != '' }}"`,
+        reason: `if: "\${{ vars.ABSENT != '' }}"`,
       },
     ]);
     expect(fetched).toEqual([]);
+  });
+
+  it("takes an undecided caller's name: override, uninterpolated", async () => {
+    const entries = await expand({
+      call: {
+        name: "custom ${{ github.event_name }}",
+        if: "${{ vars.ABSENT != '' }}",
+        uses: "./.github/workflows/sub.yml",
+      },
+    });
+    expect(entries[0]).toMatchObject({
+      job: "custom ${{ github.event_name }}",
+      checkName: "custom ${{ github.event_name }}",
+    });
+  });
+
+  it("nulls the name of an undecided caller inside an unresolvable caller", async () => {
+    const entries = await expand(
+      { call: { name: "${{ inputs.flavour }}", uses: "./.github/workflows/sub.yml" } },
+      readerFor({
+        [SUB]: JSON.stringify({
+          on: { workflow_call: null },
+          jobs: { nested: { if: "${{ vars.ABSENT != '' }}", uses: "./.github/workflows/d.yml" } },
+        }),
+      }),
+    );
+    expect(entries[0]).toMatchObject({
+      job: "${{ inputs.flavour }} / nested",
+      checkName: null,
+      status: "unknown",
+    });
   });
 
   it("reports a uses: it cannot turn into a fetch target", async () => {

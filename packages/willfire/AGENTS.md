@@ -69,6 +69,10 @@ receipt — an exclusion with no open issue is how they accumulate (#181).
 
 - Every PR is armed for auto-merge as soon as it is open, fixture and test PRs
   included: `gh pr merge <n> --auto --squash`. Arm it; don't ask.
+- **Except a PR that removes or edits an existing integration or e2e test** —
+  the test bodies, their fixtures, or the gates that run them. Those need
+  Kevin's explicit per-PR approval before merging or arming. Adding a test is
+  not an edit. See the root `AGENTS.md`; that rule governs this package too.
 - A scratch probe PR is the exception: never merged, never armed. It is closed
   unmerged, and the closed PR is the permanent record.
 - Every PR touching `src/**` carries an e2e attestation (see above). No
