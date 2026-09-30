@@ -6,6 +6,7 @@ import type { CallbackMap } from "../callback/parseCallbackMap.js";
 import type { Scope } from "../expr/val.js";
 import type { JobExecutor } from "../execute/types.js";
 import { expandMatrixDetailed } from "../matrix/expandMatrixDetailed.js";
+import { capDisplayName } from "../names/capDisplayName.js";
 import { jobDisplayName } from "../names/jobDisplayName.js";
 import { skippedDisplayName } from "../names/skippedDisplayName.js";
 import { parseUses } from "../uses/parseUses.js";
@@ -15,6 +16,8 @@ import { evalIf } from "./evalIf.js";
 import { neededJobIds } from "./neededJobIds.js";
 import { readsVars } from "./readsVars.js";
 import { prScope } from "./prScope.js";
+import { resolveStatuses } from "./resolveStatuses.js";
+import { startupFailure } from "./startupFailure.js";
 import type {
   ExpandedJob,
   JobSite,
@@ -24,12 +27,23 @@ import type {
 } from "../types.js";
 
 /**
- * GitHub.com connects ten levels of workflows — the top-level caller plus nine
- * reusable levels below it — so a tenth level fails the run and has no check
- * name to predict. A cross-repo hop costs the same one level as a local one.
- * https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#nesting-reusable-workflows
+ * GitHub.com connects the top-level caller plus ten reusable levels below it.
+ * The docs say nine; measured live, ten ran and eleven failed (willfire#342,
+ * runs 36417316158 / 36417315398). A cross-repo hop costs the same one level
+ * as a local one, and this bound is also what stops a `uses:` cycle.
  */
-const MAX_REUSABLE_DEPTH = 9;
+const MAX_REUSABLE_DEPTH = 10;
+
+/**
+ * Exceeding the limit anywhere fails the whole run at validation: zero jobs,
+ * zero checks, legal sibling branches included (willfire#342, run 36417461106).
+ * Thrown so the workflow's expansion collapses instead of one entry.
+ */
+export class ReusableDepthError extends Error {
+  constructor(uses: string) {
+    super(`reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels at ${uses}`);
+  }
+}
 
 /** `ref` is already a commit id, so resolving it is a no-op. */
 const SHA_RE = /^[0-9a-f]{40}$/i;
@@ -68,7 +82,6 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
   } = args;
   const entries: ExpandedJob[] = [];
   const jobs = (wf["jobs"] ?? {}) as Record<string, Workflow>;
-  const statuses: Record<string, string> = {};
 
   // Nothing dispatched or called this run, so an input this workflow declares
   // and nothing supplied reads as the empty string (#125) — laid under, never
@@ -113,35 +126,13 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
     return failed === undefined ? "" : `; ${execFailures[failed]}`;
   };
 
+  // Statuses settle ahead of the emit loop because `needs:` may point at a job
+  // declared later in the file; entries stay in declaration order.
+  const verdicts = resolveStatuses(jobs, scoped);
+
   for (const [jobId, jobRaw] of Object.entries(jobs)) {
     const job = jobRaw ?? {};
-    const needsRaw = job["needs"];
-    const needs: string[] =
-      typeof needsRaw === "string" ? [needsRaw] : ((needsRaw ?? []) as string[]);
-    const cond = String(job.if ?? "");
-    // Every need settled and one was skipped: a status-function condition is
-    // decidable against that state (probe PR #341, run 36416679059), where a
-    // condition without one falls to the implicit success() gate below. The
-    // pattern is inline because the mutation gate covers no module-level
-    // initializer.
-    const settledSkip =
-      needs.some((n) => statuses[n] === "skipped") &&
-      needs.every((n) => statuses[n] !== "unknown") &&
-      /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
-    let status = evalIf(job.if, settledSkip ? { ...scoped, skippedNeed: true } : scoped);
-    let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
-    if (!settledSkip && status !== "skipped" && !cond.includes("always()")) {
-      for (const n of needs) {
-        if (statuses[n] === "skipped") {
-          status = "skipped";
-          reason = `needs '${n}' which is skipped`;
-        } else if (statuses[n] === "unknown" && status === "run") {
-          status = "unknown";
-          reason = `needs '${n}' whose status is unknown`;
-        }
-      }
-    }
-    statuses[jobId] = status;
+    const { status, reason, needs } = verdicts[jobId];
 
     // A skipped job never expands its matrix and never dispatches a called
     // workflow: it collapses to a single check under the bare job name.
@@ -155,11 +146,14 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         reason,
       });
     } else if (status === "unknown" && "uses" in job) {
-      // An undecided caller may not dispatch at all, so its callee's names
-      // must not surface as run (#269): the verdict stops at the caller.
+      // The guard picks between two check sets: the caller's own name if it
+      // skips (probe willfire#352 ran `callvars`), the callee's if it
+      // dispatches. Only the caller's is nameable, so the callee's stay out
+      // (#269) and the caller's no longer goes missing.
+      const name = prefix + skippedDisplayName(jobId, job).name;
       entries.push({
-        job: prefix + jobId,
-        checkName: null,
+        job: name,
+        checkName: prefixResolved ? name : null,
         status,
         reason,
       });
@@ -169,8 +163,11 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       // a matrix on the *caller* multiplies the whole callee set. A cross-repo
       // call names its checks exactly the same way a local one does — probe
       // PR #9, `call-remote-tag / r-inner` alongside `call-plain / inner`.
-      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
       const uses = job["uses"] as string;
+      if (depth + 1 > MAX_REUSABLE_DEPTH) {
+        throw new ReusableDepthError(uses);
+      }
+      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
       if (combos === null) {
         entries.push({
           job: prefix + jobId,
@@ -178,6 +175,18 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           status: "unknown",
           reason: "dynamic matrix on reusable workflow call" + execNote(needs),
         });
+      } else if (depth + 1 > MAX_REUSABLE_DEPTH) {
+        // The one graph error whose dispatch shape has never been read off a
+        // live run, so it still stops at the caller rather than taking the
+        // workflow with it.
+        for (const combo of combos) {
+          entries.push({
+            job: prefix + jobDisplayName(jobId, job, combo).name,
+            checkName: null,
+            status: "unknown",
+            reason: `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`,
+          });
+        }
       } else {
         // Resolve the called workflow once, not once per matrix combination.
         let subWf: Workflow | null = null;
@@ -187,9 +196,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         // pinned ref; a local one keeps the caller's.
         let subSite: JobSite = site;
         const target = parseUses(uses);
-        if (depth + 1 > MAX_REUSABLE_DEPTH) {
-          failure = `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`;
-        } else if (target === null) {
+        if (target === null) {
           failure = `unresolvable reusable reference: ${uses}`;
         } else {
           // A local `./` call stays on the caller's source, which is already
@@ -220,45 +227,41 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           }
         }
 
+        // A callee GitHub cannot read fails the whole run before any job is
+        // scheduled, so this cannot stay a verdict on the calling job alone.
+        if (subWf === null) {
+          throw startupFailure(failure ?? `cannot resolve ${uses}`);
+        }
+
         for (const combo of combos) {
           const disp = jobDisplayName(jobId, job, combo);
           const baseName = prefix + disp.name;
           const nameResolved = prefixResolved && disp.resolved;
-          if (subWf === null) {
-            entries.push({
-              job: baseName,
-              checkName: null,
-              status: "unknown",
-              reason: failure ?? `cannot resolve ${uses}`,
-            });
-          } else {
-            // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
-            // do not. A callee's jobs run in the caller's repo, so the facts
-            // seeded at the top of the prediction stay true all the way down.
-            // Evaluated per combination: a `with:` may read `matrix.*`, and
-            // each combination dispatches its own callee run with its own
-            // inputs.
-            const subScope: Scope = {
-              inputs: calleeInputs(
-                job.with,
-                subWf,
-                combo === null ? scoped : { ...scoped, matrix: combo.values },
-              ),
-              github: scoped.github,
-              vars: scoped.vars,
-            };
-            entries.push(
-              ...(await expandJobs({
-                ...args,
-                wf: subWf,
-                site: subSite,
-                depth: depth + 1,
-                prefix: `${baseName} / `,
-                prefixResolved: nameResolved,
-                scope: subScope,
-              })),
-            );
-          }
+          // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
+          // do not. A callee's jobs run in the caller's repo, so the facts
+          // seeded at the top of the prediction stay true all the way down.
+          // Evaluated per combination: a `with:` may read `matrix.*`, and each
+          // combination dispatches its own callee run with its own inputs.
+          const subScope: Scope = {
+            inputs: calleeInputs(
+              job.with,
+              subWf,
+              combo === null ? scoped : { ...scoped, matrix: combo.values },
+            ),
+            github: scoped.github,
+            vars: scoped.vars,
+          };
+          entries.push(
+            ...(await expandJobs({
+              ...args,
+              wf: subWf,
+              site: subSite,
+              depth: depth + 1,
+              prefix: `${baseName} / `,
+              prefixResolved: nameResolved,
+              scope: subScope,
+            })),
+          );
         }
       }
     } else {
@@ -273,7 +276,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       } else {
         for (const combo of combos) {
           const disp = jobDisplayName(jobId, job, combo);
-          const name = prefix + disp.name;
+          const name = prefix + capDisplayName(disp.name);
           entries.push({
             job: name,
             checkName: prefixResolved && disp.resolved ? name : null,
