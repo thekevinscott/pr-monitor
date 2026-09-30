@@ -57,16 +57,23 @@ test.each(CASES)(
 
 // A skipped job still gets a check run, so a matching name list can hide a
 // wrong verdict. `statuses.json` records what GitHub reported per dispatched
-// check — `skipped`, or run — for the cases where that distinction is the case.
+// check — its conclusion, where anything but `skipped` means it ran — for the
+// cases where that distinction is the case.
 const STATUS_CASES = CASES.filter((c) => existsSync(join(c.dir, "statuses.json")));
 
 test.each(STATUS_CASES)(
   "$title predicts each dispatched check's status",
   async (c) => {
-    const expected = JSON.parse(readFileSync(join(c.dir, "statuses.json"), "utf8")) as Record<
+    const conclusions = JSON.parse(readFileSync(join(c.dir, "statuses.json"), "utf8")) as Record<
       string,
       string
     >;
+    const expected = Object.fromEntries(
+      Object.entries(conclusions).map(([name, conclusion]) => [
+        name,
+        conclusion === "skipped" ? "skipped" : "run",
+      ]),
+    );
     const { entries } = await predictOnce(c);
     const actual = Object.fromEntries(
       Object.keys(expected).map((name) => [

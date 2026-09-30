@@ -7,5 +7,5 @@ nothing.
 `statuses.json` carries each dispatched check's conclusion, because six of the
 eight names would match even if the verdicts were wrong.
 
-`prt-noop` is the standing `pull_request_target` workflow willfire cannot see
-until #356 lands.
+`prt-noop` is the standing `pull_request_target` workflow. Its calls were
+recorded on 2026-09-30, after the target pass first needed them.
