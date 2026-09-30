@@ -183,7 +183,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         // workflow with it.
         for (const combo of combos) {
           entries.push({
-            job: prefix + jobDisplayName(jobId, job, combo).name,
+            job: prefix + jobDisplayName(jobId, job, combo, scoped.github).name,
             checkName: null,
             status: "unknown",
             reason: `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`,
@@ -236,7 +236,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         }
 
         for (const combo of combos) {
-          const disp = jobDisplayName(jobId, job, combo);
+          const disp = jobDisplayName(jobId, job, combo, scoped.github);
           const baseName = prefix + disp.name;
           const nameResolved = prefixResolved && disp.resolved;
           // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
@@ -278,7 +278,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         });
       } else {
         for (const combo of combos) {
-          const disp = jobDisplayName(jobId, job, combo);
+          const disp = jobDisplayName(jobId, job, combo, scoped.github);
           const name = prefix + capDisplayName(disp.name);
           entries.push({
             job: name,
