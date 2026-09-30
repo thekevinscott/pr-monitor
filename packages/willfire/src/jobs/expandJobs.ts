@@ -14,9 +14,10 @@ import { absentInputs } from "./absentInputs.js";
 import { calleeInputs } from "./calleeInputs.js";
 import { evalIf } from "./evalIf.js";
 import { neededJobIds } from "./neededJobIds.js";
-import { needsSettled } from "./needsSettled.js";
 import { readsVars } from "./readsVars.js";
 import { prScope } from "./prScope.js";
+import { resolveStatuses } from "./resolveStatuses.js";
+import { startupFailure } from "./startupFailure.js";
 import type {
   ExpandedJob,
   JobSite,
@@ -81,7 +82,6 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
   } = args;
   const entries: ExpandedJob[] = [];
   const jobs = (wf["jobs"] ?? {}) as Record<string, Workflow>;
-  const statuses: Record<string, string> = {};
 
   // Nothing dispatched or called this run, so an input this workflow declares
   // and nothing supplied reads as the empty string (#125) — laid under, never
@@ -126,32 +126,13 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
     return failed === undefined ? "" : `; ${execFailures[failed]}`;
   };
 
+  // Statuses settle ahead of the emit loop because `needs:` may point at a job
+  // declared later in the file; entries stay in declaration order.
+  const verdicts = resolveStatuses(jobs, scoped);
+
   for (const [jobId, jobRaw] of Object.entries(jobs)) {
     const job = jobRaw ?? {};
-    const needsRaw = job["needs"];
-    const needs: string[] =
-      typeof needsRaw === "string" ? [needsRaw] : ((needsRaw ?? []) as string[]);
-    const cond = String(job.if ?? "");
-    // A condition naming a status-check function replaces the implicit
-    // success() gate on `needs` rather than being ANDed with it, so the
-    // propagation loop below does not apply to it. The pattern is inline
-    // because the mutation gate covers no module-level initializer.
-    const guarded = /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
-    const ifScope = { ...scoped, needsSettled: needsSettled(needs, statuses) };
-    let status = evalIf(job.if, ifScope);
-    let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
-    if (!guarded && status !== "skipped") {
-      for (const n of needs) {
-        if (statuses[n] === "skipped") {
-          status = "skipped";
-          reason = `needs '${n}' which is skipped`;
-        } else if (statuses[n] === "unknown" && status === "run") {
-          status = "unknown";
-          reason = `needs '${n}' whose status is unknown`;
-        }
-      }
-    }
-    statuses[jobId] = status;
+    const { status, reason, needs } = verdicts[jobId];
 
     // A skipped job never expands its matrix and never dispatches a called
     // workflow: it collapses to a single check under the bare job name.
@@ -194,6 +175,18 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           status: "unknown",
           reason: "dynamic matrix on reusable workflow call" + execNote(needs),
         });
+      } else if (depth + 1 > MAX_REUSABLE_DEPTH) {
+        // The one graph error whose dispatch shape has never been read off a
+        // live run, so it still stops at the caller rather than taking the
+        // workflow with it.
+        for (const combo of combos) {
+          entries.push({
+            job: prefix + jobDisplayName(jobId, job, combo).name,
+            checkName: null,
+            status: "unknown",
+            reason: `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`,
+          });
+        }
       } else {
         // Resolve the called workflow once, not once per matrix combination.
         let subWf: Workflow | null = null;
@@ -234,45 +227,41 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           }
         }
 
+        // A callee GitHub cannot read fails the whole run before any job is
+        // scheduled, so this cannot stay a verdict on the calling job alone.
+        if (subWf === null) {
+          throw startupFailure(failure ?? `cannot resolve ${uses}`);
+        }
+
         for (const combo of combos) {
           const disp = jobDisplayName(jobId, job, combo);
           const baseName = prefix + disp.name;
           const nameResolved = prefixResolved && disp.resolved;
-          if (subWf === null) {
-            entries.push({
-              job: baseName,
-              checkName: null,
-              status: "unknown",
-              reason: failure ?? `cannot resolve ${uses}`,
-            });
-          } else {
-            // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
-            // do not. A callee's jobs run in the caller's repo, so the facts
-            // seeded at the top of the prediction stay true all the way down.
-            // Evaluated per combination: a `with:` may read `matrix.*`, and
-            // each combination dispatches its own callee run with its own
-            // inputs.
-            const subScope: Scope = {
-              inputs: calleeInputs(
-                job.with,
-                subWf,
-                combo === null ? scoped : { ...scoped, matrix: combo.values },
-              ),
-              github: scoped.github,
-              vars: scoped.vars,
-            };
-            entries.push(
-              ...(await expandJobs({
-                ...args,
-                wf: subWf,
-                site: subSite,
-                depth: depth + 1,
-                prefix: `${baseName} / `,
-                prefixResolved: nameResolved,
-                scope: subScope,
-              })),
-            );
-          }
+          // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
+          // do not. A callee's jobs run in the caller's repo, so the facts
+          // seeded at the top of the prediction stay true all the way down.
+          // Evaluated per combination: a `with:` may read `matrix.*`, and each
+          // combination dispatches its own callee run with its own inputs.
+          const subScope: Scope = {
+            inputs: calleeInputs(
+              job.with,
+              subWf,
+              combo === null ? scoped : { ...scoped, matrix: combo.values },
+            ),
+            github: scoped.github,
+            vars: scoped.vars,
+          };
+          entries.push(
+            ...(await expandJobs({
+              ...args,
+              wf: subWf,
+              site: subSite,
+              depth: depth + 1,
+              prefix: `${baseName} / `,
+              prefixResolved: nameResolved,
+              scope: subScope,
+            })),
+          );
         }
       }
     } else {
