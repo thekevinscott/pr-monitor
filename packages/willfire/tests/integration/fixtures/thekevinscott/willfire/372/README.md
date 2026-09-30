@@ -90,5 +90,5 @@ Another whole-file startup failure: run 36431251563, zero jobs, no
 `pull_request` run. `matrix` is not in scope for a job `if:` and GitHub rejects
 the file rather than treating the context as empty. willfire predicts
 `m6-sibling` and marks the guarded job unknown — an over-prediction, tracked
-in #429. This fixture is red on that name until #429 lands, and on `prt-noop`
-until #356 lands.
+in #429 and fixed by https://github.com/thekevinscott/pr-monitor/pull/152.
+`prt-noop` cleared with #356.
