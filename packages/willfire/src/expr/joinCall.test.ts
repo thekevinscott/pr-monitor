@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { joinCall } from "./joinCall.js";
-import { UNKNOWN } from "./val.js";
+
+const UNKNOWN = { kind: "unknown" } as const;
 
 describe("joinCall", () => {
   it("joins an array with the separator given", () => {
