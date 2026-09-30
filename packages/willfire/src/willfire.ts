@@ -12,7 +12,7 @@ import { jobName } from "./entries/jobName.js";
 import { errorStatus } from "./predict/errorStatus.js";
 import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
-import { expandJobs } from "./jobs/expandJobs.js";
+import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
@@ -259,20 +259,31 @@ export async function willfire(
     // unnamed — all the way down its reusable call tree, so it seeds per
     // workflow here and travels into callees with the rest of the facts.
     const wfName = wf["name"] ?? path;
-    const jobs = await expandJobs({
-      wf,
-      reader,
-      site: { path, source },
-      scope: {
-        github: {
-          ...facts.github,
-          ...(typeof wfName === "string" ? { workflow: wfName } : {}),
+    let jobs;
+    try {
+      jobs = await expandJobs({
+        wf,
+        reader,
+        site: { path, source },
+        scope: {
+          github: {
+            ...facts.github,
+            ...(typeof wfName === "string" ? { workflow: wfName } : {}),
+          },
         },
-      },
-      vars: repoVars,
-      executor: jobExecutor,
-      callbacks: callbackMap,
-    });
+        vars: repoVars,
+        executor: jobExecutor,
+        callbacks: callbackMap,
+      });
+    } catch (e) {
+      // Past the nesting limit GitHub fails the whole run at validation — it
+      // exists but has zero jobs, legal siblings included — the same shape as
+      // the unparseable-file run above.
+      if (e instanceof ReusableDepthError) {
+        return [{ workflow: path, job: "*", status: "run", reason: e.message }];
+      }
+      throw e;
+    }
     return jobs.map((j) => ({
       workflow: path,
       job: jobName(j.job),
