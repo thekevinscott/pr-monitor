@@ -71,7 +71,7 @@ export interface Prediction {
    * still gets a check under that name. Unnamed entries remain in `entries`.
    */
   checkNames: string[];
-  skip: string | null; // set when a skip instruction suppresses everything
+  skip: string | null; // set when a skip instruction suppresses the `pull_request` run
   /**
    * Every repo this prediction read, and the commit each ref resolved to —
    * the PR's own head first, then any cross-repo `uses:` reached from it.
