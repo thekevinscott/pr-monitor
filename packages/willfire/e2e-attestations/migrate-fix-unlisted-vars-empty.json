@@ -1,7 +1,7 @@
 {
   "command": "pnpm run test:e2e",
-  "ran_at": 1790798474,
+  "ran_at": 1790799638,
   "exit_code": 0,
-  "commit": "c6ac81e85fe15984b22ef3d6be3b91c4ed40fc9f",
+  "commit": "72fdff90179631f2f56fab8c231f4979d0a887ef",
   "branch": "migrate/fix/unlisted-vars-empty"
 }
