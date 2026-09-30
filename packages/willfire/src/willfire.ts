@@ -14,6 +14,8 @@ import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
 import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
 import { isStartupFailure } from "./jobs/isStartupFailure.js";
+import { rejectedIfContext } from "./jobs/rejectedIfContext.js";
+import { emptyMatrixAxis } from "./matrix/emptyMatrixAxis.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
@@ -86,15 +88,11 @@ export async function willfire(
   const sources = new Map<string, WorkflowSource>([[sourceKey(headSource), headSource]]);
 
   const headCommit = await github.getCommit({ ...base, ref: headSha });
-  const headMsg = headCommit.commit.message;
-
-  if (hasSkipInstruction(headMsg)) {
-    return finalizePrediction(
-      [],
-      "head commit message contains a skip instruction",
-      sources,
-    );
-  }
+  // A skip instruction suppresses the `pull_request` run only: probe #380 and
+  // #394 each dispatched nothing but the `pull_request_target` workflow.
+  const skip = hasSkipInstruction(headCommit.commit.message)
+    ? "head commit message contains a skip instruction"
+    : null;
 
   sources.set(sourceKey(readSource), readSource);
 
@@ -242,6 +240,10 @@ export async function willfire(
       ref: `refs/pull/${prNumber}/merge`,
       "event.action": ctx.action,
       "event.pull_request.draft": pr.draft,
+      // The label set the run sees is the one attached when it dispatched —
+      // probe #383 run 36430375629 skipped the guard before the label existed
+      // and run 36430454044 ran it after.
+      "event.pull_request.labels.*.name": pr.labels.map((l) => l.name),
       ...(pr.head.repo === null
         ? {}
         : { "event.pull_request.head.repo.full_name": pr.head.repo.full_name }),
@@ -258,6 +260,32 @@ export async function willfire(
     jobExecutor: JobExecutor | undefined,
     reason: string,
   ): Promise<DraftEntry[]> => {
+    // A file GitHub refuses at startup is refused whole: the failure hangs off
+    // the push that introduced it, never the pull request, so no job in it is
+    // named. It is a property of the file, so it settles before expansion.
+    const rejected = rejectedIfContext(wf);
+    if (rejected !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: rejected }];
+    }
+    // A literal empty matrix axis is rejected before any job is scheduled, so
+    // no job in the file gets a check — the sibling included. The failure
+    // hangs off the push and there is no `pull_request` run for the file at
+    // all (probe PR #372, run 36431252913), which is why this is
+    // `no-dispatch` rather than the parse error's `run`. Unlike the
+    // both-filters startup failures, whose entries #7 deliberately left
+    // expanding, this one is cheap to answer exactly and the sibling is a
+    // real over-prediction.
+    const emptyAxis = emptyMatrixAxis(wf);
+    if (emptyAxis !== null) {
+      return [
+        {
+          workflow: path,
+          job: "*",
+          status: "no-dispatch",
+          reason: `empty matrix axis '${emptyAxis}': startup failure`,
+        },
+      ];
+    }
     // `github.workflow` is the top-level workflow's `name:` — the path when
     // unnamed — all the way down its reusable call tree, so it seeds per
     // workflow here and travels into callees with the rest of the facts.
@@ -328,6 +356,9 @@ export async function willfire(
     try {
       wf = parseYaml(content);
     } catch (e) {
+      if (skip !== null) {
+        return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+      }
       // GitHub creates a run for an unparseable workflow file and concludes it
       // `startup_failure`. The run exists but has no jobs, so this is a
       // workflow-level "it dispatches" with nothing to expand.
@@ -335,6 +366,9 @@ export async function willfire(
     }
     if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
       targetTriggered = true;
+    }
+    if (skip !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
     }
     const [dispatches, reason] = workflowDispatches(wf, ctx);
     if (!dispatches) {
@@ -421,5 +455,5 @@ export async function willfire(
       await exec?.cleanup?.();
     }
   }
-  return finalizePrediction(entries, null, sources);
+  return finalizePrediction(entries, skip, sources);
 }

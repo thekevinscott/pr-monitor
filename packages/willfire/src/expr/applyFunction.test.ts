@@ -71,6 +71,12 @@ describe("applyFunction", () => {
     expect(applyFunction("contains", [S("abc")], {})).toEqual({ kind: "unknown" });
   });
 
+  it("evaluates contains over an array by element equality", () => {
+    const arr = { kind: "json" as const, v: ["abc", 1] };
+    expect(applyFunction("contains", [arr, S("1")], {})).toEqual(S(true));
+    expect(applyFunction("contains", [arr, S("ab")], {})).toEqual(S(false));
+  });
+
   it("evaluates startswith and endswith", () => {
     expect(applyFunction("startswith", [S("abc"), S("ab")], {})).toEqual(S(true));
     expect(applyFunction("endswith", [S("abc"), S("bc")], {})).toEqual(S(true));
