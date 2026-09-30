@@ -4,6 +4,7 @@ import { resolveStatuses } from "./resolveStatuses.js";
 // `evalIf` is the guard verdict this pass is built around, so the real one
 // runs rather than a stub answering for it.
 vi.mock("./evalIf.js", async () => await vi.importActual<typeof import("./evalIf.js")>("./evalIf.js"));
+vi.mock("./jobScope.js", async () => await vi.importActual<typeof import("./jobScope.js")>("./jobScope.js"));
 import type { Workflow } from "../types.js";
 import type { YamlMap } from "../yamlValue.js";
 
@@ -15,6 +16,15 @@ const statuses = (jobs: YamlMap): Record<string, string> =>
 describe("resolveStatuses", () => {
   it("settles a job with no guard and no needs as run", () => {
     expect(resolve({ a: {} })["a"]).toEqual({ status: "run", reason: "", needs: [] });
+  });
+
+  it("decides an unlisted variable from a complete listing, except under an environment", () => {
+    const jobs = {
+      bare: { if: "vars.ABSENT == ''" },
+      env: { if: "vars.ABSENT == ''", environment: "prod" },
+    } as unknown as Record<string, Workflow>;
+    const verdicts = resolveStatuses(jobs, { vars: {}, varsComplete: true });
+    expect([verdicts["bare"].status, verdicts["env"].status]).toEqual(["run", "unknown"]);
   });
 
   it("tolerates a job whose body is empty", () => {
