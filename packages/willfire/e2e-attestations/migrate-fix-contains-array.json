@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790789600,
+  "exit_code": 0,
+  "commit": "f43a18ce1fdc03fd6eb73181fcd251b97c42961d",
+  "branch": "migrate/fix/contains-array"
+}

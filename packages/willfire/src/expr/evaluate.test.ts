@@ -119,12 +119,14 @@ describe("comparison", () => {
     expect(evaluate(src)).toBe(want);
   });
 
-  it("refuses to compare across types", () => {
-    // GitHub coerces here and the corner cases are surprising (`'' == 0` is
-    // true). Not modelling the table is the honest option, not a gap.
-    expect(evaluate("'1' == 1")).toBe(null);
-    expect(evaluate("'' == 0")).toBe(null);
-    expect(evaluate("true == 'true'")).toBe(null);
+  it("compares across types by casting both sides to a number", () => {
+    // Probe #383, runs 36430453573 and 36431899972. `'' == 0` is true and
+    // `true == 'true'` is false, because `'true'` casts to NaN.
+    expect(evaluate("'1' == 1")).toBe(true);
+    expect(evaluate("'' == 0")).toBe(true);
+    expect(evaluate("true == 'true'")).toBe(false);
+    expect(evaluate("'abc' == 0")).toBe(false);
+    expect(evaluate("'abc' != 0")).toBe(true);
   });
 });
 
@@ -272,6 +274,16 @@ describe("functions", () => {
     expect(evaluate("contains('abc', 'z')")).toBe(false);
   });
 
+  it("evaluates contains over an array produced by fromJSON", () => {
+    // Probe #383 ran the first two (run 36430453627) and the last three
+    // (run 36431899958). `'ab'` against `['abc']` skipped: element equality.
+    expect(evaluate("contains(fromJSON('[\"a\",\"b\"]'), 'a')")).toBe(true);
+    expect(evaluate("contains(fromJSON('[\"a\",\"b\"]'), 'c')")).toBe(false);
+    expect(evaluate("contains(fromJSON('[\"abc\"]'), 'ab')")).toBe(false);
+    expect(evaluate("contains(fromJSON('[1,2]'), 1)")).toBe(true);
+    expect(evaluate("contains(fromJSON('[1,2]'), '1')")).toBe(true);
+  });
+
   it("evaluates startsWith and endsWith", () => {
     expect(evaluate("startsWith('abc', 'ab')")).toBe(true);
     expect(evaluate("startsWith('abc', 'bc')")).toBe(false);
@@ -290,11 +302,10 @@ describe("functions", () => {
     expect(evaluate("startsWith('abc', 1)")).toBe(null);
   });
 
-  it("leaves the job-status functions unknown", () => {
-    // These depend on jobs that have not run.
+  it("leaves success and failure unknown without a needs state, and cancelled false", () => {
     expect(evaluate("success()")).toBe(null);
     expect(evaluate("failure()")).toBe(null);
-    expect(evaluate("cancelled()")).toBe(null);
+    expect(evaluate("cancelled()")).toBe(false);
   });
 
   it("leaves an unmodelled function unknown but still consumes its arguments", () => {
@@ -330,12 +341,11 @@ describe("fromJSON", () => {
     expect(evaluate("fromJSON('null')")).toBe(false);
   });
 
-  it("does not model the truthiness of an array or an object", () => {
-    // GitHub casts them, but no workflow asks it to, and the answer is not
-    // worth guessing at to find out.
-    expect(evaluate("fromJSON('[]')")).toBe(null);
-    expect(evaluate("fromJSON('[1]')")).toBe(null);
-    expect(evaluate("fromJSON('{}')")).toBe(null);
+  it("reads an array or an object as true, the empty array included", () => {
+    // Probe #383 run 36430453652 dispatched all three; all three ran.
+    expect(evaluate("fromJSON('[]')")).toBe(true);
+    expect(evaluate("fromJSON('[1]')")).toBe(true);
+    expect(evaluate('fromJSON(\'{"a":1}\')')).toBe(true);
   });
 
   it("compares a structure by instance, so it equals nothing written beside it", () => {
