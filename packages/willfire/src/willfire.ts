@@ -15,6 +15,7 @@ import type { JobExecutor } from "./execute/types.js";
 import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
 import { isStartupFailure } from "./jobs/isStartupFailure.js";
 import { rejectedIfContext } from "./jobs/rejectedIfContext.js";
+import { emptyMatrixAxis } from "./matrix/emptyMatrixAxis.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
@@ -243,6 +244,10 @@ export async function willfire(
       ref: `refs/pull/${prNumber}/merge`,
       "event.action": ctx.action,
       "event.pull_request.draft": pr.draft,
+      // The label set the run sees is the one attached when it dispatched —
+      // probe #383 run 36430375629 skipped the guard before the label existed
+      // and run 36430454044 ran it after.
+      "event.pull_request.labels.*.name": pr.labels.map((l) => l.name),
       ...(pr.head.repo === null
         ? {}
         : { "event.pull_request.head.repo.full_name": pr.head.repo.full_name }),
@@ -265,6 +270,25 @@ export async function willfire(
     const rejected = rejectedIfContext(wf);
     if (rejected !== null) {
       return [{ workflow: path, job: "*", status: "no-dispatch", reason: rejected }];
+    }
+    // A literal empty matrix axis is rejected before any job is scheduled, so
+    // no job in the file gets a check — the sibling included. The failure
+    // hangs off the push and there is no `pull_request` run for the file at
+    // all (probe PR #372, run 36431252913), which is why this is
+    // `no-dispatch` rather than the parse error's `run`. Unlike the
+    // both-filters startup failures, whose entries #7 deliberately left
+    // expanding, this one is cheap to answer exactly and the sibling is a
+    // real over-prediction.
+    const emptyAxis = emptyMatrixAxis(wf);
+    if (emptyAxis !== null) {
+      return [
+        {
+          workflow: path,
+          job: "*",
+          status: "no-dispatch",
+          reason: `empty matrix axis '${emptyAxis}': startup failure`,
+        },
+      ];
     }
     // `github.workflow` is the top-level workflow's `name:` — the path when
     // unnamed — all the way down its reusable call tree, so it seeds per

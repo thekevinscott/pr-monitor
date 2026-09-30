@@ -72,6 +72,7 @@ describe("makeGithubClient", () => {
       merge_commit_sha: null,
       mergeable: null,
       draft: false,
+      labels: [{ name: "ci" }],
       user: { login: "octocat" },
     };
     stage(json(pr));

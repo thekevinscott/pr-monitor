@@ -13,6 +13,10 @@ vi.mock(
   "./neededJobIds.js",
   async () => await vi.importActual<typeof import("./neededJobIds.js")>("./neededJobIds.js"),
 );
+vi.mock(
+  "./resolveStatuses.js",
+  async () => await vi.importActual<typeof import("./resolveStatuses.js")>("./resolveStatuses.js"),
+);
 import type { CallbackMap } from "../callback/parseCallbackMap.js";
 import type { JobExecutor } from "../execute/types.js";
 import type {
@@ -274,6 +278,31 @@ describe("job expansion", () => {
       });
     });
 
+    it("collapses a dependent declared before the job it needs", async () => {
+      // Probe PR #373, run 36430122487: `needs-first` and `caller-first`, both
+      // above the `if: false` job they need, each dispatched as one skipped
+      // check — no matrix rows, no callee names.
+      const reader = readerFor({
+        ".github/workflows/no-callee.yml": JSON.stringify({
+          on: { workflow_call: null },
+          jobs: { "inner-a": {}, "inner-b": {} },
+        }),
+      });
+      const entries = await expand(
+        {
+          "needs-first": { needs: ["gone"], strategy: { matrix: { a: ["x", "y"] } } },
+          "caller-first": { needs: ["gone"], uses: "./.github/workflows/no-callee.yml" },
+          gone: { if: false },
+        },
+        reader,
+      );
+      expect(entries.map((e) => [e.job, e.checkName, e.status])).toEqual([
+        ["needs-first", "needs-first", "skipped"],
+        ["caller-first", "caller-first", "skipped"],
+        ["gone", "gone", "skipped"],
+      ]);
+    });
+
     // Jobs `f` and `g` on probe PR #376, run 36430193559: `f (1)`/`f (2)` and
     // `g / cj1`/`g / cj2` all dispatched under a `!cancelled()` guard.
     it("expands a matrix and a callee tree under a status-function guard", async () => {
@@ -325,17 +354,17 @@ describe("job expansion", () => {
       expect(entries.map((e) => e.job)).toEqual(["build linux", "build mac"]);
     });
 
-    it("leaves an unset matrix key in place rather than guessing at it", async () => {
-      // #9 stopped rendering an unevaluable expression as the empty string. It
-      // survives into the name verbatim and nulls `checkName` instead: a wrong
-      // name reads as a MISS against a check that really ran, whereas an absent
-      // one is something verify.ts can report as unresolved and move on.
+    it("names a job whose expression reads a matrix key the combination lacks", async () => {
+      // GitHub substitutes nothing and trims: probe PR #372 run 36431257532
+      // dispatched `build` for `name: build ${{ matrix.label }}` over the
+      // combination carrying no `label`. #9's verbatim-name rule still holds
+      // for an expression nothing in scope can settle; this one is settled.
       const entries = await expand({
         a: { name: "build ${{ matrix.nope }}", strategy: { matrix: { os: ["linux"] } } },
       });
       expect(entries[0]).toMatchObject({
-        job: "build ${{ matrix.nope }}",
-        checkName: null,
+        job: "build",
+        checkName: "build",
       });
     });
 

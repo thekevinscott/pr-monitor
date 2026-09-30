@@ -14,9 +14,9 @@ import { absentInputs } from "./absentInputs.js";
 import { calleeInputs } from "./calleeInputs.js";
 import { evalIf } from "./evalIf.js";
 import { neededJobIds } from "./neededJobIds.js";
-import { needsSettled } from "./needsSettled.js";
 import { readsVars } from "./readsVars.js";
 import { prScope } from "./prScope.js";
+import { resolveStatuses } from "./resolveStatuses.js";
 import { startupFailure } from "./startupFailure.js";
 import type {
   ExpandedJob,
@@ -82,7 +82,6 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
   } = args;
   const entries: ExpandedJob[] = [];
   const jobs = (wf["jobs"] ?? {}) as Record<string, Workflow>;
-  const statuses: Record<string, string> = {};
 
   // Nothing dispatched or called this run, so an input this workflow declares
   // and nothing supplied reads as the empty string (#125) — laid under, never
@@ -127,32 +126,13 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
     return failed === undefined ? "" : `; ${execFailures[failed]}`;
   };
 
+  // Statuses settle ahead of the emit loop because `needs:` may point at a job
+  // declared later in the file; entries stay in declaration order.
+  const verdicts = resolveStatuses(jobs, scoped);
+
   for (const [jobId, jobRaw] of Object.entries(jobs)) {
     const job = jobRaw ?? {};
-    const needsRaw = job["needs"];
-    const needs: string[] =
-      typeof needsRaw === "string" ? [needsRaw] : ((needsRaw ?? []) as string[]);
-    const cond = String(job.if ?? "");
-    // A condition naming a status-check function replaces the implicit
-    // success() gate on `needs` rather than being ANDed with it, so the
-    // propagation loop below does not apply to it. The pattern is inline
-    // because the mutation gate covers no module-level initializer.
-    const guarded = /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
-    const ifScope = { ...scoped, needsSettled: needsSettled(needs, statuses) };
-    let status = evalIf(job.if, ifScope);
-    let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
-    if (!guarded && status !== "skipped") {
-      for (const n of needs) {
-        if (statuses[n] === "skipped") {
-          status = "skipped";
-          reason = `needs '${n}' which is skipped`;
-        } else if (statuses[n] === "unknown" && status === "run") {
-          status = "unknown";
-          reason = `needs '${n}' whose status is unknown`;
-        }
-      }
-    }
-    statuses[jobId] = status;
+    const { status, reason, needs } = verdicts[jobId];
 
     // A skipped job never expands its matrix and never dispatches a called
     // workflow: it collapses to a single check under the bare job name.

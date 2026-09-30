@@ -123,6 +123,8 @@ interface Fixture {
   headRef?: string;
   /** The PR's draft state. */
   draft?: boolean;
+  /** Label names attached to the PR. */
+  labels?: string[];
   /** The head repo's full name; `null` models a deleted fork. */
   headRepo?: string | null;
 }
@@ -181,6 +183,7 @@ function fakeGithub(f: Fixture): GithubClient {
         merge_commit_sha: f.mergeSha ?? null,
         mergeable: f.mergeable ?? null,
         draft: f.draft ?? false,
+        labels: (f.labels ?? []).map((name) => ({ name })),
         user: { login: f.author ?? "octocat" },
       };
     },
@@ -448,6 +451,20 @@ describe("workflow-level verdicts", () => {
     const wf =
       "on: pull_request\njobs:\n  a:\n    if: ${{ contains(github.ref, 'secrets.X') }}\n    runs-on: ubuntu-latest\n";
     expect(await only(wf)).toMatchObject({ job: "a" });
+  });
+
+  it("gives a workflow with a literal empty matrix axis no job checks", async () => {
+    // GitHub rejects the file before scheduling anything, so the plain sibling
+    // gets no check either. Probe PR #372, run 36431252913: `probe-m1.yml`
+    // produced zero jobs and no `pull_request` run at all.
+    const wf =
+      "on:\n  pull_request:\njobs:\n  sibling: {}\n  m:\n    strategy:\n      matrix:\n        a: []\n";
+    expect(await only(wf)).toMatchObject({
+      job: "*",
+      status: "no-dispatch",
+      reason: "empty matrix axis 'a': startup failure",
+    });
+    expect((await run(wf)).checkNames).toEqual([]);
   });
 
   it("reports a workflow with no file at head as no-dispatch (#7)", async () => {
@@ -1345,6 +1362,24 @@ describe("PR facts seeded into the expression scope (#322)", () => {
       ["to-main", "run"],
       ["from-topic", "skipped"],
       ["owned", "run"],
+    ]);
+  });
+
+  it("decides a label filter from the labels attached to the pull", async () => {
+    // Probe #383: run 36430454044 ran the guard with `skip-ci` attached and
+    // skipped the same job's absent-label twin; run 36430375629, dispatched
+    // before the label existed, skipped both.
+    const jobs = {
+      present: { if: "contains(github.event.pull_request.labels.*.name, 'skip-ci')" },
+      absent: { if: "contains(github.event.pull_request.labels.*.name, 'nope')" },
+    };
+    expect(await statuses({ jobs }, { labels: ["skip-ci"] })).toEqual([
+      ["present", "run"],
+      ["absent", "skipped"],
+    ]);
+    expect(await statuses({ jobs })).toEqual([
+      ["present", "skipped"],
+      ["absent", "skipped"],
     ]);
   });
 
