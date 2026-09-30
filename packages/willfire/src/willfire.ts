@@ -11,7 +11,12 @@ import { resolveCallbackMap } from "./callback/resolveCallbackMap.js";
 import { jobName } from "./entries/jobName.js";
 import { errorStatus } from "./predict/errorStatus.js";
 import type { Scope } from "./expr/val.js";
-import { expandJobs } from "./jobs/expandJobs.js";
+import type { JobExecutor } from "./execute/types.js";
+import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
+import { isStartupFailure } from "./jobs/isStartupFailure.js";
+import { rejectedIfContext } from "./jobs/rejectedIfContext.js";
+import { emptyMatrixAxis } from "./matrix/emptyMatrixAxis.js";
+import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
 import type { GithubClient } from "./predict/makeGithubClient.js";
@@ -21,6 +26,7 @@ import { stackTargetRef } from "./predict/stackTargetRef.js";
 import type {
   Ctx,
   DraftEntry,
+  ExpandedJob,
   FetchWorkflow,
   Prediction,
   PredictOptions,
@@ -82,15 +88,11 @@ export async function willfire(
   const sources = new Map<string, WorkflowSource>([[sourceKey(headSource), headSource]]);
 
   const headCommit = await github.getCommit({ ...base, ref: headSha });
-  const headMsg = headCommit.commit.message;
-
-  if (hasSkipInstruction(headMsg)) {
-    return finalizePrediction(
-      [],
-      "head commit message contains a skip instruction",
-      sources,
-    );
-  }
+  // A skip instruction suppresses the `pull_request` run only: probe #380 and
+  // #394 each dispatched nothing but the `pull_request_target` workflow.
+  const skip = hasSkipInstruction(headCommit.commit.message)
+    ? "head commit message contains a skip instruction"
+    : null;
 
   sources.set(sourceKey(readSource), readSource);
 
@@ -231,8 +233,17 @@ export async function willfire(
       repository_owner: owner,
       base_ref: pr.base.ref,
       head_ref: pr.head.ref,
+      // Every trigger willfire matches is `pull_request`, and on one of those
+      // `github.ref` is the merge ref — measured on probe #383, run
+      // 36430453531. Whoever adds `pull_request_target` (#356) has to thread
+      // the trigger kind here: on that event the ref is the base branch.
+      ref: `refs/pull/${prNumber}/merge`,
       "event.action": ctx.action,
       "event.pull_request.draft": pr.draft,
+      // The label set the run sees is the one attached when it dispatched —
+      // probe #383 run 36430375629 skipped the guard before the label existed
+      // and run 36430454044 ran it after.
+      "event.pull_request.labels.*.name": pr.labels.map((l) => l.name),
       ...(pr.head.repo === null
         ? {}
         : { "event.pull_request.head.repo.full_name": pr.head.repo.full_name }),
@@ -240,6 +251,86 @@ export async function willfire(
       ...(ctx.action === "opened" ? { actor: pr.user.login } : {}),
     },
   };
+
+  const expandAt = async (
+    path: string,
+    wf: Workflow,
+    source: WorkflowSource,
+    facts: Scope,
+    jobExecutor: JobExecutor | undefined,
+    reason: string,
+  ): Promise<DraftEntry[]> => {
+    // A file GitHub refuses at startup is refused whole: the failure hangs off
+    // the push that introduced it, never the pull request, so no job in it is
+    // named. It is a property of the file, so it settles before expansion.
+    const rejected = rejectedIfContext(wf);
+    if (rejected !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: rejected }];
+    }
+    // A literal empty matrix axis is rejected before any job is scheduled, so
+    // no job in the file gets a check — the sibling included. The failure
+    // hangs off the push and there is no `pull_request` run for the file at
+    // all (probe PR #372, run 36431252913), which is why this is
+    // `no-dispatch` rather than the parse error's `run`. Unlike the
+    // both-filters startup failures, whose entries #7 deliberately left
+    // expanding, this one is cheap to answer exactly and the sibling is a
+    // real over-prediction.
+    const emptyAxis = emptyMatrixAxis(wf);
+    if (emptyAxis !== null) {
+      return [
+        {
+          workflow: path,
+          job: "*",
+          status: "no-dispatch",
+          reason: `empty matrix axis '${emptyAxis}': startup failure`,
+        },
+      ];
+    }
+    // `github.workflow` is the top-level workflow's `name:` — the path when
+    // unnamed — all the way down its reusable call tree, so it seeds per
+    // workflow here and travels into callees with the rest of the facts.
+    const wfName = wf["name"] ?? path;
+    let jobs: ExpandedJob[];
+    try {
+      jobs = await expandJobs({
+        wf,
+        reader,
+        site: { path, source },
+        scope: {
+          github: {
+            ...facts.github,
+            ...(typeof wfName === "string" ? { workflow: wfName } : {}),
+          },
+        },
+        vars: repoVars,
+        executor: jobExecutor,
+        callbacks: callbackMap,
+      });
+    } catch (e) {
+      // Past the nesting limit, or with a callee it cannot read, GitHub fails
+      // the whole run at startup — it exists but has zero jobs, legal siblings
+      // included — the same shape as the unparseable-file run above.
+      if (e instanceof ReusableDepthError || isStartupFailure(e)) {
+        return [{ workflow: path, job: "*", status: "run", reason: e.message }];
+      }
+      throw e;
+    }
+    return jobs.map((j) => ({
+      workflow: path,
+      job: jobName(j.job),
+      checkName: j.checkName,
+      status: j.status,
+      reason: j.reason || reason,
+    }));
+  };
+
+  // Whether any workflow at the read ref names `pull_request_target`. The read
+  // ref carries the base branch tip, so a target workflow the PR did not delete
+  // is visible there — which is what lets the default-branch pass below stay
+  // off, costing no API calls, for the repos that have none. It stands in for
+  // the default branch, so a PR that deletes the file, or one based on a branch
+  // that predates it, still misses the run (#321).
+  let targetTriggered = false;
 
   const workflowEntries = async (path: string, state: string): Promise<DraftEntry[]> => {
     if (state !== "active") {
@@ -265,40 +356,84 @@ export async function willfire(
     try {
       wf = parseYaml(content);
     } catch (e) {
+      if (skip !== null) {
+        return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+      }
       // GitHub creates a run for an unparseable workflow file and concludes it
       // `startup_failure`. The run exists but has no jobs, so this is a
       // workflow-level "it dispatches" with nothing to expand.
       return [{ workflow: path, job: "*", status: "run", reason: `YAML parse error: ${e}` }];
     }
+    if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
+      targetTriggered = true;
+    }
+    if (skip !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+    }
     const [dispatches, reason] = workflowDispatches(wf, ctx);
     if (!dispatches) {
       return [{ workflow: path, job: "*", status: "no-dispatch", reason }];
     }
-    // `github.workflow` is the top-level workflow's `name:` — the path when
-    // unnamed — all the way down its reusable call tree, so it seeds per
-    // workflow here and travels into callees with the rest of the facts.
-    const wfName = wf["name"] ?? path;
-    const jobs = await expandJobs({
-      wf,
-      reader,
-      site: { path, source: readSource },
-      scope: {
-        github: {
-          ...prFacts.github,
-          ...(typeof wfName === "string" ? { workflow: wfName } : {}),
-        },
-      },
-      vars: repoVars,
-      executor,
-      callbacks: callbackMap,
-    });
-    return jobs.map((j) => ({
-      workflow: path,
-      job: jobName(j.job),
-      checkName: j.checkName,
-      status: j.status,
-      reason: j.reason || reason,
-    }));
+    return expandAt(path, wf, readSource, prFacts, executor, reason);
+  };
+
+  // GitHub reads a `pull_request_target` workflow from the default branch tip
+  // (GITHUB_SHA is its last commit), never from the PR, so the default branch
+  // is a second source and the PR's own copy of the file decides nothing.
+  let targetExecutor: JobExecutor | undefined;
+  const targetEntries = async (): Promise<DraftEntry[]> => {
+    const defaultBranch = pr.base.repo.default_branch;
+    const sha = await resolveRef({ owner, repo: name, ref: defaultBranch });
+    if (sha === null) {
+      // Silently predicting nothing here would under-predict every target run.
+      throw new Error(`cannot resolve default branch '${defaultBranch}' of ${repo}`);
+    }
+    const targetSource: WorkflowSource = { owner, repo: name, ref: defaultBranch, sha };
+    let files: { path: string; type: string }[];
+    try {
+      files = await github.listWorkflowFiles({ ...base, ref: sha });
+    } catch (e) {
+      if (errorStatus(e) !== 404) {
+        throw e;
+      }
+      return [];
+    }
+    targetExecutor =
+      opts.executor === undefined ? makeLiveExecutor(github, targetSource, resolveRef) : executor;
+    const states = new Map(workflows.map((w) => [w.path, w.state]));
+    // GITHUB_SHA is the default branch tip here, not the test merge the
+    // `pull_request` pass seeds.
+    const targetFacts: Scope = {
+      github: { ...prFacts.github, event_name: "pull_request_target", sha },
+    };
+    const out: DraftEntry[] = [];
+    const paths = files
+      .filter((f) => f.type === "file" && /\.ya?ml$/i.test(f.path))
+      .map((f) => f.path)
+      .filter((p) => (states.get(p) ?? "active") === "active");
+    for (const path of paths) {
+      const content = await fetchWorkflow(path, targetSource);
+      // Absent or unparseable at the tip, no trigger is readable, so no target
+      // run is enumerable; the same path's `pull_request` side was already
+      // answered by the main loop.
+      let wf: Workflow | null = null;
+      try {
+        wf = content === null ? null : parseYaml(content);
+      } catch {
+        // Unparseable: `wf` stays null.
+      }
+      if (wf !== null && getPrTrigger(wf, "pull_request_target") !== MISSING) {
+        const [dispatches, reason] = workflowDispatches(wf, ctx, "pull_request_target");
+        if (!dispatches) {
+          out.push({ workflow: path, job: "*", status: "no-dispatch", reason });
+        } else {
+          out.push(
+            ...(await expandAt(path, wf, targetSource, targetFacts, targetExecutor, reason)),
+          );
+        }
+      }
+    }
+    return out;
   };
 
   const entries: DraftEntry[] = [];
@@ -310,8 +445,15 @@ export async function willfire(
         entries.push(...(await workflowEntries(w.path, w.state)));
       }
     }
+    if (targetTriggered) {
+      entries.push(...(await targetEntries()));
+    }
   } finally {
-    await executor?.cleanup?.();
+    // The two passes share one executor when the caller injected it, so the set
+    // is what keeps that one from being cleaned up twice.
+    for (const exec of new Set([executor, targetExecutor])) {
+      await exec?.cleanup?.();
+    }
   }
-  return finalizePrediction(entries, null, sources);
+  return finalizePrediction(entries, skip, sources);
 }

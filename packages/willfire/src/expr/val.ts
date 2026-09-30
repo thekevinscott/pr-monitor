@@ -38,10 +38,14 @@ export interface Scope {
   /**
    * `github.*` values that are fixed for the run being predicted, keyed by the
    * dotted remainder after `github.` (`event.action`). A boolean stays a
-   * boolean: GitHub's `==` refuses mixed types, so `draft == false` only
-   * decides against a real boolean.
+   * boolean: a mixed-type `==` casts both sides to a number, so seeding
+   * `draft` as `'false'` would read `draft == false` as `NaN == 0`.
+   *
+   * An object filter is keyed by the path as written, star included
+   * (`event.pull_request.labels.*.name`), and its value is the array the
+   * filter collects.
    */
-  github?: Record<string, string | boolean>;
+  github?: Record<string, string | boolean | string[]>;
   /**
    * Repo-level Actions variables, read from the API at prediction time.
    * Unlike `needs` and `steps`, this set is never complete: org- and
@@ -85,9 +89,10 @@ export interface Scope {
    */
   matrix?: YamlMap;
   /**
-   * True when every job this one `needs` has settled and at least one was
-   * skipped. In that state `success()`, `failure()` and `cancelled()` all
-   * return false — measured on probe PR #341, run 36416679059.
+   * How the jobs this one `needs` settled, when every one of them did.
+   * `"all-run"` makes `success()` true and `failure()` false; `"some-skipped"`
+   * makes both false — measured on probe PR #341, run 36416679059. Absent
+   * means at least one need is undecided, so neither is answerable.
    */
-  skippedNeed?: boolean;
+  needsSettled?: "all-run" | "some-skipped";
 }
