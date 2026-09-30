@@ -1,0 +1,7 @@
+name: prt-base-probe
+on: pull_request_target
+jobs:
+  prt-base-only:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "base=$GITHUB_BASE_REF sha=$GITHUB_SHA"
