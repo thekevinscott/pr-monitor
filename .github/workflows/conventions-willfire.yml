@@ -1,0 +1,28 @@
+name: Testing Conventions (willfire)
+
+# A second call over the absorbed package: `source` derives the package root, so
+# the gates read `packages/willfire/package.json` and its `e2e-attestations/`.
+#
+# `gates` allowlists every gate except `unit-coverage` (willfire enforces no
+# coverage floor), `packaging` and `changelog` (willfire is private and no
+# longer published), and `mutation` — the move reclassifies every willfire line
+# as changed, so the gate reports 156 pre-existing surviving mutants it had
+# never audited. #103 tracks killing them and putting this back.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  conventions:
+    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0
+    with:
+      languages: '["typescript"]'
+      source: packages/willfire/src
+      gates: >-
+        ["colocated-test", "one-function-per-file", "unit-lint",
+        "integration-lint", "e2e-verify"]

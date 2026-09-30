@@ -1,0 +1,288 @@
+import { parse as parseYaml } from "yaml";
+import { decidedInputs } from "../callback/decidedInputs.js";
+import { jobKey } from "../callback/jobKey.js";
+import { matchOutputs } from "../callback/matchOutputs.js";
+import type { CallbackMap } from "../callback/parseCallbackMap.js";
+import type { Scope } from "../expr/val.js";
+import type { JobExecutor } from "../execute/types.js";
+import { expandMatrixDetailed } from "../matrix/expandMatrixDetailed.js";
+import { jobDisplayName } from "../names/jobDisplayName.js";
+import { skippedDisplayName } from "../names/skippedDisplayName.js";
+import { parseUses } from "../uses/parseUses.js";
+import { absentInputs } from "./absentInputs.js";
+import { calleeInputs } from "./calleeInputs.js";
+import { evalIf } from "./evalIf.js";
+import { neededJobIds } from "./neededJobIds.js";
+import { readsVars } from "./readsVars.js";
+import { prScope } from "./prScope.js";
+import type {
+  ExpandedJob,
+  JobSite,
+  Workflow,
+  WorkflowReader,
+  WorkflowSource,
+} from "../types.js";
+
+/**
+ * GitHub.com connects ten levels of workflows — the top-level caller plus nine
+ * reusable levels below it — so a tenth level fails the run and has no check
+ * name to predict. A cross-repo hop costs the same one level as a local one.
+ * https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#nesting-reusable-workflows
+ */
+const MAX_REUSABLE_DEPTH = 9;
+
+/** `ref` is already a commit id, so resolving it is a no-op. */
+const SHA_RE = /^[0-9a-f]{40}$/i;
+
+const isSha = (ref: string): boolean => SHA_RE.test(ref);
+
+export interface ExpandJobsArgs {
+  wf: Workflow;
+  reader: WorkflowReader;
+  site: JobSite;
+  depth?: number;
+  prefix?: string;
+  prefixResolved?: boolean;
+  scope?: Scope;
+  /**
+   * Memoized repo-variables read, awaited only for a workflow that mentions
+   * `vars` in its jobs — which keeps the API call off every prediction that
+   * never needs it.
+   */
+  vars?: () => Promise<Record<string, string>>;
+  executor?: JobExecutor;
+  callbacks?: CallbackMap;
+}
+
+export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
+  const {
+    wf,
+    reader,
+    site,
+    depth = 0,
+    prefix = "",
+    prefixResolved = true,
+    scope = {},
+    executor,
+    callbacks,
+  } = args;
+  const entries: ExpandedJob[] = [];
+  const jobs = (wf["jobs"] ?? {}) as Record<string, Workflow>;
+  const statuses: Record<string, string> = {};
+
+  // Nothing dispatched or called this run, so an input this workflow declares
+  // and nothing supplied reads as the empty string (#125) — laid under, never
+  // over, whatever the caller bound.
+  let scoped: Scope = { ...scope, inputs: { ...absentInputs(wf), ...scope.inputs } };
+  if (scoped.vars === undefined && args.vars !== undefined && readsVars(jobs)) {
+    scoped = { ...scoped, vars: await args.vars() };
+  }
+
+  // Selection is derived, never configured: execute exactly the jobs some
+  // sibling's `needs.*.outputs` read depends on, under the same `evalIf`
+  // verdict the main loop applies.
+  const execFailures: Record<string, string> = {};
+  const needed = neededJobIds(jobs);
+  for (const [jobId, jobRaw] of Object.entries(jobs)) {
+    const job = jobRaw ?? {};
+    // A reusable-call job has no steps of its own to run.
+    const runnable = needed.has(jobId) && !("uses" in job) && evalIf(job.if, scoped) === "run";
+    if (runnable) {
+      const answer = matchOutputs(callbacks ?? {}, jobKey(site, jobId), decidedInputs(scoped));
+      if (answer.kind === "ambiguous") {
+        // Two recorded answers claiming one invocation: either pick would be a
+        // guess wearing a recorded answer's face, so the whole prediction aborts.
+        throw new Error(answer.reason);
+      }
+      if (answer.kind === "hit") {
+        scoped = { ...scoped, needs: { ...scoped.needs, [jobId]: { outputs: answer.outputs } } };
+      } else if (answer.kind === "no-match") {
+        execFailures[jobId] = answer.reason;
+      } else if (executor !== undefined) {
+        const res = await executor.executeJob(jobId, job, wf, scoped);
+        if (res.ok) {
+          scoped = { ...scoped, needs: { ...scoped.needs, [jobId]: { outputs: res.outputs } } };
+        } else {
+          execFailures[jobId] = `executing '${jobId}' failed: ${res.reason}`;
+        }
+      }
+    }
+  }
+  const execNote = (needs: string[]): string => {
+    const failed = needs.find((n) => n in execFailures);
+    return failed === undefined ? "" : `; ${execFailures[failed]}`;
+  };
+
+  for (const [jobId, jobRaw] of Object.entries(jobs)) {
+    const job = jobRaw ?? {};
+    const needsRaw = job["needs"];
+    const needs: string[] =
+      typeof needsRaw === "string" ? [needsRaw] : ((needsRaw ?? []) as string[]);
+    const cond = String(job.if ?? "");
+    // Every need settled and one was skipped: a status-function condition is
+    // decidable against that state (probe PR #341, run 36416679059), where a
+    // condition without one falls to the implicit success() gate below. The
+    // pattern is inline because the mutation gate covers no module-level
+    // initializer.
+    const settledSkip =
+      needs.some((n) => statuses[n] === "skipped") &&
+      needs.every((n) => statuses[n] !== "unknown") &&
+      /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
+    let status = evalIf(job.if, settledSkip ? { ...scoped, skippedNeed: true } : scoped);
+    let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
+    if (!settledSkip && status !== "skipped" && !cond.includes("always()")) {
+      for (const n of needs) {
+        if (statuses[n] === "skipped") {
+          status = "skipped";
+          reason = `needs '${n}' which is skipped`;
+        } else if (statuses[n] === "unknown" && status === "run") {
+          status = "unknown";
+          reason = `needs '${n}' whose status is unknown`;
+        }
+      }
+    }
+    statuses[jobId] = status;
+
+    // A skipped job never expands its matrix and never dispatches a called
+    // workflow: it collapses to a single check under the bare job name.
+    if (status === "skipped") {
+      const disp = skippedDisplayName(jobId, job);
+      const name = prefix + disp.name;
+      entries.push({
+        job: name,
+        checkName: prefixResolved && disp.resolved ? name : null,
+        status,
+        reason,
+      });
+    } else if (status === "unknown" && "uses" in job) {
+      // An undecided caller may not dispatch at all, so its callee's names
+      // must not surface as run (#269): the verdict stops at the caller.
+      entries.push({
+        job: prefix + jobId,
+        checkName: null,
+        status,
+        reason,
+      });
+    } else if ("uses" in job) {
+      // Reusable workflow call. The calling job produces no check of its own;
+      // each called job becomes `<calling job name> / <called job name>`, and
+      // a matrix on the *caller* multiplies the whole callee set. A cross-repo
+      // call names its checks exactly the same way a local one does — probe
+      // PR #9, `call-remote-tag / r-inner` alongside `call-plain / inner`.
+      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
+      const uses = job["uses"] as string;
+      if (combos === null) {
+        entries.push({
+          job: prefix + jobId,
+          checkName: null,
+          status: "unknown",
+          reason: "dynamic matrix on reusable workflow call" + execNote(needs),
+        });
+      } else {
+        // Resolve the called workflow once, not once per matrix combination.
+        let subWf: Workflow | null = null;
+        let failure: string | null = null;
+        // Where the callee is defined, and where its own `./` calls will
+        // resolve. A remote `uses:` moves the source to the callee's repo and
+        // pinned ref; a local one keeps the caller's.
+        let subSite: JobSite = site;
+        const target = parseUses(uses);
+        if (depth + 1 > MAX_REUSABLE_DEPTH) {
+          failure = `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`;
+        } else if (target === null) {
+          failure = `unresolvable reusable reference: ${uses}`;
+        } else {
+          // A local `./` call stays on the caller's source, which is already
+          // pinned to a commit. A cross-repo one arrives as whatever the
+          // `uses:` string spelled — `@v0` — and has to be resolved before
+          // anything is read from it, so the file that gets read and the
+          // commit the prediction names are the same one.
+          let resolved: WorkflowSource | null = site.source;
+          if (target.source !== null) {
+            const { ref } = target.source;
+            const sha = isSha(ref) ? ref : await reader.resolveRef(target.source);
+            resolved = sha === null ? null : { ...target.source, sha };
+          }
+          if (resolved === null) {
+            failure = `cannot resolve ref for ${uses}`;
+          } else {
+            subSite = { path: target.path, source: resolved };
+            const content = await reader.fetchWorkflow(target.path, resolved);
+            if (content === null) {
+              failure = `cannot fetch ${uses}`;
+            } else {
+              try {
+                subWf = parseYaml(content);
+              } catch (e) {
+                failure = `YAML parse error in ${uses}: ${e}`;
+              }
+            }
+          }
+        }
+
+        for (const combo of combos) {
+          const disp = jobDisplayName(jobId, job, combo);
+          const baseName = prefix + disp.name;
+          const nameResolved = prefixResolved && disp.resolved;
+          if (subWf === null) {
+            entries.push({
+              job: baseName,
+              checkName: null,
+              status: "unknown",
+              reason: failure ?? `cannot resolve ${uses}`,
+            });
+          } else {
+            // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
+            // do not. A callee's jobs run in the caller's repo, so the facts
+            // seeded at the top of the prediction stay true all the way down.
+            // Evaluated per combination: a `with:` may read `matrix.*`, and
+            // each combination dispatches its own callee run with its own
+            // inputs.
+            const subScope: Scope = {
+              inputs: calleeInputs(
+                job.with,
+                subWf,
+                combo === null ? scoped : { ...scoped, matrix: combo.values },
+              ),
+              github: scoped.github,
+              vars: scoped.vars,
+            };
+            entries.push(
+              ...(await expandJobs({
+                ...args,
+                wf: subWf,
+                site: subSite,
+                depth: depth + 1,
+                prefix: `${baseName} / `,
+                prefixResolved: nameResolved,
+                scope: subScope,
+              })),
+            );
+          }
+        }
+      }
+    } else {
+      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
+      if (combos === null) {
+        entries.push({
+          job: prefix + jobId,
+          checkName: null,
+          status: "unknown",
+          reason: "dynamic matrix" + execNote(needs),
+        });
+      } else {
+        for (const combo of combos) {
+          const disp = jobDisplayName(jobId, job, combo);
+          const name = prefix + disp.name;
+          entries.push({
+            job: name,
+            checkName: prefixResolved && disp.resolved ? name : null,
+            status,
+            reason,
+          });
+        }
+      }
+    }
+  }
+  return entries;
+}

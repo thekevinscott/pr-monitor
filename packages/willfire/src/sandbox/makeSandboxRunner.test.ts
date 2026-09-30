@@ -1,0 +1,280 @@
+import { spawn } from "node:child_process";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { RunSpec } from "../execute/types.js";
+import { imageTag } from "./imageTag.js";
+import { makeSandboxRunner } from "./makeSandboxRunner.js";
+import { sandboxArgv } from "./sandboxArgv.js";
+import { sandboxConfig } from "./sandboxConfig.js";
+
+// Nothing here talks to real docker: `spawn` is mocked with one scripted
+// child per invocation (`h.script` says how it behaves, `h.calls` records it).
+
+// The isolation gate wants collaborators mocked; these tests assert the real
+// tag and argv, so the mocks pass the actual modules through.
+vi.mock(
+  "./imageTag.js",
+  async () => await vi.importActual<typeof import("./imageTag.js")>("./imageTag.js"),
+);
+vi.mock(
+  "./sandboxArgv.js",
+  async () => await vi.importActual<typeof import("./sandboxArgv.js")>("./sandboxArgv.js"),
+);
+vi.mock(
+  "./sandboxConfig.js",
+  async () => await vi.importActual<typeof import("./sandboxConfig.js")>("./sandboxConfig.js"),
+);
+vi.mock(
+  "./stateVolumes.js",
+  async () => await vi.importActual<typeof import("./stateVolumes.js")>("./stateVolumes.js"),
+);
+
+interface DockerCall {
+  bin: string;
+  argv: string[];
+  stdin: string;
+}
+
+interface Behavior {
+  stderr?: string[];
+  /** Exit code; `null` is a signal death. Omitted means 0. */
+  close?: number | null;
+  /** Fire the spawn-failure path (no binary) instead of running. */
+  error?: true;
+  /** Never exit on its own; `h.release` holds the death this child is waiting for. */
+  hang?: true;
+}
+
+/** What the fake hands a listener: a spawn error, a stderr chunk, or an exit code. */
+type HandlerArg = Error | string | number | null;
+
+const h = vi.hoisted(() => ({
+  calls: [] as { bin: string; argv: string[]; stdin: string }[],
+  script: [] as { stderr?: string[]; close?: number | null; error?: true; hang?: true }[],
+  release: [] as (() => void)[],
+}));
+
+vi.mock("node:child_process", async () => {
+  const actual = await vi.importActual<typeof import("node:child_process")>("node:child_process");
+  const fakeSpawn = vi.fn((bin: string, argv: string[]) => {
+    const behavior: Behavior = h.script.shift() ?? {};
+    const call: DockerCall = { bin, argv, stdin: "" };
+    h.calls.push(call);
+    const handlers = new Map<string, (arg?: HandlerArg) => void>();
+    const child = {
+      stdout: { on: (ev: string, cb: (d?: HandlerArg) => void) => handlers.set(`stdout:${ev}`, cb) },
+      stderr: { on: (ev: string, cb: (d?: HandlerArg) => void) => handlers.set(`stderr:${ev}`, cb) },
+      stdin: {
+        write: (d: string) => {
+          call.stdin += d;
+        },
+        end: () => {},
+      },
+      on: (ev: string, cb: (arg?: HandlerArg) => void) => handlers.set(ev, cb),
+    };
+    // After the synchronous return, so every handler is registered first.
+    queueMicrotask(() => {
+      if (behavior.error) {
+        handlers.get("error")?.(new Error("spawn ENOENT"));
+        return;
+      }
+      handlers.get("spawn")?.();
+      for (const chunk of behavior.stderr ?? []) {
+        handlers.get("stderr:data")?.(chunk);
+      }
+      if (behavior.hang === true) {
+        // 137 is what an attached client really reports once `docker kill` lands.
+        h.release.push(() => handlers.get("close")?.(137));
+        return;
+      }
+      handlers.get("close")?.(behavior.close === undefined ? 0 : behavior.close);
+    });
+    return child;
+  });
+  return { ...actual, spawn: fakeSpawn };
+});
+
+const spec = (over: Partial<RunSpec> = {}): RunSpec => ({
+  script: "true",
+  shell: "bash",
+  cwd: "/w",
+  env: {},
+  ...over,
+});
+
+const kinds = (): string[] => h.calls.map((c) => c.argv[0]);
+
+/** The container name a recorded `docker run` was given. */
+const nameOf = (argv: string[]): string => argv[argv.indexOf("--name") + 1];
+
+const DEADLINE_MS = 10 * 60 * 1000;
+
+beforeEach(() => {
+  h.calls.length = 0;
+  h.script.length = 0;
+  h.release.length = 0;
+  vi.mocked(spawn).mockClear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe("makeSandboxRunner", () => {
+  it("touches nothing until a spec runs", () => {
+    expect(typeof makeSandboxRunner().run).toBe("function");
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("provisions on first use — inspect, miss, build from the inline dockerfile — then runs", async () => {
+    h.script = [{ close: 1 }, {}, {}];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = await run(spec({ env: { FOO: "bar" } }));
+    expect(r.code).toBe(0);
+    const tag = imageTag("FROM x\n");
+    expect(h.calls.map((c) => c.bin)).toEqual(["dkr", "dkr", "dkr"]);
+    expect(h.calls[0].argv).toEqual(["image", "inspect", tag]);
+    expect(h.calls[1].argv).toEqual(["build", "-t", tag, "-"]);
+    expect(h.calls[1].stdin).toBe("FROM x\n");
+    expect(h.calls[0].stdin).toBe("");
+    expect(h.calls[2].argv).toEqual(
+      sandboxArgv(
+        spec({ env: { FOO: "bar" } }),
+        sandboxConfig({ dockerfile: "FROM x\n" }),
+        nameOf(h.calls[2].argv),
+      ),
+    );
+  });
+
+  it("provisions once, however many specs run", async () => {
+    h.script = [{ close: 1 }, {}, {}, {}];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    await run(spec());
+    await run(spec());
+    expect(kinds()).toEqual(["image", "build", "run", "run"]);
+    // A shared name would have one step's deadline kill another's container.
+    expect(nameOf(h.calls[2].argv)).not.toBe(nameOf(h.calls[3].argv));
+    expect(nameOf(h.calls[2].argv)).toMatch(/^willfire-/);
+  });
+
+  it("skips the build when the image already exists", async () => {
+    h.script = [{ close: 0 }, {}];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    await run(spec());
+    expect(kinds()).toEqual(["image", "run"]);
+  });
+
+  it("reports a failed build as 125 with the reason, and never runs the spec", async () => {
+    h.script = [{ close: 1 }, { close: 1, stderr: ["step 1/1\n", "stub build broke\n"] }];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = await run(spec());
+    expect(r.code).toBe(125);
+    expect(r.stdout).toBe("");
+    expect(r.stderr).toContain("cannot build sandbox image");
+    expect(r.stderr).toContain("stub build broke");
+    // The failure is remembered: no retry for the next spec.
+    expect((await run(spec())).code).toBe(125);
+    expect(kinds()).toEqual(["image", "build"]);
+  });
+
+  it("reports a missing docker binary as a provisioning failure", async () => {
+    h.script = [{ error: true }, { error: true }];
+    const { run } = makeSandboxRunner({ dockerBin: "/nonexistent/docker", dockerfile: "FROM x\n" });
+    const r = await run(spec());
+    expect(r.code).toBe(125);
+    expect(r.stderr).toBe(`cannot build sandbox image ${imageTag("FROM x\n")}`);
+  });
+
+  it("hands back the container's exit code and stderr tail", async () => {
+    h.script = [{ close: 0 }, { close: 7, stderr: ["boom\n"] }];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = await run(spec());
+    expect(r.code).toBe(7);
+    expect(r.stderr).toContain("boom");
+  });
+
+  it("reports a signal death as exit 1", async () => {
+    h.script = [{ close: 0 }, { close: null }];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    expect((await run(spec())).code).toBe(1);
+  });
+
+  it("kills a container that outruns the deadline and reports 124 with the reason", async () => {
+    vi.useFakeTimers();
+    h.script = [{ close: 0 }, { hang: true }, {}];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = run(spec());
+    await vi.advanceTimersByTimeAsync(0);
+    expect(kinds()).toEqual(["image", "run"]);
+    await vi.advanceTimersByTimeAsync(DEADLINE_MS);
+    expect(h.calls[2].argv).toEqual(["kill", nameOf(h.calls[1].argv)]);
+    h.release.shift()?.();
+    expect(await r).toEqual({ code: 124, stdout: "", stderr: "killed after 600s" });
+  });
+
+  it("leaves a container that finishes inside the deadline alone", async () => {
+    vi.useFakeTimers();
+    h.script = [{ close: 0 }, { close: 3 }];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = run(spec());
+    await vi.advanceTimersByTimeAsync(0);
+    expect((await r).code).toBe(3);
+    await vi.advanceTimersByTimeAsync(DEADLINE_MS);
+    expect(kinds()).toEqual(["image", "run"]);
+  });
+
+  it("gives runs sharing a stateKey the same volumes, and other keys their own", async () => {
+    h.script = [{ close: 0 }, {}, {}, {}];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    await run(spec({ stateKey: "a" }));
+    await run(spec({ stateKey: "a" }));
+    await run(spec({ stateKey: "b" }));
+    const vols = (argv: string[]): string[] =>
+      argv.filter((a) => /^willfire-state-/.test(a.split(":")[0]));
+    expect(vols(h.calls[1].argv)).toEqual([
+      "willfire-state-a-usr:/usr/local",
+      "willfire-state-a-tmp:/tmp",
+    ]);
+    expect(vols(h.calls[2].argv)).toEqual(vols(h.calls[1].argv));
+    expect(vols(h.calls[3].argv)).toEqual([
+      "willfire-state-b-usr:/usr/local",
+      "willfire-state-b-tmp:/tmp",
+    ]);
+  });
+
+  it("removes every state volume on dispose, and only then", async () => {
+    h.script = [{ close: 0 }, {}, {}, {}];
+    const { run, dispose } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    await run(spec({ stateKey: "a" }));
+    await run(spec({ stateKey: "b" }));
+    expect(kinds()).toEqual(["image", "run", "run"]);
+    await dispose();
+    expect(h.calls[3].argv).toEqual([
+      "volume",
+      "rm",
+      "-f",
+      "willfire-state-a-usr",
+      "willfire-state-a-tmp",
+      "willfire-state-b-usr",
+      "willfire-state-b-tmp",
+    ]);
+    // Disposed means forgotten: a second dispose has nothing to remove.
+    await dispose();
+    expect(h.calls).toHaveLength(4);
+  });
+
+  it("touches no volumes for keyless specs, so dispose is a no-op", async () => {
+    h.script = [{ close: 0 }, {}];
+    const { run, dispose } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    await run(spec());
+    await dispose();
+    expect(kinds()).toEqual(["image", "run"]);
+  });
+
+  it("caps captured stderr at its tail", async () => {
+    h.script = [{ close: 0 }, { close: 0, stderr: [`${"x".repeat(5000)}END\n`] }];
+    const { run } = makeSandboxRunner({ dockerBin: "dkr", dockerfile: "FROM x\n" });
+    const r = await run(spec());
+    expect(r.stderr.length).toBeLessThanOrEqual(4096);
+    expect(r.stderr).toContain("END");
+  });
+});

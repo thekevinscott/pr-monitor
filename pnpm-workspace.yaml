@@ -1,6 +1,9 @@
+packages:
+  - '.'
+  - 'packages/*'
+
 allowBuilds:
   esbuild: false
 
 minimumReleaseAgeExclude:
-  - willfire
   - testing-conventions

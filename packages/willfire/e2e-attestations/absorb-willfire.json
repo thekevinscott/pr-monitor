@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790715187,
+  "exit_code": 0,
+  "commit": "8de8d6008dbd28bb02921551e662f02924b769e6",
+  "branch": "feat/absorb-willfire"
+}

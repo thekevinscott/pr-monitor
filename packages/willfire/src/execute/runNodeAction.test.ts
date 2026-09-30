@@ -1,0 +1,138 @@
+import { describe, expect, it } from "vitest";
+import { runNodeAction } from "./runNodeAction.js";
+import type { RunCommand, RunSpec, WalkCtx } from "./types.js";
+
+const ctxOf = (runCommand: RunCommand): WalkCtx => ({
+  tree: "/nonexistent-tree",
+  hasHistory: false,
+  envLayers: [],
+  stateKey: "sk",
+  jobEnv: {},
+  deps: {
+    provideTree: async () => null,
+    runCommand,
+    resolveRef: async (s) => s.ref,
+    nodeMajor: 24,
+  },
+  depth: 0,
+});
+
+const ok: RunCommand = async () => ({ code: 0, stdout: "", stderr: "" });
+
+describe("runNodeAction", () => {
+  it("refuses an action wanting another node", async () => {
+    const action = { runs: { using: "node20", main: "index.js" } };
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 20, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': action ./a wants node 20; the sandbox has node 24",
+    });
+  });
+
+  it("refuses an action that declares a pre: step", async () => {
+    const action = { runs: { using: "node24", main: "index.js", pre: "setup.js" } };
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': action ./a declares a pre: step; not modelled",
+    });
+  });
+
+  it("refuses an action with no runs.main", async () => {
+    const action = { runs: { using: "node24" } };
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': action ./a has no runs.main",
+    });
+  });
+
+  it("runs main and reads its outputs back from GITHUB_OUTPUT", async () => {
+    const action = { runs: { using: "node24", main: "index.js" } };
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({ ok: true, v: {} });
+  });
+
+  it("treats an explicit `pre: null` as no pre: step", async () => {
+    const action = { runs: { using: "node24", main: "index.js", pre: null } };
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({ ok: true, v: {} });
+  });
+
+  it("refuses an action with no runs block at all", async () => {
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", {}, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': action ./a has no runs.main",
+    });
+  });
+
+  it("refuses a null action — YAML parses an empty manifest to null", async () => {
+    const action = null;
+    expect(
+      await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': action ./a has no runs.main",
+    });
+  });
+
+  it("stops on an env: layer it cannot render", async () => {
+    const step = { env: { K: "${{ env.nope }}" } };
+    const action = { runs: { using: "node24", main: "index.js" } };
+    expect(
+      await runNodeAction(step, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(ok)),
+    ).toEqual({
+      ok: false,
+      reason: "step '#1': cannot resolve env 'K'",
+    });
+  });
+
+  it("binds inputs over the env layers — an INPUT_* is not a step's to override", async () => {
+    const specs: RunSpec[] = [];
+    const cmd: RunCommand = async (spec) => {
+      specs.push(spec);
+      return { code: 0, stdout: "", stderr: "" };
+    };
+    const step = { with: { who: "bound" }, env: { INPUT_WHO: "layered" } };
+    const action = {
+      inputs: { who: { default: "" } },
+      runs: { using: "node24", main: "index.js" },
+    };
+    await runNodeAction(step, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctxOf(cmd));
+    expect(specs[0].env.INPUT_WHO).toBe("bound");
+    expect(specs[0].env.WILLFIRE_ACTION_MAIN).toBe("/d/index.js");
+  });
+
+  it("runs node on the manifest's main, in the tree, with the action root to mount", async () => {
+    const specs: RunSpec[] = [];
+    const cmd: RunCommand = async (spec) => {
+      specs.push(spec);
+      return { code: 0, stdout: "", stderr: "" };
+    };
+    const action = { runs: { using: "node24", main: "index.js" } };
+    await runNodeAction({}, "step '#1'", "./a", action, "/d", "/root", 24, {}, ctxOf(cmd));
+    expect(specs[0].script).toBe('exec node "$WILLFIRE_ACTION_MAIN"');
+    expect(specs[0].cwd).toBe("/nonexistent-tree");
+    expect(specs[0].mounts).toContainEqual({ path: "/root", writable: false });
+    expect(specs[0].stateKey).toBe("sk");
+  });
+
+  it("lands the action's GITHUB_ENV writes in the job env", async () => {
+    const cmd: RunCommand = async (spec) => {
+      const { appendFile } = await import("node:fs/promises");
+      await appendFile(spec.env.GITHUB_ENV, "K=written\n");
+      return { code: 0, stdout: "", stderr: "" };
+    };
+    const ctx = ctxOf(cmd);
+    const action = { runs: { using: "node24", main: "index.js" } };
+    await runNodeAction({}, "step '#1'", "./a", action, "/d", undefined, 24, {}, ctx);
+    expect(ctx.jobEnv).toEqual({ K: "written" });
+  });
+});

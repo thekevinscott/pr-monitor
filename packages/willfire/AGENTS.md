@@ -1,0 +1,151 @@
+# Agent contract
+
+willfire is one package: `src/willfire.ts` (the prediction engine and public
+entry point), `src/cli.ts` (its CLI) and `src/expr/` (a tri-state evaluator for
+the slice of the GitHub expression language that job `if:` conditions use).
+`README.md` describes the model; this file is the operating contract for
+working in the repo.
+
+willfire predicts a list of strings and nothing else. A tool that diffs, reports
+on, or otherwise consumes that list belongs to the caller.
+
+## Goals
+
+@GOALS.md
+
+## Testing
+
+Unit tests are **colocated** with their source (`foo.ts` ↔ `foo.test.ts`), per
+the [testing-conventions](https://github.com/thekevinscott/testing-conventions)
+standard. There is **no coverage requirement** — no floor, no changed-lines
+ratio, no number at any level.
+
+A unit test asserts what its author believed, so it is never evidence about
+GitHub. Only the integration and e2e fixtures — recordings of live CI — verify
+willfire's contract, the exact list of check-name strings. Evidence is a
+captured fixture under `tests/integration/fixtures/` or a cited live run; a
+test comment claiming measurement names the run id or the fixture path.
+`src/jobs/expandJobs.test.ts` asserted a ten-level reusable chain never runs,
+with a comment claiming it was measured; probe PR #340 (run 36416635296) showed
+GitHub runs it, and the suite was green throughout.
+
+The expectations in `src/willfire.test.ts` are **not** opinions about how GitHub
+ought to behave. Every workflow-level verdict was read off a live dispatch on
+[willrun-probe](https://github.com/thekevinbot/willrun-probe); the workflows
+under `tests/fixtures/willrun-probe/` are the record. Changing one of those
+assertions is a claim that GitHub's behavior
+changed — verify it against a real PR before you do.
+
+Integration coverage is the priority. Never remove an integration test; add
+them freely wherever the prediction rests on a belief no fixture verifies.
+
+willfire MUST return the exact list of check-name strings, with zero
+`unknown`s. Anything it cannot decide — a runtime-computed matrix, an
+unreadable cross-repo workflow — throws an explicit error naming what it could
+not decide. Never guess a name to make an entry look decided; never emit an
+`unknown` verdict or add one to `Entry`.
+
+## e2e attestations
+
+The e2e suite does not run in CI. A PR touching `src/**` lands a receipt in
+`e2e-attestations/` recording the command actually run and its real exit code.
+`tests/integration/attestations.test.ts` fails the suite on a nonzero one. Run
+it unpiped: `| tail` makes the shell report the pipe's status, and a receipt
+recording `exit_code: 0` for a run that printed `3 failed` defeats that check
+outright.
+
+Never copy the previous receipt's `-t` exclusion forward unexamined. An
+exclusion is a standing claim that the excluded case still fails for a known
+reason, and that claim decays: the `willfire#34` term rode 45 receipts over
+three weeks while the reason recorded for it was superseded and no open issue
+tracked it. Re-run each excluded case and drop the term if it passes. If it
+still fails, name the open issue tracking it in the commit that adds the
+receipt — an exclusion with no open issue is how they accumulate (#181).
+
+## Merging
+
+- Every PR is armed for auto-merge as soon as it is open, fixture and test PRs
+  included: `gh pr merge <n> --auto --squash`. Arm it; don't ask.
+- A scratch probe PR is the exception: never merged, never armed. It is closed
+  unmerged, and the closed PR is the permanent record.
+- Every PR touching `src/**` carries an e2e attestation (see above). No
+  attestation, no arming.
+- A downstream bug the suite did not catch is fatal to this policy: stop
+  arming, report it, and re-examine — potentially jettison — the testing
+  assumptions before anything else merges.
+
+## Comments
+
+A comment earns its place by stating what the code cannot: a constraint, a
+workaround's cause, a verified external behavior. One or two lines. No
+narrative comments, no doc-comment essays, no restating the diff or the PR
+description. When in doubt, delete it.
+
+## Consumers
+
+pr-monitor is the only consumer, it lives in this repo, and it imports
+`src/index.ts` directly — there is no published package and no version skew. It
+gates the fleet on willfire's predicted run set: a prediction wrong in the
+over-predicting direction hangs a gate, one wrong in the under-predicting
+direction opens a silent hole. Treat a change to verdict logic as a change to
+every gated repo.
+
+A PR body claiming the consumer is unaffected cites the grep that established
+it. Reasoning from how the API is constructed is not a check; #174 reasoned that
+way and missed a live call site.
+
+## Conventions
+
+- Never pin in workflow YAML — not by SHA, not by tag. Moving tags (`@v0`,
+  `@v1`) are the distribution channel for fleet CI conventions; consuming them
+  is the point. When a tag move breaks CI, adopt the change or fix forward.
+  Freezing the ref is never the fix (ruled on PR #145).
+- Smallest reviewable PRs. One concern per PR; split by default.
+- Rebase proactively; never ask first. Getting a PR to green is the job, and a
+  rebase is not a decision to bring back. Rebase onto the updated base whenever:
+  - the branch has a merge conflict,
+  - a CI check needs retriggering,
+  - a rebase could plausibly turn a check green,
+  - commits are unsigned and need re-signing.
+
+## Session handoff doc
+
+Maintain one ongoing handoff doc per working session and deliver it to the user
+as a downloadable markdown file at every **stopping point**: after each major
+unit of work lands (a push, an observed red or green CI run, a merged PR, a
+finished investigation) or when blocked on user input. A stopping point marks a
+checkpoint, not the end — send the doc, then keep working.
+
+The doc is conversation-scoped: keep it in the session scratchpad or `/tmp`
+(e.g. `<scratchpad>/handoff.md`), outside the repo tree, and keep it out of
+every commit. Update the same doc in place and re-send it at each checkpoint
+(in hosted sessions, attach it via the file-delivery tool; locally, print its
+path), so the freshest copy sits near the bottom of the conversation.
+
+Write it standalone, so a brand-new session with zero context resumes from it
+alone:
+
+- Task and current status (done / in progress / next)
+- Branches, PRs, and issues with numbers and CI state
+- Key decisions and discovered constraints, with one-line reasons
+- Exact next steps, including commands to run
+- Anything waiting on the user
+- Every claim labelled **measured** (you ran it and read the output) or
+  **agent-reported** (a subagent told you)
+- Corrections to the previous handoff, first in the doc — handoffs here have
+  propagated wrong "verified" claims before
+
+Purpose: the prompt cache survives at most an hour of inactivity, so resuming a
+long conversation after hours away reprocesses the entire history at full cost.
+A current handoff doc near the end of the transcript lets the user scroll up,
+grab it, and start a cheap fresh session from the doc instead of resuming the
+stale one.
+
+## Out of scope
+
+- Don't add unsolicited refactors or hypothetical-future abstractions.
+- Don't bypass a CI gate without an explicit reason in the PR body.
+- Don't merge PRs by hand. Auto-merge per the Merging section.
+- No attribution boilerplate. No "Generated with Claude Code" footers, no
+  claude.ai links, no session trailers — not in commit messages, PR bodies,
+  issues, or docs.

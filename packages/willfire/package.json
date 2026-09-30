@@ -1,0 +1,54 @@
+{
+  "name": "willfire",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "Kevin Scott <me@thekevinscott.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thekevinscott/willfire.git"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "bin": {
+    "willfire": "./src/cli.ts"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "predict": "tsx src/cli.ts",
+    "test:coverage": "vitest run --coverage src",
+    "test:e2e": "vitest run --config tests/e2e/vitest.config.mts",
+    "test:integration": "vitest run tests/integration",
+    "test:unit": "vitest run src",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "arg": "^5.0.2",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.9.1",
+    "testing-conventions": "^0.0.94",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^4.1.10"
+  },
+  "private": true,
+  "description": "Predict the set of CI check entries GitHub Actions will create for a pull request"
+}
