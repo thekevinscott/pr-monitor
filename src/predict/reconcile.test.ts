@@ -36,6 +36,7 @@ function makeGithub(tagSha: string | null) {
     getPull: async () => ({
       commits: 1,
       draft: false,
+      labels: [],
       user: { login: 'someone' },
       base: { ref: 'main' },
       head: { sha: HEAD, ref: 'topic', repo: { full_name: 'o/r' } },
