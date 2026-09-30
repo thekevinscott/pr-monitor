@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790771662,
+  "exit_code": 0,
+  "commit": "e5df8038708847e2b6c5af153f136f4143a75d79",
+  "branch": "migrate/fix/seed-github-ref"
+}
