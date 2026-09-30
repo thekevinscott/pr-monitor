@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790770954,
+  "exit_code": 0,
+  "commit": "00bdd292f02d995df6245f5c7107b4a5fe2ed64f",
+  "branch": "migrate/fix/empty-matrix-axis-startup"
+}
