@@ -1293,7 +1293,7 @@ describe("repo variables in job guards (#323)", () => {
   const GUARD = "vars.RUN_EXTRA == 'true'";
 
   it("awaits the read for a workflow that reads vars, and decides the guard", async () => {
-    const vars = vi.fn(async () => ({ RUN_EXTRA: "true" }));
+    const vars = vi.fn(async () => ({ vars: { RUN_EXTRA: "true" } }));
     const entries = await expandJobs({
       wf: { on: { pull_request: null }, jobs: { extra: { if: GUARD } } } as Workflow,
       reader: readerFor({}),
@@ -1305,7 +1305,7 @@ describe("repo variables in job guards (#323)", () => {
   });
 
   it("never awaits the read when no job mentions the context", async () => {
-    const vars = vi.fn(async () => ({}));
+    const vars = vi.fn(async () => ({ vars: {} }));
     await expandJobs({
       wf: { on: { pull_request: null }, jobs: { a: {} } } as Workflow,
       reader: readerFor({}),
@@ -1320,8 +1320,32 @@ describe("repo variables in job guards (#323)", () => {
     expect(entries.map((e) => [e.job, e.status])).toEqual([["extra", "unknown"]]);
   });
 
+  it("settles an unlisted name from a complete listing, except under an environment", async () => {
+    const vars = vi.fn(async () => ({ vars: {}, varsComplete: true }));
+    const entries = await expandJobs({
+      wf: {
+        on: { pull_request: null },
+        jobs: {
+          bare: { if: "vars.ABSENT == ''" },
+          env: { if: "vars.ABSENT == ''", environment: "prod" },
+          call: { uses: `./${SUB}` },
+        },
+      } as Workflow,
+      reader: readerFor({
+        [SUB]: JSON.stringify({ on: { workflow_call: null }, jobs: { inner: { if: "vars.ABSENT" } } }),
+      }),
+      site: SITE,
+      vars,
+    });
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["bare", "run"],
+      ["env", "unknown"],
+      ["call / inner", "skipped"],
+    ]);
+  });
+
   it("carries fetched variables across the call boundary without a second read", async () => {
-    const vars = vi.fn(async () => ({ RUN_EXTRA: "true" }));
+    const vars = vi.fn(async () => ({ vars: { RUN_EXTRA: "true" } }));
     const entries = await expandJobs({
       wf: {
         on: { pull_request: null },
@@ -1341,7 +1365,7 @@ describe("repo variables in job guards (#323)", () => {
   });
 
   it("reads for a callee even when its caller never mentions vars", async () => {
-    const vars = vi.fn(async () => ({ RUN_EXTRA: "false" }));
+    const vars = vi.fn(async () => ({ vars: { RUN_EXTRA: "false" } }));
     const entries = await expandJobs({
       wf: { on: { pull_request: null }, jobs: { call: { uses: `./${SUB}` } } } as Workflow,
       reader: readerFor({

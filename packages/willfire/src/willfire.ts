@@ -170,17 +170,20 @@ export async function willfire(
   // token cannot see the variables — so every lookup honestly stays unknown;
   // anything else is "could not read" and aborts rather than degrading a
   // decidable guard to unknown only on bad days.
-  let varsRead: Promise<Record<string, string>> | undefined;
-  const repoVars = (): Promise<Record<string, string>> => {
+  let varsRead: Promise<Pick<Scope, "vars" | "varsComplete">> | undefined;
+  const repoVars = (): Promise<Pick<Scope, "vars" | "varsComplete">> => {
     varsRead ??= github.listRepoVariables(base).then(
-      (vars) => Object.fromEntries(vars.map((v) => [v.name, v.value])),
+      (vars) => ({
+        vars: Object.fromEntries(vars.map((v) => [v.name, v.value])),
+        varsComplete: pr.base.repo.owner.type === "User",
+      }),
       (e) => {
         const status = errorStatus(e);
         if (status !== 403 && status !== 404) {
           throw e;
         }
         console.warn(`willfire: cannot list variables for ${repo} (${String(e)})`);
-        return {};
+        return { vars: {} };
       },
     );
     return varsRead;
