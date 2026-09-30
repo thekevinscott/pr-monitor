@@ -1,1 +1,3 @@
 Head commit message `chore: probe a1\n\n\nskip-checks: true` — two empty lines, trailer last. GitHub created no `pull_request` run at `1fb362b6`; the only run at that SHA is `pull_request_target` 36430343026 from the permanent `prt-noop.yml`, which is the positive control that the event was processed at all. Quiescence rule: no `pull_request` run 25 minutes after the PR opened, with that completed `pull_request_target` run present.
+
+The workflow-listing calls were recorded on 2026-09-30, after willfire stopped returning early on a skip instruction. They cannot change the verdict: under a skip instruction every `pull_request` workflow is no-dispatch, and the target pass reads immutable shas.
