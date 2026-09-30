@@ -16,7 +16,7 @@ const CALLEE_AT: Record<string, string> = {
   'callee-b': reusable(job('alpha') + job('beta')),
   'callee-dynamic': reusable(
     `  setup:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: \${{ steps.emit.outputs.matrix }}\n    steps:\n      - id: emit\n        run: echo 'matrix=["x"]' >> "$GITHUB_OUTPUT"\n` +
-      `  spread:\n    needs: setup\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        leg: \${{ fromJSON(needs.setup.outputs.matrix) }}\n${step}`,
+      `  spread:\n    needs: setup\n    strategy:\n      matrix:\n        leg: \${{ fromJSON(needs.setup.outputs.matrix) }}\n${step}`,
   ),
 };
 
@@ -36,6 +36,7 @@ function makeGithub(tagSha: string | null) {
     getPull: async () => ({
       commits: 1,
       draft: false,
+      labels: [],
       user: { login: 'someone' },
       base: { ref: 'main' },
       head: { sha: HEAD, ref: 'topic', repo: { full_name: 'o/r' } },
