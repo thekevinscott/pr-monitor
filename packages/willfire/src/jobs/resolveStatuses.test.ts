@@ -19,11 +19,14 @@ describe("resolveStatuses", () => {
   });
 
   it("decides an unlisted variable from a complete listing, except under an environment", () => {
-    const jobs = {
+    const jobs: YamlMap = {
       bare: { if: "vars.ABSENT == ''" },
       env: { if: "vars.ABSENT == ''", environment: "prod" },
-    } as unknown as Record<string, Workflow>;
-    const verdicts = resolveStatuses(jobs, { vars: {}, varsComplete: true });
+    };
+    const verdicts = resolveStatuses(jobs as Record<string, Workflow>, {
+      vars: {},
+      varsComplete: true,
+    });
     expect([verdicts["bare"].status, verdicts["env"].status]).toEqual(["run", "unknown"]);
   });
 
