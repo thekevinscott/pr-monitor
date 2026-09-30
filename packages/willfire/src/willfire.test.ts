@@ -117,6 +117,8 @@ interface Fixture {
   variables?: { name: string; value: string }[];
   /** Status `listRepoVariables` throws instead of answering. */
   variablesError?: number;
+  /** `base.repo.owner.type`; a `User` owner has no org-level variables. */
+  ownerType?: string;
   /** The PR's author login. */
   author?: string;
   /** The PR's head branch name. */
@@ -174,7 +176,13 @@ function fakeGithub(f: Fixture): GithubClient {
       }
       return {
         commits: f.commits ?? 1,
-        base: { ref: f.baseRef ?? "main", repo: { default_branch: f.defaultBranch ?? "main" } },
+        base: {
+          ref: f.baseRef ?? "main",
+          repo: {
+            default_branch: f.defaultBranch ?? "main",
+            owner: { type: f.ownerType ?? "Organization" },
+          },
+        },
         head: {
           sha: HEAD_SHA,
           ref: f.headRef ?? "topic",
@@ -1550,6 +1558,30 @@ describe("repo variables as a prediction-wide fact (#323)", () => {
   it("leaves an unlisted name unknown: org-level variables are invisible here", async () => {
     const { entries } = await willfire(
       fakeGithub({ contents: { [WF]: GUARDED }, variables: [] }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "unknown"],
+      ["base", "run"],
+    ]);
+  });
+
+  it("skips on an unlisted name in a user-owned repo, which has no org level", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variables: [], ownerType: "User" }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "skipped"],
+      ["base", "run"],
+    ]);
+  });
+
+  it("stays unknown in a user-owned repo when the listing cannot be read", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variablesError: 403, ownerType: "User" }),
       "o/r",
       1,
     );

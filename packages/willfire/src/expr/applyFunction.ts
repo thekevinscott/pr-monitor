@@ -2,6 +2,7 @@ import { asBool } from "./asBool.js";
 import { containsCall } from "./containsCall.js";
 import { formatCall } from "./formatCall.js";
 import { fromJson } from "./fromJson.js";
+import { joinCall } from "./joinCall.js";
 import { UNKNOWN, type Scope, type Val } from "./val.js";
 
 /**
@@ -9,7 +10,8 @@ import { UNKNOWN, type Scope, type Val } from "./val.js";
  * token: willfire answers for a dispatch that happens, never for a cancelled
  * one. `success()` and `failure()` read the needs state the scope carries.
  * `fromJSON` is what a dynamic matrix axis is built out of, and `format` is
- * what a conditional `name:` suffix is built out of. Every function not
+ * what a conditional `name:` suffix is built out of, as `join` is for a
+ * label list (probe #383). Every function not
  * modelled here is unknown.
  */
 export function applyFunction(name: string, args: Val[], scope: Scope): Val {
@@ -30,6 +32,9 @@ export function applyFunction(name: string, args: Val[], scope: Scope): Val {
   }
   if (name === "format") {
     return formatCall(args);
+  }
+  if (name === "join" && (args.length === 1 || args.length === 2)) {
+    return joinCall(args);
   }
   if (name === "contains" && args.length === 2) {
     return containsCall(args[0], args[1]);
