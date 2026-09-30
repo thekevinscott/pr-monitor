@@ -13,8 +13,9 @@ GitHub skipped the call — dispatching a job named `callvars`, the caller, not
 `callvars / inner`. Had the variable been set, the same file would have
 dispatched `callvars / inner` and no `callvars`.
 
-Red: willfire predicts neither name. Since #343 an undecided caller stops with
-`checkName: null`, so the callee never surfaces — correct as far as it goes,
-but the caller's own name is missing, and the two outcomes the guard selects
-between are different check sets, not one set minus a callee. `prt-noop` is
-missing for a separate reason: `pull_request_target` is not modelled (#321).
+willfire predicts `callvars` since the caller keeps its own name when its
+guard is undecided, and `prt-noop` since `pull_request_target` is modelled.
+
+`listRepoVariables` was recorded on 2026-09-30, after the case first needed
+it. That call takes no ref. The list holds only `RUN_EXTRA`, created
+before this capture, and no `WILLFIRE_U5_ABSENT`, matching the run above.
