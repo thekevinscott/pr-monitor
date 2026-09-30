@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790768664,
+  "exit_code": 0,
+  "commit": "8f278b3555803ded80e978e640ee23eb647f69cc",
+  "branch": "migrate/fix/status-function-guards"
+}
