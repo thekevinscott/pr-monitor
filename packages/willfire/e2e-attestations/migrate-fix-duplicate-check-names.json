@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790770430,
+  "exit_code": 0,
+  "commit": "b20347f8125a600e345b46648cb55a71d37bdc66",
+  "branch": "migrate/fix/duplicate-check-names"
+}
