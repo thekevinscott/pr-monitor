@@ -27,7 +27,7 @@ const { entries, checkNames, skip, sources } = await willfire(
   123,
   { action: context.payload.action }, // e.g. "opened", "labeled", "ready_for_review"
 );
-// checkNames: sorted, deduped checkName of every entry that resolved one
+// checkNames: sorted checkName of every entry that resolved one, one per check
 // sources: every repo read, and the commit each ref resolved to
 ```
 
