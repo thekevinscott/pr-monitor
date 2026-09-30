@@ -3151,5 +3151,249 @@
       "ref": "9b412e688589a479f88db0ccadd7dffb82b6e6b4"
     },
     "result": "name: unit\n\n# Colocated tests over `src` alone. Only this job carries the coverage floor:\n# `src/` reaches 100% from its colocated tests, so the integration suite is\n# not propping the number up.\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'vitest.config.mts'\n      - 'tsconfig.json'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/unit.yml'\n  push:\n    branches: [main]\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  unit:\n    name: unit (100% coverage)\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm test:unit\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": [
+      {
+        "name": "check.yml",
+        "path": ".github/workflows/check.yml",
+        "sha": "1123e982399b0c237670b255b32b39ee35ff2b1e",
+        "size": 320,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/check.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/check.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/1123e982399b0c237670b255b32b39ee35ff2b1e",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/check.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/check.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/1123e982399b0c237670b255b32b39ee35ff2b1e",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/check.yml"
+        }
+      },
+      {
+        "name": "conventions-src.yml",
+        "path": ".github/workflows/conventions-src.yml",
+        "sha": "d9183c5bd306e5d924154f5c0cc46ae66c549300",
+        "size": 1645,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/conventions-src.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/conventions-src.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/d9183c5bd306e5d924154f5c0cc46ae66c549300",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/conventions-src.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/conventions-src.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/d9183c5bd306e5d924154f5c0cc46ae66c549300",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/conventions-src.yml"
+        }
+      },
+      {
+        "name": "integration.yml",
+        "path": ".github/workflows/integration.yml",
+        "sha": "96fb9220cbe0ab38339fc34cc30fd7df4ed2a976",
+        "size": 1117,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/integration.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/integration.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/96fb9220cbe0ab38339fc34cc30fd7df4ed2a976",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/integration.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/integration.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/96fb9220cbe0ab38339fc34cc30fd7df4ed2a976",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/integration.yml"
+        }
+      },
+      {
+        "name": "lint.yml",
+        "path": ".github/workflows/lint.yml",
+        "sha": "ee629f13af169e3e2d19558f5e2ca72b38585b8b",
+        "size": 725,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/lint.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/lint.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/ee629f13af169e3e2d19558f5e2ca72b38585b8b",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/lint.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/lint.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/ee629f13af169e3e2d19558f5e2ca72b38585b8b",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/lint.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "f90c7a95c4a7cf2ba8aa51737f14cfb2159663a7",
+        "size": 520,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/pr-monitor.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/f90c7a95c4a7cf2ba8aa51737f14cfb2159663a7",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/pr-monitor.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/f90c7a95c4a7cf2ba8aa51737f14cfb2159663a7",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "prt-noop.yml",
+        "path": ".github/workflows/prt-noop.yml",
+        "sha": "b043948102324f2ef7445d49333562d361b5f069",
+        "size": 366,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/prt-noop.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/prt-noop.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/b043948102324f2ef7445d49333562d361b5f069",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/prt-noop.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/prt-noop.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/b043948102324f2ef7445d49333562d361b5f069",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/prt-noop.yml"
+        }
+      },
+      {
+        "name": "release.yml",
+        "path": ".github/workflows/release.yml",
+        "sha": "598acec69c3873f20f45bf661340fd3688de8685",
+        "size": 2281,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/release.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/598acec69c3873f20f45bf661340fd3688de8685",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/release.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/598acec69c3873f20f45bf661340fd3688de8685",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/release.yml"
+        }
+      },
+      {
+        "name": "typecheck.yml",
+        "path": ".github/workflows/typecheck.yml",
+        "sha": "4e36b5de6fb30313b01a23c6e3cb08382c9e26cb",
+        "size": 760,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/typecheck.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/typecheck.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/4e36b5de6fb30313b01a23c6e3cb08382c9e26cb",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/typecheck.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/typecheck.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/4e36b5de6fb30313b01a23c6e3cb08382c9e26cb",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/typecheck.yml"
+        }
+      },
+      {
+        "name": "unit.yml",
+        "path": ".github/workflows/unit.yml",
+        "sha": "dcad95e6b0b9c848a7c69bf50e7ff0766360404d",
+        "size": 748,
+        "url": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/unit.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+        "html_url": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/unit.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/dcad95e6b0b9c848a7c69bf50e7ff0766360404d",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/willfire/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/unit.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/willfire/contents/.github/workflows/unit.yml?ref=d8e58345c812c5e5a66ce8cb1e61f742213ffad0",
+          "git": "https://api.github.com/repos/thekevinscott/willfire/git/blobs/dcad95e6b0b9c848a7c69bf50e7ff0766360404d",
+          "html": "https://github.com/thekevinscott/willfire/blob/d8e58345c812c5e5a66ce8cb1e61f742213ffad0/.github/workflows/unit.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/check.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: putitoutthere check\n\non:\n  pull_request:\n    paths:\n      - 'putitoutthere.toml'\n      - 'package.json'\n      - 'scripts/*/package.json'\n      - '.github/workflows/release.yml'\n      - '.github/workflows/check.yml'\n\njobs:\n  putitoutthere-check:\n    uses: thekevinscott/putitoutthere/.github/workflows/check.yml@v0\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/conventions-src.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: Testing Conventions (willfire)\n\n# Runs the upstream testing-conventions gates over the root `willfire` package,\n# pinned to the rolling `v0` tag (the same convention as check.yml).\n#\n# `gates` allowlists every gate except `unit-coverage`, which carries both the\n# whole-tree and the changed-lines coverage jobs: willfire has no coverage\n# requirement. Mutation's Stryker deps are in devDependencies, and\n# `e2e-attestations/` holds the receipt the e2e-verify gate checks.\n#\n# One workflow file per workspace package (docs/monorepo.md), because `paths:`\n# is per-file and each package's lane has a different trigger set.\n\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'e2e-attestations/**'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'tsconfig.build.json'\n      - 'vitest.config.mts'\n      - '.github/workflows/conventions-src.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'e2e-attestations/**'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'tsconfig.build.json'\n      - 'vitest.config.mts'\n      - '.github/workflows/conventions-src.yml'\n\npermissions:\n  contents: read\n\njobs:\n  # Job id kept as-is: it prefixes every check name this call produces.\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: src\n      gates: >-\n        [\"colocated-test\", \"one-function-per-file\", \"unit-lint\",\n        \"integration-lint\", \"mutation\", \"packaging\", \"e2e-verify\", \"changelog\"]\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/integration.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: integration\n\n# The suite builds `src` and replays `tests/integration`, importing\n# `tests/cases.ts` and `tests/getResponse.ts`; `attestations.test.ts` reads\n# `e2e-attestations/`. `tests/e2e` and `tests/fixtures` are read by no CI job.\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tests/integration/**'\n      - 'tests/cases.ts'\n      - 'tests/getResponse.ts'\n      - 'e2e-attestations/**'\n      - 'tsconfig.json'\n      - 'tsconfig.build.json'\n      - 'vitest.config.mts'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/integration.yml'\n  push:\n    branches: [main]\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  integration:\n    name: integration\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm test:integration\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/lint.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: lint\n\non:\n  pull_request:\n    # eslint.config.js only matches src/**/*.ts and scripts/*/src/**/*.ts.\n    paths:\n      - 'src/**'\n      - 'scripts/*/src/**'\n      - 'eslint.config.js'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - '.github/workflows/lint.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  lint:\n    name: lint\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm lint\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own (see monitor.ts) — this is the\n    # backstop. If a predicted run never dispatches, the gate waits here\n    # until the job is killed.\n    timeout-minutes: 20\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/prt-noop.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: prt-noop\n\n# Permanent probe for case D13 (#328): pull_request_target is read from the\n# default branch, so the only way a prediction of it can be exercised is a\n# workflow that lives here forever.\non:\n  pull_request_target:\n\npermissions: {}\n\njobs:\n  prt-noop:\n    name: prt-noop\n    runs-on: ubuntu-latest\n    timeout-minutes: 2\n    steps:\n      - run: 'true'\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/release.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: Release\n\n# putitoutthere's reusable workflow; config lives in `putitoutthere.toml`\n# at the repo root.\n#\n# Auth: the `NPM_TOKEN` secret is the first-publish bootstrap only —\n# Trusted Publishing on npm binds to an already-published package, so\n# the very first publish has no OIDC path. `willfire` is published:\n# register the trusted publisher (repo thekevinscott/willfire,\n# workflow release.yml, environment release), then DELETE the NPM_TOKEN\n# secret; the OIDC exchange takes over.\n#\n# Filename matters: npm's trust policy matches the caller workflow\n# filename. Renaming this file requires re-registering the trusted\n# publisher.\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n    inputs:\n      release_packages:\n        description: >\n          Packages to release manually, bypassing change detection.\n          Comma-separated list of name[@<bump|version>] entries, e.g.\n          \"willfire@minor\" or \"willfire@1.2.0\". Leave empty to fall back\n          to automatic change detection (same as a push).\n        required: false\n        default: ''\n\njobs:\n  release:\n    uses: thekevinscott/putitoutthere/.github/workflows/release.yml@v0\n    with:\n      release_packages: ${{ inputs.release_packages || '' }}\n    secrets:\n      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}\n    permissions:\n      contents: write\n      # Required even for the token-auth bootstrap publish: the\n      # reusable workflow's publish job declares id-token: write, and\n      # a caller granting less is a startup error.\n      id-token: write\n\n  # PyPI upload runs in the caller's workflow context (see\n  # pypi/warehouse#11096). The `if:` gate skips this job for non-PyPI\n  # repos — pasted verbatim per putitoutthere's README regardless of\n  # what the repo publishes.\n  pypi-publish:\n    needs: release\n    if: needs.release.outputs.has_pypi == 'true'\n    runs-on: ubuntu-latest\n    environment: release\n    permissions:\n      id-token: write\n    steps:\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-sdist'\n          path: dist/\n          merge-multiple: true\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-wheel-*'\n          path: dist/\n          merge-multiple: true\n      - uses: pypa/gh-action-pypi-publish@release/v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/typecheck.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: typecheck\n\n# `tsc -p tsconfig.json`, whose include is `src` alone.\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tsconfig.json'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/typecheck.yml'\n  push:\n    branches: [main]\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  typecheck:\n    name: typecheck\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm typecheck\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "willfire",
+      "path": ".github/workflows/unit.yml",
+      "ref": "d8e58345c812c5e5a66ce8cb1e61f742213ffad0"
+    },
+    "result": "name: unit\n\n# Colocated tests over `src` alone.\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'vitest.config.mts'\n      - 'tsconfig.json'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/unit.yml'\n  push:\n    branches: [main]\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  unit:\n    name: unit\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm test:unit\n"
   }
 ]
