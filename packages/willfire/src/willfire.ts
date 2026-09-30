@@ -88,15 +88,11 @@ export async function willfire(
   const sources = new Map<string, WorkflowSource>([[sourceKey(headSource), headSource]]);
 
   const headCommit = await github.getCommit({ ...base, ref: headSha });
-  const headMsg = headCommit.commit.message;
-
-  if (hasSkipInstruction(headMsg)) {
-    return finalizePrediction(
-      [],
-      "head commit message contains a skip instruction",
-      sources,
-    );
-  }
+  // A skip instruction suppresses the `pull_request` run only: probe #380 and
+  // #394 each dispatched nothing but the `pull_request_target` workflow.
+  const skip = hasSkipInstruction(headCommit.commit.message)
+    ? "head commit message contains a skip instruction"
+    : null;
 
   sources.set(sourceKey(readSource), readSource);
 
@@ -174,17 +170,20 @@ export async function willfire(
   // token cannot see the variables — so every lookup honestly stays unknown;
   // anything else is "could not read" and aborts rather than degrading a
   // decidable guard to unknown only on bad days.
-  let varsRead: Promise<Record<string, string>> | undefined;
-  const repoVars = (): Promise<Record<string, string>> => {
+  let varsRead: Promise<Pick<Scope, "vars" | "varsComplete">> | undefined;
+  const repoVars = (): Promise<Pick<Scope, "vars" | "varsComplete">> => {
     varsRead ??= github.listRepoVariables(base).then(
-      (vars) => Object.fromEntries(vars.map((v) => [v.name, v.value])),
+      (vars) => ({
+        vars: Object.fromEntries(vars.map((v) => [v.name, v.value])),
+        varsComplete: pr.base.repo.owner.type === "User",
+      }),
       (e) => {
         const status = errorStatus(e);
         if (status !== 403 && status !== 404) {
           throw e;
         }
         console.warn(`willfire: cannot list variables for ${repo} (${String(e)})`);
-        return {};
+        return { vars: {} };
       },
     );
     return varsRead;
@@ -360,6 +359,9 @@ export async function willfire(
     try {
       wf = parseYaml(content);
     } catch (e) {
+      if (skip !== null) {
+        return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+      }
       // GitHub creates a run for an unparseable workflow file and concludes it
       // `startup_failure`. The run exists but has no jobs, so this is a
       // workflow-level "it dispatches" with nothing to expand.
@@ -367,6 +369,9 @@ export async function willfire(
     }
     if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
       targetTriggered = true;
+    }
+    if (skip !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
     }
     const [dispatches, reason] = workflowDispatches(wf, ctx);
     if (!dispatches) {
@@ -453,5 +458,5 @@ export async function willfire(
       await exec?.cleanup?.();
     }
   }
-  return finalizePrediction(entries, null, sources);
+  return finalizePrediction(entries, skip, sources);
 }

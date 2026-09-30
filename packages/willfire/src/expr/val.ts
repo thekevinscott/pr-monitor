@@ -48,11 +48,16 @@ export interface Scope {
   github?: Record<string, string | boolean | string[]>;
   /**
    * Repo-level Actions variables, read from the API at prediction time.
-   * Unlike `needs` and `steps`, this set is never complete: org- and
-   * environment-level variables are invisible to the repo listing, so an
-   * unlisted name stays unknown rather than becoming the empty string.
+   * Org- and environment-level variables are invisible to the repo listing,
+   * so an unlisted name stays unknown unless `varsComplete` is set.
    */
   vars?: Record<string, string>;
+  /**
+   * `vars` is every variable the job can see: the repo is user-owned, so it
+   * has no org level, and the job declares no `environment:`. An unlisted
+   * name is then the empty string, as GitHub resolves it (probe #408).
+   */
+  varsComplete?: boolean;
   /**
    * Outputs of jobs this workflow's jobs `needs`, keyed by job id.
    *

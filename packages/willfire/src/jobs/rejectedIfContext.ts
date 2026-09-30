@@ -15,13 +15,15 @@ import type { YamlValue } from "../yamlValue.js";
  * in a job `if:` wrapped (run 36433479173) and bare (36433480515), `secrets`
  * in a step `if:` (36433481828), and `env` in a job `if:` (36433483413) each
  * produced only a zero-job `push` failure run and no `pull_request` run at
- * all. A step may read `env`; a job may not.
+ * all. A step may read `env`; a job may not. `matrix` in a job `if:` fails
+ * the same way (probe #372, run 36431251563): the guard is decided before
+ * the matrix expands.
  */
 export function rejectedIfContext(wf: Workflow): string | null {
   const jobs = (wf["jobs"] ?? {}) as Record<string, YamlValue | undefined>;
   const declared = Object.entries(jobs).filter((e): e is [string, Workflow] => isPlainObject(e[1]));
   for (const [id, job] of declared) {
-    const jobCtx = rejectedIn(job["if"], ["secrets", "env"]);
+    const jobCtx = rejectedIn(job["if"], ["secrets", "env", "matrix"]);
     if (jobCtx !== null) {
       return `job '${id}' if: reads ${jobCtx}, unavailable there: startup failure`;
     }

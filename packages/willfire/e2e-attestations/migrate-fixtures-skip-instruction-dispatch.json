@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790784286,
+  "exit_code": 0,
+  "commit": "639d25be986049c3daa4f797408961c1fee713b2",
+  "branch": "migrate/fixtures/skip-instruction-dispatch"
+}

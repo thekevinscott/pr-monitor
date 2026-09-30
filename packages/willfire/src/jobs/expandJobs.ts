@@ -15,6 +15,7 @@ import { calleeInputs } from "./calleeInputs.js";
 import { evalIf } from "./evalIf.js";
 import { neededJobIds } from "./neededJobIds.js";
 import { readsVars } from "./readsVars.js";
+import { jobScope } from "./jobScope.js";
 import { prScope } from "./prScope.js";
 import { resolveStatuses } from "./resolveStatuses.js";
 import { startupFailure } from "./startupFailure.js";
@@ -63,7 +64,7 @@ export interface ExpandJobsArgs {
    * `vars` in its jobs — which keeps the API call off every prediction that
    * never needs it.
    */
-  vars?: () => Promise<Record<string, string>>;
+  vars?: () => Promise<Pick<Scope, "vars" | "varsComplete">>;
   executor?: JobExecutor;
   callbacks?: CallbackMap;
 }
@@ -88,7 +89,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
   // over, whatever the caller bound.
   let scoped: Scope = { ...scope, inputs: { ...absentInputs(wf), ...scope.inputs } };
   if (scoped.vars === undefined && args.vars !== undefined && readsVars(jobs)) {
-    scoped = { ...scoped, vars: await args.vars() };
+    scoped = { ...scoped, ...(await args.vars()) };
   }
 
   // Selection is derived, never configured: execute exactly the jobs some
@@ -99,7 +100,8 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
   for (const [jobId, jobRaw] of Object.entries(jobs)) {
     const job = jobRaw ?? {};
     // A reusable-call job has no steps of its own to run.
-    const runnable = needed.has(jobId) && !("uses" in job) && evalIf(job.if, scoped) === "run";
+    const runnable =
+      needed.has(jobId) && !("uses" in job) && evalIf(job.if, jobScope(job, scoped)) === "run";
     if (runnable) {
       const answer = matchOutputs(callbacks ?? {}, jobKey(site, jobId), decidedInputs(scoped));
       if (answer.kind === "ambiguous") {
@@ -112,7 +114,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       } else if (answer.kind === "no-match") {
         execFailures[jobId] = answer.reason;
       } else if (executor !== undefined) {
-        const res = await executor.executeJob(jobId, job, wf, scoped);
+        const res = await executor.executeJob(jobId, job, wf, jobScope(job, scoped));
         if (res.ok) {
           scoped = { ...scoped, needs: { ...scoped.needs, [jobId]: { outputs: res.outputs } } };
         } else {
@@ -167,7 +169,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       if (depth + 1 > MAX_REUSABLE_DEPTH) {
         throw new ReusableDepthError(uses);
       }
-      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
+      const combos = expandMatrixDetailed(job.strategy, prScope(jobScope(job, scoped)));
       if (combos === null) {
         entries.push({
           job: prefix + jobId,
@@ -181,7 +183,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         // workflow with it.
         for (const combo of combos) {
           entries.push({
-            job: prefix + jobDisplayName(jobId, job, combo).name,
+            job: prefix + jobDisplayName(jobId, job, combo, scoped.github).name,
             checkName: null,
             status: "unknown",
             reason: `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`,
@@ -234,7 +236,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         }
 
         for (const combo of combos) {
-          const disp = jobDisplayName(jobId, job, combo);
+          const disp = jobDisplayName(jobId, job, combo, scoped.github);
           const baseName = prefix + disp.name;
           const nameResolved = prefixResolved && disp.resolved;
           // `inputs.*` changes at the call boundary; `github.*` and `vars.*`
@@ -250,6 +252,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
             ),
             github: scoped.github,
             vars: scoped.vars,
+            varsComplete: scoped.varsComplete,
           };
           entries.push(
             ...(await expandJobs({
@@ -265,7 +268,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         }
       }
     } else {
-      const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
+      const combos = expandMatrixDetailed(job.strategy, prScope(jobScope(job, scoped)));
       if (combos === null) {
         entries.push({
           job: prefix + jobId,
@@ -275,7 +278,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         });
       } else {
         for (const combo of combos) {
-          const disp = jobDisplayName(jobId, job, combo);
+          const disp = jobDisplayName(jobId, job, combo, scoped.github);
           const name = prefix + capDisplayName(disp.name);
           entries.push({
             job: name,

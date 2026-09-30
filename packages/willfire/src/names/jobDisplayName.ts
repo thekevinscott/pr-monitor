@@ -1,5 +1,6 @@
 import { matrixSuffix } from "../matrix/matrixSuffix.js";
 import { renderName } from "./renderName.js";
+import type { Scope } from "../expr/val.js";
 import type { DetailedCombo, DisplayName, Workflow } from "../types.js";
 
 /**
@@ -24,12 +25,13 @@ export function jobDisplayName(
   jobId: string,
   job: Workflow,
   combo: DetailedCombo | null,
+  github?: Scope["github"],
 ): DisplayName {
   const raw = job.name !== undefined && job.name !== null ? String(job.name) : null;
   if (raw === null) {
     return { name: jobId + (combo ? matrixSuffix(combo) : ""), resolved: true };
   }
-  const { text, resolved } = renderName(raw, combo?.values ?? null);
+  const { text, resolved } = renderName(raw, combo?.values ?? null, github);
   const suffix = combo && !EXPRESSION_RE.test(raw) ? matrixSuffix(combo) : "";
   // GitHub trims the rendered name, so an expression that substitutes nothing
   // leaves no edge whitespace: probe PR #372 dispatched `build` for
