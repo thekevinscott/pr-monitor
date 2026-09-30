@@ -13,6 +13,7 @@ import { errorStatus } from "./predict/errorStatus.js";
 import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
 import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
+import { isStartupFailure } from "./jobs/isStartupFailure.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
@@ -23,6 +24,7 @@ import { stackTargetRef } from "./predict/stackTargetRef.js";
 import type {
   Ctx,
   DraftEntry,
+  ExpandedJob,
   FetchWorkflow,
   Prediction,
   PredictOptions,
@@ -255,7 +257,7 @@ export async function willfire(
     // unnamed — all the way down its reusable call tree, so it seeds per
     // workflow here and travels into callees with the rest of the facts.
     const wfName = wf["name"] ?? path;
-    let jobs;
+    let jobs: ExpandedJob[];
     try {
       jobs = await expandJobs({
         wf,
@@ -272,10 +274,10 @@ export async function willfire(
         callbacks: callbackMap,
       });
     } catch (e) {
-      // Past the nesting limit GitHub fails the whole run at validation — it
-      // exists but has zero jobs, legal siblings included — the same shape as
-      // the unparseable-file run above.
-      if (e instanceof ReusableDepthError) {
+      // Past the nesting limit, or with a callee it cannot read, GitHub fails
+      // the whole run at startup — it exists but has zero jobs, legal siblings
+      // included — the same shape as the unparseable-file run above.
+      if (e instanceof ReusableDepthError || isStartupFailure(e)) {
         return [{ workflow: path, job: "*", status: "run", reason: e.message }];
       }
       throw e;
