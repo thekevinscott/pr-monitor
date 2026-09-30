@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790805314,
+  "exit_code": 0,
+  "commit": "1f379316d0189a4c9c0c2163ddcca0f3bd12d55e",
+  "branch": "migrate/capture/fork-431"
+}
