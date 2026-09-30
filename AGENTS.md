@@ -10,7 +10,7 @@ The exception is the integration and e2e suites. They must stay comprehensive an
 
 Approval is per-PR and explicit. A previous approval does not carry to the next PR.
 
-`.claude/hooks/block-pr-merge.sh` blocks `gh pr merge` in every form, the `pulls/N/merge` REST endpoint, and the `mergePullRequest` GraphQL mutation. It predates this policy and blocks every merge, not just the ones above; it needs narrowing or removing before this section is usable in a Claude Code session.
+`.claude/hooks/block-pr-merge.sh` enforces this in Claude Code. It lets `gh pr merge <number>` through unless the PR modifies, removes, or renames a file under `tests/integration/`, `tests/e2e/`, `tests/fixtures/`, `.github/workflows/`, `testing-conventions.toml`, or a vitest config; those need an approving review from `thekevinscott` on the head commit. It blocks `--auto`, since arming checks one diff and merges a later one, and it blocks the `pulls/N/merge` REST endpoint and the GraphQL merge mutations. The rule is the authority, not the hook: sandboxes and agents outside Claude Code never load it.
 
 `.github/` holds workflow YAML and Actions config, nothing else. No `.sh`, no `.mjs`, no scripts of any kind, and no logic inside a `run:` block. A `run:` block is one invocation — branching, loops, `case` dispatch, command substitution, pipelines, and `grep`/`sed` munging all belong in a tested package in this repo's own language, invoked through a declared `package.json` script. Toolchain installs are the exemption: checkout and pnpm/node setup are glue a consumer step would carry too.
 
