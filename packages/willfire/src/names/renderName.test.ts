@@ -2,6 +2,35 @@ import { describe, expect, it } from "vitest";
 import { renderName } from "./renderName.js";
 
 describe("renderName", () => {
+  it("reads the github facts it is handed", () => {
+    // Probe PR #383: `c3-ref-is-${{ github.ref }}` dispatched as
+    // `c3-ref-is-refs/pull/383/merge`.
+    expect(
+      renderName("c3-ref-is-${{ github.ref }}", null, { ref: "refs/pull/383/merge" }),
+    ).toEqual({ text: "c3-ref-is-refs/pull/383/merge", resolved: true });
+  });
+
+  it("joins a label list the facts carry", () => {
+    expect(
+      renderName("c8-labels-${{ join(github.event.pull_request.labels.*.name, '|') }}", null, {
+        "event.pull_request.labels.*.name": ["skip-ci", "x"],
+      }),
+    ).toEqual({ text: "c8-labels-skip-ci|x", resolved: true });
+  });
+
+  it("keeps event_name as pull_request when the facts do not state one", () => {
+    expect(renderName("ev ${{ github.event_name }}", null, { ref: "r" })).toEqual({
+      text: "ev pull_request",
+      resolved: true,
+    });
+  });
+
+  it("takes event_name from the facts when they state one", () => {
+    expect(
+      renderName("ev ${{ github.event_name }}", null, { event_name: "pull_request_target" }),
+    ).toEqual({ text: "ev pull_request_target", resolved: true });
+  });
+
   it("substitutes matrix values", () => {
     expect(renderName("build ${{ matrix.os }}", { os: "linux" })).toEqual({
       text: "build linux",
