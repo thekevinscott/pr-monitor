@@ -10,10 +10,7 @@ export function finalizePrediction(
   const final = entries.map(finalize);
   const names = new Set<string>();
   for (const e of final) {
-    // Not gated on status: GitHub creates the check whether the job runs or
-    // skips, so a resolved name is a check either way. `checkName` is already
-    // null for every entry whose check may not exist at all.
-    if (e.checkName !== null) {
+    if ((e.status === "run" || e.status === "skipped") && e.checkName !== null) {
       names.add(e.checkName);
     }
   }

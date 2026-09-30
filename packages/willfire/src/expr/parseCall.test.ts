@@ -16,9 +16,9 @@ describe("parseCall", () => {
 
   it("hands the scope to the function it applies", () => {
     const cur = new Cursor([{ t: "op", v: ")" }]);
-    expect(parseCall(cur, { needsSettled: "all-run" }, "success")).toEqual({
+    expect(parseCall(cur, { skippedNeed: true }, "cancelled")).toEqual({
       kind: "value",
-      v: true,
+      v: false,
     });
   });
 

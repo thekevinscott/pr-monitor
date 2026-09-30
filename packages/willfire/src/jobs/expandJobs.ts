@@ -6,7 +6,6 @@ import type { CallbackMap } from "../callback/parseCallbackMap.js";
 import type { Scope } from "../expr/val.js";
 import type { JobExecutor } from "../execute/types.js";
 import { expandMatrixDetailed } from "../matrix/expandMatrixDetailed.js";
-import { capDisplayName } from "../names/capDisplayName.js";
 import { jobDisplayName } from "../names/jobDisplayName.js";
 import { skippedDisplayName } from "../names/skippedDisplayName.js";
 import { parseUses } from "../uses/parseUses.js";
@@ -14,7 +13,6 @@ import { absentInputs } from "./absentInputs.js";
 import { calleeInputs } from "./calleeInputs.js";
 import { evalIf } from "./evalIf.js";
 import { neededJobIds } from "./neededJobIds.js";
-import { needsSettled } from "./needsSettled.js";
 import { readsVars } from "./readsVars.js";
 import { prScope } from "./prScope.js";
 import type {
@@ -26,23 +24,12 @@ import type {
 } from "../types.js";
 
 /**
- * GitHub.com connects the top-level caller plus ten reusable levels below it.
- * The docs say nine; measured live, ten ran and eleven failed (willfire#342,
- * runs 36417316158 / 36417315398). A cross-repo hop costs the same one level
- * as a local one, and this bound is also what stops a `uses:` cycle.
+ * GitHub.com connects ten levels of workflows — the top-level caller plus nine
+ * reusable levels below it — so a tenth level fails the run and has no check
+ * name to predict. A cross-repo hop costs the same one level as a local one.
+ * https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#nesting-reusable-workflows
  */
-const MAX_REUSABLE_DEPTH = 10;
-
-/**
- * Exceeding the limit anywhere fails the whole run at validation: zero jobs,
- * zero checks, legal sibling branches included (willfire#342, run 36417461106).
- * Thrown so the workflow's expansion collapses instead of one entry.
- */
-export class ReusableDepthError extends Error {
-  constructor(uses: string) {
-    super(`reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels at ${uses}`);
-  }
-}
+const MAX_REUSABLE_DEPTH = 9;
 
 /** `ref` is already a commit id, so resolving it is a no-op. */
 const SHA_RE = /^[0-9a-f]{40}$/i;
@@ -132,15 +119,18 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
     const needs: string[] =
       typeof needsRaw === "string" ? [needsRaw] : ((needsRaw ?? []) as string[]);
     const cond = String(job.if ?? "");
-    // A condition naming a status-check function replaces the implicit
-    // success() gate on `needs` rather than being ANDed with it, so the
-    // propagation loop below does not apply to it. The pattern is inline
-    // because the mutation gate covers no module-level initializer.
-    const guarded = /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
-    const ifScope = { ...scoped, needsSettled: needsSettled(needs, statuses) };
-    let status = evalIf(job.if, ifScope);
+    // Every need settled and one was skipped: a status-function condition is
+    // decidable against that state (probe PR #341, run 36416679059), where a
+    // condition without one falls to the implicit success() gate below. The
+    // pattern is inline because the mutation gate covers no module-level
+    // initializer.
+    const settledSkip =
+      needs.some((n) => statuses[n] === "skipped") &&
+      needs.every((n) => statuses[n] !== "unknown") &&
+      /\b(?:success|failure|cancelled|always)\s*\(/i.test(cond);
+    let status = evalIf(job.if, settledSkip ? { ...scoped, skippedNeed: true } : scoped);
     let reason = job.if !== undefined && job.if !== null ? `if: ${JSON.stringify(job.if)}` : "";
-    if (!guarded && status !== "skipped") {
+    if (!settledSkip && status !== "skipped" && !cond.includes("always()")) {
       for (const n of needs) {
         if (statuses[n] === "skipped") {
           status = "skipped";
@@ -165,14 +155,11 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         reason,
       });
     } else if (status === "unknown" && "uses" in job) {
-      // The guard picks between two check sets: the caller's own name if it
-      // skips (probe willfire#352 ran `callvars`), the callee's if it
-      // dispatches. Only the caller's is nameable, so the callee's stay out
-      // (#269) and the caller's no longer goes missing.
-      const name = prefix + skippedDisplayName(jobId, job).name;
+      // An undecided caller may not dispatch at all, so its callee's names
+      // must not surface as run (#269): the verdict stops at the caller.
       entries.push({
-        job: name,
-        checkName: prefixResolved ? name : null,
+        job: prefix + jobId,
+        checkName: null,
         status,
         reason,
       });
@@ -182,11 +169,8 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       // a matrix on the *caller* multiplies the whole callee set. A cross-repo
       // call names its checks exactly the same way a local one does — probe
       // PR #9, `call-remote-tag / r-inner` alongside `call-plain / inner`.
-      const uses = job["uses"] as string;
-      if (depth + 1 > MAX_REUSABLE_DEPTH) {
-        throw new ReusableDepthError(uses);
-      }
       const combos = expandMatrixDetailed(job.strategy, prScope(scoped));
+      const uses = job["uses"] as string;
       if (combos === null) {
         entries.push({
           job: prefix + jobId,
@@ -203,7 +187,9 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         // pinned ref; a local one keeps the caller's.
         let subSite: JobSite = site;
         const target = parseUses(uses);
-        if (target === null) {
+        if (depth + 1 > MAX_REUSABLE_DEPTH) {
+          failure = `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`;
+        } else if (target === null) {
           failure = `unresolvable reusable reference: ${uses}`;
         } else {
           // A local `./` call stays on the caller's source, which is already
@@ -287,7 +273,7 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
       } else {
         for (const combo of combos) {
           const disp = jobDisplayName(jobId, job, combo);
-          const name = prefix + capDisplayName(disp.name);
+          const name = prefix + disp.name;
           entries.push({
             job: name,
             checkName: prefixResolved && disp.resolved ? name : null,

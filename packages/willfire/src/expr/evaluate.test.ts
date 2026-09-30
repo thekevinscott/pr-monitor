@@ -302,10 +302,11 @@ describe("functions", () => {
     expect(evaluate("startsWith('abc', 1)")).toBe(null);
   });
 
-  it("leaves success and failure unknown without a needs state, and cancelled false", () => {
+  it("leaves the job-status functions unknown", () => {
+    // These depend on jobs that have not run.
     expect(evaluate("success()")).toBe(null);
     expect(evaluate("failure()")).toBe(null);
-    expect(evaluate("cancelled()")).toBe(false);
+    expect(evaluate("cancelled()")).toBe(null);
   });
 
   it("leaves an unmodelled function unknown but still consumes its arguments", () => {
