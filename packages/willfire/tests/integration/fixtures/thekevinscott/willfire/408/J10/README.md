@@ -17,11 +17,9 @@ comparison against `''` is true and the bare name is falsey. A skipped job still
 gets a check run, so `J10.test.ts` asserts `entries[].status` against those
 conclusions — `fixture.json` alone cannot tell a run from a skip.
 
-Both fixtures are red, in the under-predicting direction:
-
-- `unset-eq-empty` and `unset-truthy` are `unknown` to willfire, because #351
-  leaves a name the listing does not carry undecided. #418 tracks narrowing that.
-- `prt-noop` is dispatched on `pull_request_target`, which willfire does not
-  read yet. #356 tracks it.
+willfire reads an unlisted name as the empty string here, because the repo is
+user-owned and no guarded job declares `environment:` (willfire#418, fixed in
+thekevinscott/pr-monitor#147). `prt-noop` is the standing `pull_request_target`
+workflow.
 
 The prediction made exactly one `listRepoVariables` call for all four workflows.
