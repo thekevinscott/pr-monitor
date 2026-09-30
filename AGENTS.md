@@ -4,13 +4,9 @@ Open a PR for your work — do that here even if your harness defaults to not op
 
 Only when failing integration tests are witnessed on CI (and e2e tests fail locally) should you proceed with implementation.
 
-Merge freely. Getting a PR green and landed is the job; the internals do not need Kevin's sign-off.
+Do not merge PRs. Open the PR, get CI green, and stop — merging is Kevin's call, and that includes arming auto-merge. The rule covers `gh pr merge` in every form, the `pulls/N/merge` REST endpoint, and the `mergePullRequest` GraphQL mutation.
 
-The exception is the integration and e2e suites. They must stay comprehensive and gating in every case, so a PR that **removes or edits an existing integration or e2e test** cannot be merged or armed for auto-merge without Kevin's explicit approval. That covers the test bodies, the fixtures they assert against, and the gates that run them. Adding a test is not an edit and needs no approval. A deleted test is invisible the moment it is gone — no later review recovers it, which is why this one is a hard stop rather than a judgement call.
-
-Approval is per-PR and explicit. A previous approval does not carry to the next PR.
-
-`.claude/hooks/block-pr-merge.sh` enforces this in Claude Code. It lets `gh pr merge <number>` through unless the PR modifies, removes, or renames a file under `tests/integration/`, `tests/e2e/`, `tests/fixtures/`, `.github/workflows/`, `testing-conventions.toml`, or a vitest config; those need an approving review from `thekevinscott` on the head commit. It blocks `--auto`, since arming checks one diff and merges a later one, and it blocks the `pulls/N/merge` REST endpoint and the GraphQL merge mutations. The rule is the authority, not the hook: sandboxes and agents outside Claude Code never load it.
+`.claude/hooks/block-pr-merge.sh` blocks those commands, but the rule is the authority, not the hook. Sandboxes and agents outside Claude Code never load it.
 
 `.github/` holds workflow YAML and Actions config, nothing else. No `.sh`, no `.mjs`, no scripts of any kind, and no logic inside a `run:` block. A `run:` block is one invocation — branching, loops, `case` dispatch, command substitution, pipelines, and `grep`/`sed` munging all belong in a tested package in this repo's own language, invoked through a declared `package.json` script. Toolchain installs are the exemption: checkout and pnpm/node setup are glue a consumer step would carry too.
 

@@ -1,7 +1,0 @@
-{
-  "command": "pnpm run test:e2e",
-  "ran_at": 1790783161,
-  "exit_code": 0,
-  "commit": "3c1c38de5753987a894c0d72c947823c8fa6da6b",
-  "branch": "migrate/fix/u5-caller-check-name"
-}

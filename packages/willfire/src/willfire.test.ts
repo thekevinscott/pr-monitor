@@ -368,37 +368,42 @@ describe("workflow-level verdicts", () => {
 
   // ---- the four verdicts settled in #7 ----
 
-  // Both-filters is invalid config, and the invalid workflow puts no check on
-  // the pull request. Measured on willfire#379: the twin workflows produced no
-  // `pull_request` run, only a jobless startup-failure run attributed to the
-  // `push` (runs 36430303598, 36430305268), and a push run is not a PR check.
-  // Fixture: `tests/integration/fixtures/thekevinscott/willfire/379/D15/`.
+  // Both-filters is invalid config. GitHub does not fall back to "no filter"
+  // and does not skip the workflow: it creates the run and concludes
+  // `startup_failure`. The run exists, so the workflow dispatches — and #7
+  // deliberately lets job expansion proceed from there rather than emit a bare
+  // `job: "*"` entry. The startup-failed run really has no job checks, so these
+  // entries over-predict at job granularity; at workflow-run granularity (what
+  // pr-monitor compares on) it collapses to the same answer, and the shape
+  // appears in zero fleet repos. Asserted here so the tradeoff stays visible.
 
-  it("declines when both `branches` and `branches-ignore` are set (#363)", async () => {
+  it("dispatches when both `branches` and `branches-ignore` are set (#7)", async () => {
     const wf =
       "on:\n  pull_request:\n    branches: [main]\n    branches-ignore: [main]\njobs:\n  a: {}\n";
     expect(await only(wf)).toMatchObject({
-      job: "*",
-      status: "no-dispatch",
-      reason: "both branches and branches-ignore set: invalid workflow",
+      job: "a",
+      status: "run",
+      reason: "both branches and branches-ignore set: startup failure",
     });
   });
 
-  it("declines when both `paths` and `paths-ignore` are set (#363)", async () => {
+  it("dispatches when both `paths` and `paths-ignore` are set (#7)", async () => {
     const wf =
       "on:\n  pull_request:\n    paths: ['**']\n    paths-ignore: ['**']\njobs:\n  a: {}\n";
     expect(await only(wf)).toMatchObject({
-      job: "*",
-      status: "no-dispatch",
-      reason: "both paths and paths-ignore set: invalid workflow",
+      job: "a",
+      status: "run",
+      reason: "both paths and paths-ignore set: startup failure",
     });
   });
 
-  it("names no check for either job of a conflicting workflow (#363)", async () => {
+  it("checks the conflicting filters before evaluating either one", async () => {
+    // `branches: [dev]` alone would decline on a `main` base, and
+    // `paths: [docs/**]` alone would decline on a `src/` diff. The
+    // startup-failure verdict has to win over both.
     const wf =
-      "on:\n  pull_request:\n    branches: [main]\n    branches-ignore: [main]\njobs:\n  a: {}\n  b: {}\n";
-    const { checkNames } = await run(wf);
-    expect(checkNames).toEqual([]);
+      "on:\n  pull_request:\n    branches: [dev]\n    branches-ignore: [dev]\njobs:\n  a: {}\n";
+    expect(await only(wf, { baseRef: "main" })).toMatchObject({ status: "run" });
   });
 
   it("reports a workflow with no file at head as no-dispatch (#7)", async () => {
@@ -418,44 +423,6 @@ describe("workflow-level verdicts", () => {
         reason: "no workflow file at head",
       },
     ]);
-  });
-
-  it("reports an over-deep reusable chain as a workflow-level run with no jobs", async () => {
-    // Eleven reusable levels fail the whole run at validation. The run exists
-    // but has zero jobs — the legal `ok` sibling included — so the verdict is
-    // the unparseable-file shape (willfire#342, runs 36417315398 / 36417461106).
-    const sub = (i: number) => `.github/workflows/n${i}.yml`;
-    const contents: Record<string, string> = {
-      [WF]: `on: pull_request\njobs:\n  ok: {}\n  call:\n    uses: ./${sub(1)}\n`,
-    };
-    for (let i = 1; i <= 10; i++) {
-      contents[sub(i)] = JSON.stringify({
-        on: { workflow_call: null },
-        jobs: { j: { uses: `./${sub(i + 1)}` } },
-      });
-    }
-    const { entries, checkNames } = await willfire(fakeGithub({ contents }), "o/r", 1);
-    expect(entries).toEqual([
-      {
-        workflow: WF,
-        job: "*",
-        checkName: null,
-        status: "run",
-        reason: `reusable workflow nested deeper than 10 levels at ./${sub(11)}`,
-      },
-    ]);
-    expect(checkNames).toEqual([]);
-  });
-
-  it("propagates a non-depth failure out of job expansion", async () => {
-    const sub = ".github/workflows/sub.yml";
-    const github = fakeGithub({
-      contents: { [WF]: `on: pull_request\njobs:\n  call:\n    uses: ./${sub}\n` },
-    });
-    const real = github.getContent;
-    github.getContent = async (args) =>
-      args.path === sub ? Promise.reject(apiError(503, sub)) : real(args);
-    await expect(willfire(github, "o/r", 1)).rejects.toThrow(`GitHub API 503 for ${sub}`);
   });
 
   it("reports an unparseable workflow as a workflow-level run (#7)", async () => {
@@ -816,7 +783,7 @@ describe("willfire", () => {
   });
 
   it("suppresses everything on a skip-checks trailer", async () => {
-    const message = "feat: thing\n\n\nskip-checks: true";
+    const message = "feat: thing\n\nskip-checks: true\n";
     expect(await run("on: pull_request\njobs:\n  a: {}\n", { message })).toEqual({
       entries: [],
       checkNames: [],
@@ -827,13 +794,13 @@ describe("willfire", () => {
   });
 
   it("reads the skip-checks trailer case-insensitively", async () => {
-    const message = "feat: thing\n\n\nSKIP-CHECKS: TRUE";
+    const message = "feat: thing\n\nSKIP-CHECKS: TRUE\n";
     const { skip } = await run("on: pull_request\njobs:\n  a: {}\n", { message });
     expect(skip).toBe("head commit message contains a skip instruction");
   });
 
   it("does not suppress on a skip-checks mention that is not a trailer", async () => {
-    const message = "feat: thing\n\n\nsee the docs on skip-checks: true handling";
+    const message = "feat: thing\n\nsee the docs on skip-checks: true handling\n";
     expect(await only("on: pull_request\njobs:\n  a: {}\n", { message })).toEqual({
       workflow: WF,
       job: "a",

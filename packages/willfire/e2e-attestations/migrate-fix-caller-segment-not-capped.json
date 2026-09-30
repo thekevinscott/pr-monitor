@@ -1,7 +1,0 @@
-{
-  "command": "pnpm run test:e2e",
-  "ran_at": 1790783878,
-  "exit_code": 0,
-  "commit": "380d329d59f69f35d18da8d22f2a57674e474b74",
-  "branch": "migrate/fix/caller-segment-not-capped"
-}
