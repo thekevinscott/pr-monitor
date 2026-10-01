@@ -12,6 +12,9 @@ describe("rejectedIfContext", () => {
     expect(rejectedIfContext(wf({ jobs: { a: { if: "${{ env.FOO != '' }}" } } }))).toBe(
       "job 'a' if: reads env, unavailable there: startup failure",
     );
+    expect(rejectedIfContext(wf({ jobs: { a: { if: "${{ matrix.label == '' }}" } } }))).toBe(
+      "job 'a' if: reads matrix, unavailable there: startup failure",
+    );
   });
 
   it("names the job whose step guard reads a refused context", () => {
@@ -34,7 +37,10 @@ describe("rejectedIfContext", () => {
           jobs: {
             a: {
               if: "github.event_name == 'pull_request'",
-              steps: [{ if: "env.FOO == 'y'", run: "true" }],
+              steps: [
+                { if: "env.FOO == 'y'", run: "true" },
+                { if: "matrix.os == 'linux'", run: "true" },
+              ],
             },
           },
         }),

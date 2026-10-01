@@ -4,7 +4,7 @@ need; `ctl-needs` and `ctl-caller` are declared below theirs. Run 36430122487
 dispatched one skipped check per job in both orders: declaration order changes
 nothing.
 
-`statuses.json` carries each dispatched check's conclusion, because six of the
+`conclusions.json` carries each dispatched check's conclusion, because six of the
 eight names would match even if the verdicts were wrong.
 
 `prt-noop` is the standing `pull_request_target` workflow. Its calls were

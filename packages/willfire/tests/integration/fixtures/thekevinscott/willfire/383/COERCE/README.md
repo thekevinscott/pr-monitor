@@ -7,8 +7,8 @@ in one wave at 13:41:16Z and the next wave at 13:41:53Z followed the push, with
 nothing in between for the 13:41:37Z labelling — a default-`types:`
 `pull_request` or `pull_request_target` workflow does not react to `labeled`.
 
-`statuses.json` is each check's run-or-skipped verdict, derived from its GitHub
-conclusion. It is the payload for the comparison cases: the names alone cannot
+`conclusions.json` is each check's GitHub conclusion, verbatim. It is the
+payload for the comparison cases: the names alone cannot
 tell a `true` from a `false`.
 
 ## Measured

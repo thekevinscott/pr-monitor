@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { predict } from "willfire";
+import { isJobEntry, predict, type Prediction } from "willfire";
 import { discoverCases } from "../cases.js";
 import { getResponse } from "../getResponse.js";
 import { getCalls } from "./getCalls.js";
@@ -29,8 +29,6 @@ const recordingKey = (c: Case): string => {
   return `${c.owner}/${c.repo}#${c.pr}:${c.action ?? ""}:${h.digest("hex")}`;
 };
 
-type Prediction = Awaited<ReturnType<typeof predict>>;
-
 const predictions = new Map<string, Promise<Prediction>>();
 
 const predictOnce = (c: Case): Promise<Prediction> => {
@@ -55,16 +53,15 @@ test.each(CASES)(
   300_000,
 );
 
-// A skipped job still gets a check run, so a matching name list can hide a
-// wrong verdict. `statuses.json` records what GitHub reported per dispatched
-// check — its conclusion, where anything but `skipped` means it ran — for the
-// cases where that distinction is the case.
-const STATUS_CASES = CASES.filter((c) => existsSync(join(c.dir, "statuses.json")));
+// A skipped job still gets a check run, so a names-only assertion cannot tell
+// a job predicted to run from one predicted to skip. `conclusions.json` holds
+// GitHub's own conclusion per check, verbatim; only `skipped` is a skip.
+const CONCLUDED = CASES.filter((c) => existsSync(join(c.dir, "conclusions.json")));
 
-test.each(STATUS_CASES)(
-  "$title predicts each dispatched check's status",
+test.each(CONCLUDED)(
+  "$title predicts run-or-skipped per check exactly",
   async (c) => {
-    const conclusions = JSON.parse(readFileSync(join(c.dir, "statuses.json"), "utf8")) as Record<
+    const conclusions = JSON.parse(readFileSync(join(c.dir, "conclusions.json"), "utf8")) as Record<
       string,
       string
     >;
@@ -74,14 +71,11 @@ test.each(STATUS_CASES)(
         conclusion === "skipped" ? "skipped" : "run",
       ]),
     );
-    const { entries } = await predictOnce(c);
-    const actual = Object.fromEntries(
-      Object.keys(expected).map((name) => [
-        name,
-        entries.find((e) => e.checkName === name)?.status,
-      ]),
-    );
-    expect(actual).toEqual(expected);
+    const predicted = (await predictOnce(c)).entries
+      .filter(isJobEntry)
+      .filter((e) => e.checkName !== null && e.status !== "unknown")
+      .map((e) => [e.checkName, e.status]);
+    expect(Object.fromEntries(predicted)).toEqual(expected);
   },
   300_000,
 );
