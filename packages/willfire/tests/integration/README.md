@@ -71,7 +71,7 @@ const recording = new Proxy(real, {
     return result;
   },
 });
-await predict(recording, `${owner}/${repo}`, pr);
+await willfire(recording, `${owner}/${repo}`, pr);
 ```
 
 Record `params` exactly as passed. `replayClient` keys on the method plus its
