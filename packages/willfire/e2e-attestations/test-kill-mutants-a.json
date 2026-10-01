@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790856748,
+  "exit_code": 0,
+  "commit": "bcd728e8c2effce14f8621710bdef103091e5dd6",
+  "branch": "test/kill-mutants-a"
+}
