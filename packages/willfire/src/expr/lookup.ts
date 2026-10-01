@@ -54,14 +54,14 @@ export function lookup(scope: Scope, path: string): Val {
     return matrixVal(scope.matrix, rest);
   }
   if (head === "vars") {
-    // Variable names are case-insensitive on GitHub. An unlisted name is not
-    // settled — see the Scope contract — so only a hit decides anything.
+    // Variable names are case-insensitive on GitHub. An unlisted name is
+    // settled only by a complete listing — see the Scope contract.
     for (const [name, v] of Object.entries(scope.vars ?? {})) {
       if (name.toUpperCase() === rest.toUpperCase()) {
         return { kind: "value", v };
       }
     }
-    return UNKNOWN;
+    return scope.varsComplete === true ? { kind: "value", v: "" } : UNKNOWN;
   }
   // `env.*` and `secrets.*`: both require something that has not happened
   // yet at prediction time.

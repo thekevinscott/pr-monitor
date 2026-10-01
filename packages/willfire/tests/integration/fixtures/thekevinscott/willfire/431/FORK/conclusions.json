@@ -1,0 +1,10 @@
+{
+  "CI Gate": "failure",
+  "actor thekevinbot": "success",
+  "fork-only": "success",
+  "head-repo thekevinbot/willfire": "success",
+  "prt-noop": "success",
+  "repository thekevinscott/willfire": "success",
+  "repository-owner thekevinscott": "success",
+  "same-repo-only": "skipped"
+}

@@ -106,6 +106,13 @@ interface Fixture {
   mergeSha?: string | null;
   /** GitHub's mergeability verdict; null while the mergeability check is pending. */
   mergeable?: boolean | null;
+  /**
+   * `pull_request` runs already at the head SHA. Absent leaves the route
+   * unserved, which pins the read as reached only on the conflicted path.
+   */
+  headRuns?: { id: number; path: string; status: string | null }[];
+  /** Filled in by the stub with every `listWorkflowRuns` query it served. */
+  runQueries?: Parameters<GithubClient["listWorkflowRuns"]>[0][];
   /** Parent shas by commit sha, via `getCommit`. Unlisted: no parents. */
   parents?: Record<string, string[]>;
   /** Open PRs, for the stack walk's `listPulls` lookup by head branch. */
@@ -117,6 +124,8 @@ interface Fixture {
   variables?: { name: string; value: string }[];
   /** Status `listRepoVariables` throws instead of answering. */
   variablesError?: number;
+  /** `base.repo.owner.type`; a `User` owner has no org-level variables. */
+  ownerType?: string;
   /** The PR's author login. */
   author?: string;
   /** The PR's head branch name. */
@@ -166,7 +175,13 @@ const unserved = (route: string) => (): never => {
 function fakeGithub(f: Fixture): GithubClient {
   const contents = f.contents ?? {};
   return {
-    listWorkflowRuns: unserved("listWorkflowRuns"),
+    listWorkflowRuns: async (params) => {
+      if (f.headRuns === undefined) {
+        return unserved("listWorkflowRuns")();
+      }
+      f.runQueries?.push(params);
+      return f.headRuns;
+    },
     listRunJobs: unserved("listRunJobs"),
     getPull: async ({ pull_number }) => {
       if (pull_number !== 1) {
@@ -174,7 +189,13 @@ function fakeGithub(f: Fixture): GithubClient {
       }
       return {
         commits: f.commits ?? 1,
-        base: { ref: f.baseRef ?? "main", repo: { default_branch: f.defaultBranch ?? "main" } },
+        base: {
+          ref: f.baseRef ?? "main",
+          repo: {
+            default_branch: f.defaultBranch ?? "main",
+            owner: { type: f.ownerType ?? "Organization" },
+          },
+        },
         head: {
           sha: HEAD_SHA,
           ref: f.headRef ?? "topic",
@@ -744,12 +765,80 @@ describe("workflow-level verdicts", () => {
 // ------------------------------------------------------------- repo-level pipeline
 
 describe("willfire", () => {
-  it("predicts no checks when GitHub reports the pull request is unmergeable", async () => {
-    const prediction = await run("on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n", {
+  // Scratch probe willfire#386 opened already conflicting with its base: no
+  // `pull_request` run at 3c7f61e4 in the 25 minutes it stayed open.
+  it("predicts no pull_request checks when an unmergeable pull request has dispatched nothing", async () => {
+    const { entries, checkNames, skip } = await run(
+      "on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n",
+      { mergeable: false, headRuns: [] },
+    );
+
+    expect(entries).toEqual([
+      {
+        workflow: WF,
+        job: "*",
+        checkName: null,
+        status: "no-dispatch",
+        reason: "pull request conflicts with its base and has no pull_request run",
+      },
+    ]);
+    expect(checkNames).toEqual([]);
+    expect(skip).toBeNull();
+  });
+
+  it("names no startup-failure run for an unparseable workflow on an unmergeable pull request", async () => {
+    const { entries } = await run("on: pull_request\njobs: [\n", { mergeable: false, headRuns: [] });
+
+    expect(entries).toEqual([
+      {
+        workflow: WF,
+        job: "*",
+        checkName: null,
+        status: "no-dispatch",
+        reason: "pull request conflicts with its base and has no pull_request run",
+      },
+    ]);
+  });
+
+  // The same probe still got its `prt-noop` run (36430470124): a target run
+  // never needs the test merge a conflict prevents.
+  it("still predicts a pull_request_target run on an unmergeable pull request", async () => {
+    const target = "on: pull_request_target\njobs:\n  label: {}\n";
+    const { checkNames } = await run(target, {
       mergeable: false,
+      headRuns: [],
+      refs: { "o/r@main": DEFAULT_SHA },
+      defaultContents: { [WF]: target },
     });
 
-    expect(prediction).toEqual({ entries: [], checkNames: [], skip: null, sources: [] });
+    expect(checkNames).toEqual(["label"]);
+  });
+
+  // Scratch probe willfire#388 conflicted after its dispatch: runs 36430507327
+  // and 36430507309 stayed on the PR, so `[]` was the wrong answer there.
+  it("keeps predicting when an unmergeable pull request already has runs", async () => {
+    const prediction = await run("on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n", {
+      mergeable: false,
+      headRuns: [{ id: 1, path: WF, status: "completed" }],
+    });
+
+    expect(prediction.checkNames).toEqual(["build"]);
+  });
+
+  it("asks only for this head's pull_request runs before writing a conflicting PR off", async () => {
+    const runQueries: Parameters<GithubClient["listWorkflowRuns"]>[0][] = [];
+
+    await run("on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n", {
+      mergeable: false,
+      headRuns: [],
+      runQueries,
+    });
+
+    // A wrong owner, head SHA or event reads some other dispatch and decides
+    // this PR on it.
+    expect(runQueries).toEqual([
+      { owner: "o", repo: "r", head_sha: HEAD_SHA, event: "pull_request" },
+    ]);
   });
 
   it("continues predicting while GitHub is still computing mergeability", async () => {
@@ -1550,6 +1639,30 @@ describe("repo variables as a prediction-wide fact (#323)", () => {
   it("leaves an unlisted name unknown: org-level variables are invisible here", async () => {
     const { entries } = await willfire(
       fakeGithub({ contents: { [WF]: GUARDED }, variables: [] }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "unknown"],
+      ["base", "run"],
+    ]);
+  });
+
+  it("skips on an unlisted name in a user-owned repo, which has no org level", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variables: [], ownerType: "User" }),
+      "o/r",
+      1,
+    );
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["extra", "skipped"],
+      ["base", "run"],
+    ]);
+  });
+
+  it("stays unknown in a user-owned repo when the listing cannot be read", async () => {
+    const { entries } = await willfire(
+      fakeGithub({ contents: { [WF]: GUARDED }, variablesError: 403, ownerType: "User" }),
       "o/r",
       1,
     );

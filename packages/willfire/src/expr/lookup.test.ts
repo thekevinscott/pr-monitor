@@ -102,4 +102,11 @@ describe("lookup", () => {
     expect(lookup({ vars: {} }, "vars.RUN_EXTRA")).toEqual({ kind: "unknown" });
     expect(lookup(SCOPE, "vars.RUN_EXTRA")).toEqual({ kind: "unknown" });
   });
+
+  it("reads an unlisted variable as the empty string once the listing is complete", () => {
+    const scope: Scope = { vars: { OTHER: "x" }, varsComplete: true };
+    expect(lookup(scope, "vars.RUN_EXTRA")).toEqual({ kind: "value", v: "" });
+    expect(lookup(scope, "vars.other")).toEqual({ kind: "value", v: "x" });
+    expect(lookup({ vars: {}, varsComplete: false }, "vars.X")).toEqual({ kind: "unknown" });
+  });
 });

@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { jobDisplayName } from "./jobDisplayName.js";
 
 describe("jobDisplayName", () => {
+  it("renders the name against the github facts it is handed", () => {
+    expect(
+      jobDisplayName("c3", { name: "c3-ref-is-${{ github.ref }}" }, null, {
+        ref: "refs/pull/383/merge",
+      }),
+    ).toEqual({ name: "c3-ref-is-refs/pull/383/merge", resolved: true });
+  });
+
   it("suffixes the job id with the matrix parenthetical when there is no name:", () => {
     expect(jobDisplayName("a", {}, { values: { os: "linux" }, displayKeys: ["os"] })).toEqual({
       name: "a (linux)",

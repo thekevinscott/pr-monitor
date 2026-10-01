@@ -47,8 +47,20 @@ export async function willfire(
   const base = { owner, repo: name };
 
   const pr = await github.getPull({ ...base, pull_number: prNumber });
+  let conflicted: string | null = null;
   if (pr.mergeable === false) {
-    return finalizePrediction([], null, new Map());
+    // A conflict stops the next dispatch; it does not retract runs GitHub
+    // already made. Probe #386 opened conflicted and got none; #388 conflicted
+    // after its run and kept every check (36430507327, 36430507309). Only the
+    // `pull_request` side stops: #386 still got its target run (36430470124).
+    const dispatched = await github.listWorkflowRuns({
+      ...base,
+      head_sha: pr.head.sha,
+      event: "pull_request",
+    });
+    if (dispatched.length === 0) {
+      conflicted = "pull request conflicts with its base and has no pull_request run";
+    }
   }
 
   const files = await github.listPullFiles({ ...base, pull_number: prNumber });
@@ -93,6 +105,7 @@ export async function willfire(
   const skip = hasSkipInstruction(headCommit.commit.message)
     ? "head commit message contains a skip instruction"
     : null;
+  const noPullRequestRun = skip ?? conflicted;
 
   sources.set(sourceKey(readSource), readSource);
 
@@ -170,17 +183,20 @@ export async function willfire(
   // token cannot see the variables — so every lookup honestly stays unknown;
   // anything else is "could not read" and aborts rather than degrading a
   // decidable guard to unknown only on bad days.
-  let varsRead: Promise<Record<string, string>> | undefined;
-  const repoVars = (): Promise<Record<string, string>> => {
+  let varsRead: Promise<Pick<Scope, "vars" | "varsComplete">> | undefined;
+  const repoVars = (): Promise<Pick<Scope, "vars" | "varsComplete">> => {
     varsRead ??= github.listRepoVariables(base).then(
-      (vars) => Object.fromEntries(vars.map((v) => [v.name, v.value])),
+      (vars) => ({
+        vars: Object.fromEntries(vars.map((v) => [v.name, v.value])),
+        varsComplete: pr.base.repo.owner.type === "User",
+      }),
       (e) => {
         const status = errorStatus(e);
         if (status !== 403 && status !== 404) {
           throw e;
         }
         console.warn(`willfire: cannot list variables for ${repo} (${String(e)})`);
-        return {};
+        return { vars: {} };
       },
     );
     return varsRead;
@@ -356,8 +372,8 @@ export async function willfire(
     try {
       wf = parseYaml(content);
     } catch (e) {
-      if (skip !== null) {
-        return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+      if (noPullRequestRun !== null) {
+        return [{ workflow: path, job: "*", status: "no-dispatch", reason: noPullRequestRun }];
       }
       // GitHub creates a run for an unparseable workflow file and concludes it
       // `startup_failure`. The run exists but has no jobs, so this is a
@@ -367,8 +383,8 @@ export async function willfire(
     if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
       targetTriggered = true;
     }
-    if (skip !== null) {
-      return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+    if (noPullRequestRun !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: noPullRequestRun }];
     }
     const [dispatches, reason] = workflowDispatches(wf, ctx);
     if (!dispatches) {
