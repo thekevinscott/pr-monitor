@@ -1,4 +1,4 @@
-import { predict } from 'willfire';
+import { willfire } from 'willfire';
 import type { MonitorParams, WorkflowJobSummary, WorkflowRunSummary } from './types';
 import { sleep } from './timing/sleep';
 import { fetchWorkflowRunJobs } from './github/fetchWorkflowRunJobs';
@@ -56,7 +56,7 @@ export async function monitor({
     action: resolveEventAction(context),
     callbacks,
   };
-  const prediction = await predict(predictClient, slug, pullNumber, options);
+  const prediction = await willfire(predictClient, slug, pullNumber, options);
   let expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 

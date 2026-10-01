@@ -9,16 +9,16 @@ vi.mock('./timing/sleep', async () => {
   return { ...actual, sleep: vi.fn(() => Promise.resolve()) };
 });
 
-// A recorder, not a mock: `predict` stays real so every scenario still exercises willfire.
-const { predictSpy } = vi.hoisted(() => ({ predictSpy: vi.fn() }));
+// A recorder, not a mock: `willfire` stays real so every scenario still exercises willfire.
+const { willfireSpy } = vi.hoisted(() => ({ willfireSpy: vi.fn() }));
 
 vi.mock('willfire', async () => {
   const actual = await vi.importActual<typeof import('willfire')>('willfire');
   return {
     ...actual,
-    predict: (...args: Parameters<typeof actual.predict>) => {
-      predictSpy(...args);
-      return actual.predict(...args);
+    willfire: (...args: Parameters<typeof actual.willfire>) => {
+      willfireSpy(...args);
+      return actual.willfire(...args);
     },
   };
 });
@@ -446,7 +446,7 @@ describe('predicted check set', () => {
       polls: [[self, run(TESTS)]],
     });
     expect(failures).toEqual([]);
-    expect(predictSpy.mock.calls.at(-1)?.[3]).toMatchObject({
+    expect(willfireSpy.mock.calls.at(-1)?.[3]).toMatchObject({
       callbacks: ['echo {}', 'printf {}'],
     });
   });
