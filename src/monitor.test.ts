@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { monitor } from './monitor';
 import { sleep } from './timing/sleep';
+import type { GithubClient } from 'willfire';
 import type { WorkflowRunSummary, MonitorParams } from './types';
 
 vi.mock('./timing/sleep', async () => {
@@ -159,19 +160,19 @@ function makeGithub(
     counter.polls++;
     return { data: { total_count: runs.length, workflow_runs: runs } };
   };
+  const pull: Awaited<ReturnType<GithubClient['getPull']>> = {
+    commits: 1,
+    draft: false,
+    mergeable: true,
+    labels: [],
+    user: { login: PR_AUTHOR },
+    base: { ref: BASE_REF, repo: { default_branch: BASE_REF, owner: { type: 'User' } } },
+    head: { sha: HEAD_SHA, ref: HEAD_REF, repo: { full_name: 'o/r' } },
+    merge_commit_sha: MERGE_SHA,
+  };
   const rest = {
     pulls: {
-      get: async () => ({
-        data: {
-          commits: 1,
-          draft: false,
-          labels: [],
-          user: { login: PR_AUTHOR },
-          base: { ref: BASE_REF },
-          head: { sha: HEAD_SHA, ref: HEAD_REF, repo: { full_name: 'o/r' } },
-          merge_commit_sha: MERGE_SHA,
-        },
-      }),
+      get: async () => ({ data: pull }),
       listFiles: async () => ({
         data: (scenario.files ?? ['src/index.ts']).map((filename) => ({ filename })),
       }),
