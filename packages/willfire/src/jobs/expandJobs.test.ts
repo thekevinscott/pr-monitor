@@ -674,6 +674,22 @@ describe("reusable workflows", () => {
     ).rejects.toThrow(`cannot fetch ${uses}`);
   });
 
+  it.each([`v${REMOTE_SHA}`, `${REMOTE_SHA}-rc`])(
+    "resolves a ref that only contains a commit id (%s)",
+    async (ref) => {
+      const uses = `octo/repo/.github/workflows/x.yml@${ref}`;
+      await expect(
+        expand(
+          { call: { uses } },
+          readerOf(
+            async () => null,
+            async () => null,
+          ),
+        ),
+      ).rejects.toThrow(`cannot resolve ref for ${uses}`);
+    },
+  );
+
   it("resolves a remote callee's own `./` calls in the callee's repo", async () => {
     // The recursion has to descend with the callee's site, not the caller's:
     // a `./` inside the callee names a file in the callee's repo at its pinned
