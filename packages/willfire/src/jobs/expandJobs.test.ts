@@ -124,6 +124,22 @@ describe("job expansion", () => {
     expect(entries[0]).toMatchObject({ job: "Build" });
   });
 
+  it("renders a name against the scope's github facts", async () => {
+    const entries = await expandJobs({
+      wf: {
+        on: { pull_request: null },
+        jobs: { c3: { name: "c3-ref-is-${{ github.ref }}" } },
+      } as Workflow,
+      reader: readerFor({}),
+      site: SITE,
+      scope: { github: { ref: "refs/pull/383/merge" } },
+    });
+    expect(entries[0]).toMatchObject({
+      job: "c3-ref-is-refs/pull/383/merge",
+      checkName: "c3-ref-is-refs/pull/383/merge",
+    });
+  });
+
   it("falls back to the job id when `name` is present but null", async () => {
     const entries = await expand({ a: { name: null } });
     expect(entries[0]).toMatchObject({ job: "a" });

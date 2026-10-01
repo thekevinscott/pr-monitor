@@ -61,6 +61,13 @@ describe("applyFunction", () => {
     expect(applyFunction("format", [], {})).toEqual({ kind: "unknown" });
   });
 
+  it("dispatches join at one or two arguments only", () => {
+    const arr = { kind: "json" as const, v: ["a", "b"] };
+    expect(applyFunction("join", [arr], {})).toEqual(S("a,b"));
+    expect(applyFunction("join", [arr, S("|")], {})).toEqual(S("a|b"));
+    expect(applyFunction("join", [arr, S("|"), S("x")], {})).toEqual({ kind: "unknown" });
+  });
+
   it("evaluates contains over two known strings", () => {
     expect(applyFunction("contains", [S("abc"), S("b")], {})).toEqual(S(true));
     expect(applyFunction("contains", [S("abc"), S("z")], {})).toEqual(S(false));
