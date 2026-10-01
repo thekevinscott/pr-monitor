@@ -21,3 +21,27 @@ prediction engine it imports from source through `tsx`, with its own
 `AGENTS.md`, eslint config, tsconfig and Vitest major — run its suites with
 `pnpm --filter willfire run <script>`, never from the root. It is private and
 never published.
+
+## Session handoff doc
+
+Maintain one ongoing handoff doc per working session and deliver it to the user at every
+**stopping point**: after each major unit of work lands (a push, an observed red or green CI run, a
+merged PR, a finished investigation) or when blocked on user input. A stopping point marks a
+checkpoint, not the end — update the doc, then keep working.
+
+Keep it at `notes/HANDOFF-<topic>.md`. `notes/` is untracked: keep the doc out of every commit.
+Update the same doc in place at each checkpoint and print its path, so the freshest pointer sits
+near the bottom of the conversation.
+
+Write it standalone, so a brand-new session with zero context resumes from it alone:
+
+- Task and current status (done / in progress / next)
+- Branches, PRs, and issues with numbers and CI state — including where the red/green cadence
+  stands (red tests pushed? red witnessed on CI? implementation up?)
+- Key decisions and discovered constraints, with one-line reasons
+- Exact next steps, including commands to run
+- Anything waiting on the user
+
+Purpose: the prompt cache survives at most an hour of inactivity, so resuming a long conversation
+after hours away reprocesses the entire history at full cost. A current handoff doc lets the user
+start a cheap fresh session from the doc instead of resuming the stale one.
