@@ -30,6 +30,10 @@ describe("formatCall", () => {
     expect(formatCall([S(7)])).toEqual(S("7"));
   });
 
+  it("keeps a lone brace that is not a slot as literal text", () => {
+    expect(formatCall([S("a{b}c{"), S("x")])).toEqual(S("a{b}c{"));
+  });
+
   it("unescapes doubled braces", () => {
     expect(formatCall([S("{{{0}}}"), S("v")])).toEqual(S("{v}"));
   });

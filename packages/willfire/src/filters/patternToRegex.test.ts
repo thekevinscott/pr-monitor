@@ -27,6 +27,10 @@ describe("patternToRegex", () => {
     expect(re.test("docs/a.md")).toBe(true);
     expect(re.test("docs/nested/a.md")).toBe(true);
     expect(re.test("README.txt")).toBe(false);
+    const named = patternToRegex("**/a.md");
+    expect(named.test("a.md")).toBe(true);
+    expect(named.test("docs/a.md")).toBe(true);
+    expect(named.test("ba.md")).toBe(false);
   });
 
   it("treats a **/ away from the start as zero or more directories too", () => {
@@ -55,6 +59,9 @@ describe("patternToRegex", () => {
     const re = patternToRegex("v[0-9]");
     expect(re.test("v7")).toBe(true);
     expect(re.test("vx")).toBe(false);
+    const two = patternToRegex("[0-9][a-z]");
+    expect(two.test("7x")).toBe(true);
+    expect(two.test("x7")).toBe(false);
   });
 
   it("escapes regex metacharacters that are literal in the glob grammar", () => {

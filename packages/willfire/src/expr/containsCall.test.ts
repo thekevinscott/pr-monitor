@@ -18,6 +18,7 @@ describe("containsCall", () => {
     expect(containsCall(J(["a", "b"]), S("c"))).toEqual(S(false));
     expect(containsCall(J(["abc"]), S("ab"))).toEqual(S(false));
     expect(containsCall(J([1, 2]), S(1))).toEqual(S(true));
+    expect(containsCall(J([false, true]), S(true))).toEqual(S(true));
     expect(containsCall(J([]), S("a"))).toEqual(S(false));
   });
 
@@ -47,5 +48,6 @@ describe("containsCall", () => {
   it("refuses a non-string string comparison", () => {
     expect(containsCall(S(1), S(2))).toEqual({ kind: "unknown" });
     expect(containsCall(S("abc"), S(1))).toEqual({ kind: "unknown" });
+    expect(containsCall(S(1), S("1"))).toEqual({ kind: "unknown" });
   });
 });

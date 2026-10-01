@@ -5,14 +5,11 @@ import type { YamlValue } from "../yamlValue.js";
  *
  * Probe-verified: object values are flattened to their own values, so
  * `cfg: {os: linux, arch: x64}` renders as `linux, x64` — the check is
- * `m-object (linux, x64)`.
+ * `m-object (linux, x64)`. A list flattens the same way.
  */
 export function formatMatrixValue(v: YamlValue | undefined): string {
   if (v === null || v === undefined) {
     return "";
-  }
-  if (Array.isArray(v)) {
-    return v.map(formatMatrixValue).join(", ");
   }
   if (typeof v === "object") {
     return Object.values(v).map(formatMatrixValue).join(", ");

@@ -2,8 +2,6 @@
 // ** (any chars), **/ (zero or more directories), ? (zero or one of preceding
 // char), + (one or more of preceding char), [ranges], leading ! negates.
 
-const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 export function patternToRegex(pat: string): RegExp {
   let out = "";
   for (let i = 0; i < pat.length; i++) {
@@ -28,11 +26,10 @@ export function patternToRegex(pat: string): RegExp {
       const j = pat.indexOf("]", i + 1);
       out += pat.slice(i, j + 1);
       i = j;
-    } else if (c === "\\") {
-      i++;
-      out += escapeRegex(pat[i]);
     } else {
-      out += escapeRegex(c);
+      // A backslash escapes the next character, which is then taken literally.
+      const lit = c === "\\" ? pat[++i] : c;
+      out += lit.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
   }
   return new RegExp(`^${out}$`);

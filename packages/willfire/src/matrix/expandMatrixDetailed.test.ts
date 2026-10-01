@@ -52,6 +52,31 @@ describe("expandMatrixDetailed", () => {
     ]);
   });
 
+  it("excludes only the combinations matching every key of an exclude entry", () => {
+    expect(
+      expandMatrixDetailed({
+        matrix: { os: ["linux", "mac"], node: [18, 20], exclude: [{ os: "mac", node: 18 }] },
+      }),
+    ).toEqual([
+      { values: { os: "linux", node: 18 }, displayKeys: ["os", "node"] },
+      { values: { os: "linux", node: 20 }, displayKeys: ["os", "node"] },
+      { values: { os: "mac", node: 20 }, displayKeys: ["os", "node"] },
+    ]);
+  });
+
+  it("merges an include only into the combinations matching every overlapping key", () => {
+    expect(
+      expandMatrixDetailed({
+        matrix: { os: ["linux", "mac"], node: [18, 20], include: [{ os: "mac", node: 20, x: 1 }] },
+      }),
+    ).toEqual([
+      { values: { os: "linux", node: 18 }, displayKeys: ["os", "node"] },
+      { values: { os: "linux", node: 20 }, displayKeys: ["os", "node"] },
+      { values: { os: "mac", node: 18 }, displayKeys: ["os", "node"] },
+      { values: { os: "mac", node: 20, x: 1 }, displayKeys: ["os", "node"] },
+    ]);
+  });
+
   it("collapses to one unsuffixed combination when exclude removes the whole product", () => {
     // Measured on probe PR #372, run 36431257507: `m3-wiped` dispatched under
     // its bare job id beside its plain sibling.
@@ -79,6 +104,7 @@ describe("expandMatrixDetailed", () => {
 
   it("gives up on a matrix that is an expression", () => {
     expect(expandMatrixDetailed({ matrix: "${{ fromJSON(x) }}" })).toBeNull();
+    expect(expandMatrixDetailed({ matrix: "" })).toBeNull();
   });
 
   it("resolves an axis written as an expression through the scope", () => {
