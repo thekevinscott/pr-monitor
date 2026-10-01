@@ -9,6 +9,8 @@ describe("toNumber", () => {
     ["", 0],
     ["  ", 0],
     ["1", 1],
+    ["1.5", 1.5],
+    [" 7 ", 7],
     ["0x1f", 31],
   ])("casts %j to %j", (v, want) => {
     expect(toNumber(v)).toBe(want);

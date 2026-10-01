@@ -53,5 +53,7 @@ describe("evaluateValue", () => {
     // A YAML block scalar keeps its newlines, so the wrapper spans lines.
     expect(evaluateValue("${{\n  'a'\n}}")).toEqual({ kind: "value", v: "a" });
     expect(evaluateValue("  ${{ 'a' }}\n")).toEqual({ kind: "value", v: "a" });
+    // The tokenizer skips only ASCII whitespace; trim takes the rest.
+    expect(evaluateValue("${{ 'a'\u00a0}}")).toEqual({ kind: "value", v: "a" });
   });
 });
