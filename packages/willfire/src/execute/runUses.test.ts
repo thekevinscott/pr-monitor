@@ -83,12 +83,13 @@ describe("runUses", () => {
   });
 
   it("materializes a 40-hex ref as the commit itself, without the resolver", async () => {
-    const sha = "a".repeat(40);
     const ctx = ctxOf({}, { resolveRef: async () => null });
-    expect(await runUses({ uses: `o/r@${sha}` }, "step '#1'", {}, ctx)).toEqual({
-      ok: false,
-      reason: `step '#1': cannot materialize o/r@${sha}`,
-    });
+    for (const sha of ["a".repeat(40), "A".repeat(40)]) {
+      expect(await runUses({ uses: `o/r@${sha}` }, "step '#1'", {}, ctx)).toEqual({
+        ok: false,
+        reason: `step '#1': cannot materialize o/r@${sha}`,
+      });
+    }
   });
 
   it("resolves any ref that is not exactly 40 hex characters", async () => {

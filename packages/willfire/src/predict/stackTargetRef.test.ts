@@ -9,10 +9,15 @@ interface Fake {
   parents?: Record<string, string[]>;
   /** Open PRs, for the walk's `listPulls` lookup by head branch. */
   openPrs?: { headRef: string; baseRef: string; mergeSha: string | null }[];
+  /** Closed PRs, served only to a `state: "closed"` or `"all"` lookup. */
+  closedPrs?: { headRef: string; baseRef: string; mergeSha: string | null }[];
+  /** Every request the walk makes, in order. */
+  requests?: string[];
 }
 
 const fakeGithub = (f: Fake): Parameters<typeof stackTargetRef>[0] => ({
   getCommit: async ({ owner, repo, ref }) => {
+    f.requests?.push(`getCommit ${ref}`);
     const sha = (f.refs ?? {})[`${owner}/${repo}@${ref}`];
     if (sha === undefined) {
       throw new Error(`404 ${owner}/${repo}@${ref}`);
@@ -20,10 +25,15 @@ const fakeGithub = (f: Fake): Parameters<typeof stackTargetRef>[0] => ({
     const parents = ((f.parents ?? {})[sha] ?? []).map((p) => ({ sha: p }));
     return { sha, commit: { message: "" }, parents };
   },
-  listPulls: async ({ head }) =>
-    (f.openPrs ?? [])
+  listPulls: async ({ state, head }) => {
+    f.requests?.push(`listPulls ${head}`);
+    return [
+      ...(state === "open" || state === "all" ? (f.openPrs ?? []) : []),
+      ...(state === "closed" || state === "all" ? (f.closedPrs ?? []) : []),
+    ]
       .filter((p) => `o:${p.headRef}` === head)
-      .map((p) => ({ base: { ref: p.baseRef }, merge_commit_sha: p.mergeSha })),
+      .map((p) => ({ base: { ref: p.baseRef }, merge_commit_sha: p.mergeSha }));
+  },
 });
 
 const walk = (pr: StackNode, f: Fake) => stackTargetRef(fakeGithub(f), "o", "r", pr);
@@ -42,6 +52,24 @@ describe("stackTargetRef", () => {
     expect(await walk({ base: { ref: "main" }, merge_commit_sha: "m0" }, f)).toBeNull();
   });
 
+  it("is null when the preview sits on the base tip, even if a PR claims that sha", async () => {
+    const f: Fake = {
+      refs: { "o/r@m0": "m0", "o/r@main": "tip-main" },
+      parents: { m0: ["tip-main"] },
+      openPrs: [{ headRef: "main", baseRef: "dev", mergeSha: "tip-main" }],
+    };
+    expect(await walk({ base: { ref: "main" }, merge_commit_sha: "m0" }, f)).toBeNull();
+  });
+
+  it("is null when only a closed PR owns the preview parent", async () => {
+    const f: Fake = {
+      refs: { "o/r@m0": "m0", "o/r@main": "tip-main" },
+      parents: { m0: ["m-closed"] },
+      closedPrs: [{ headRef: "main", baseRef: "dev", mergeSha: "m-closed" }],
+    };
+    expect(await walk({ base: { ref: "main" }, merge_commit_sha: "m0" }, f)).toBeNull();
+  });
+
   it("is null when no open PR owns the preview parent", async () => {
     // The preview parent is an old base tip, not any open PR's merge sha.
     const f: Fake = {
@@ -55,9 +83,10 @@ describe("stackTargetRef", () => {
     expect(await walk({ base: { ref: "main" }, merge_commit_sha: "m0" }, f)).toBeNull();
   });
 
-  it("is null when the preview has no parents", async () => {
-    const f: Fake = { refs: { "o/r@m0": "m0" } };
+  it("is null when the preview has no parents, and asks nothing further", async () => {
+    const f: Fake = { refs: { "o/r@m0": "m0", "o/r@main": "tip-main" }, requests: [] };
     expect(await walk({ base: { ref: "main" }, merge_commit_sha: "m0" }, f)).toBeNull();
+    expect(f.requests).toEqual(["getCommit m0"]);
   });
 
   it("stops at the last proven hop when the preview cannot be read", async () => {

@@ -151,6 +151,25 @@ describe("the CLI entrypoint", () => {
     expect(out).toEqual([]);
   });
 
+  it.each(["/somewhere/cli.json", "/opt/willfire/index.js"])(
+    "stays quiet when node runs %s, which only resembles the entrypoint",
+    async (script) => {
+      hoisted.github = fakeGithub({ contents: { [WF]: WORKFLOW } });
+      process.argv = ["node", script, "--repo", "o/r", "--pr", "1"];
+      vi.resetModules();
+      await import("./cli.js");
+      expect(out).toEqual([]);
+    },
+  );
+
+  it("runs when node is pointed at the installed willfire bin", async () => {
+    hoisted.github = fakeGithub({ contents: { [WF]: WORKFLOW } });
+    process.argv = ["node", "/usr/local/bin/willfire", "--repo", "o/r", "--pr", "1"];
+    vi.resetModules();
+    await import("./cli.js");
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+  });
+
   it("predicts through willfire, not the deprecated predict alias", async () => {
     await invoke(["--repo", "o/r", "--pr", "1"], { contents: { [WF]: WORKFLOW } });
     expect(hoisted.entered).toEqual(["o/r"]);

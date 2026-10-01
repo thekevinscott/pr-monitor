@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DOCKERFILE, sandboxConfig } from "./sandboxConfig.js";
+import { SANDBOX_NODE_MAJOR, sandboxConfig } from "./sandboxConfig.js";
 
 describe("sandboxConfig", () => {
   it("defaults to the docker on PATH, the invoking user, and the shipped dockerfile", () => {
@@ -7,11 +7,11 @@ describe("sandboxConfig", () => {
     expect(cfg.dockerBin).toBe("docker");
     expect(cfg.uid).toBe(process.getuid!());
     expect(cfg.gid).toBe(process.getgid!());
-    expect(cfg.dockerfile).toBe(DOCKERFILE);
+    expect(cfg.dockerfile).toMatch(new RegExp(`^FROM node:${SANDBOX_NODE_MAJOR}-slim\n`));
   });
 
   it("ships an image whose /usr/local dirs take a non-root `npm install -g`", () => {
-    expect(DOCKERFILE).toContain("find /usr/local -type d -exec chmod a+w {} +");
+    expect(sandboxConfig().dockerfile).toContain("find /usr/local -type d -exec chmod a+w {} +");
   });
 
   it("takes every override", () => {
