@@ -49,8 +49,9 @@ test.each(CASES)(
     expect((await predictOnce(c)).checkNames).toEqual(getResponse(c.dir));
   },
   // A replay with a runtime-computed matrix runs the docker sandbox, and CI
-  // provisions the image inside the first such test.
-  300_000,
+  // provisions the image inside the first such test. putitoutthere#702 takes
+  // 220-290s on a CI runner.
+  600_000,
 );
 
 // A skipped job still gets a check run, so a names-only assertion cannot tell
