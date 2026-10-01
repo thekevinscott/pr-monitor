@@ -10,7 +10,7 @@ export function getPrTrigger(wf: Workflow, event: PrEvent = "pull_request"): Yam
   // YAML 1.1 parsers read `on` as boolean true; the `yaml` package (1.2)
   // keeps it a string key. Handle both.
   const on = wf["on"] ?? wf["true"];
-  if (on === null || on === undefined) {
+  if (on === null) {
     return MISSING;
   }
   if (typeof on === "string") {
