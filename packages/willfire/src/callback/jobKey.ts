@@ -6,5 +6,6 @@ import type { JobSite } from "../types.js";
  * so a moving tag never invalidates one. Constructed only — the job id sits
  * after the last colon precisely because nothing ever parses a key back apart.
  */
-export const jobKey = (site: JobSite, jobId: string): string =>
-  `${site.source.owner}/${site.source.repo}/${site.path}:${jobId}`;
+export function jobKey(site: JobSite, jobId: string): string {
+  return `${site.source.owner}/${site.source.repo}/${site.path}:${jobId}`;
+}

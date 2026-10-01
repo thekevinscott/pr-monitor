@@ -14,6 +14,17 @@ describe("isJobEntry", () => {
     expect(isJobEntry(e)).toBe(true);
   });
 
+  it("is true for a job whose name only contains an asterisk", () => {
+    const e: Entry = {
+      workflow: "w.yml",
+      job: "build (*)" as JobName,
+      checkName: "build (*)",
+      status: "run",
+      reason: "",
+    };
+    expect(isJobEntry(e)).toBe(true);
+  });
+
   it("is false for the workflow-level sentinel job", () => {
     const e: Entry = {
       workflow: "w.yml",

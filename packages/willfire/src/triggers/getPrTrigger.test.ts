@@ -16,6 +16,10 @@ describe("getPrTrigger", () => {
     expect(getPrTrigger({} as Workflow)).toBe(MISSING);
   });
 
+  it("is MISSING for an empty on", () => {
+    expect(getPrTrigger({ on: null } as Workflow)).toBe(MISSING);
+  });
+
   it("is MISSING for an on that is an unusable scalar", () => {
     // `on: true` — YAML 1.2 keeps the key a string and the value a boolean, so
     // there is no trigger map to read.

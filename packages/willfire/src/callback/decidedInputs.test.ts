@@ -16,6 +16,10 @@ describe("decidedInputs", () => {
     ).toEqual({ a: "x", n: "4", b: "true" });
   });
 
+  it("keeps a decided empty string, which is what an absent input reads as", () => {
+    expect(decidedInputs({ inputs: { a: { kind: "value", v: "" } } })).toEqual({ a: "" });
+  });
+
   it("answers empty for a scope with no inputs at all", () => {
     expect(decidedInputs({})).toEqual({});
   });

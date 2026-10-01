@@ -13,6 +13,12 @@ describe("prScope", () => {
     });
   });
 
+  it("leaves the caller's scope untouched", () => {
+    const caller: Scope = { github: { repository: "o/r" } };
+    prScope(caller);
+    expect(caller).toEqual({ github: { repository: "o/r" } });
+  });
+
   it("keeps every other key the caller stated", () => {
     // In and out are the expr module's own Scope, not structural copies.
     const caller: Scope = { inputs: { x: { kind: "value", v: "v" } } };

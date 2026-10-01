@@ -44,7 +44,7 @@ export function resolveStatuses(
       };
     }
     const upstream = needs.map((n) => statusOf(n));
-    const cond = String(job.if ?? "");
+    const cond = String(job.if);
     // A condition naming a status-check function replaces the implicit
     // success() gate on `needs` rather than being ANDed with it, so the
     // propagation loop below does not apply to it. The pattern stays inside the

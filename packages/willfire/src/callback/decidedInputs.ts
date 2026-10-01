@@ -5,9 +5,10 @@ import type { Scope } from "../expr/val.js";
  * An undecided input is left out rather than guessed at, so an entry that
  * conditions on it can never match.
  */
-export const decidedInputs = (scope: Scope): Record<string, string> =>
-  Object.fromEntries(
+export function decidedInputs(scope: Scope): Record<string, string> {
+  return Object.fromEntries(
     Object.entries(scope.inputs ?? {}).flatMap(([key, val]): [string, string][] =>
       val.kind === "value" ? [[key, String(val.v)]] : [],
     ),
   );
+}

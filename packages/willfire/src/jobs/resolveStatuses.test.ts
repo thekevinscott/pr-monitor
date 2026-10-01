@@ -30,6 +30,14 @@ describe("resolveStatuses", () => {
     expect([verdicts["bare"].status, verdicts["env"].status]).toEqual(["run", "unknown"]);
   });
 
+  it("carries a skip through a literal true guard", () => {
+    expect(resolve({ a: { if: false }, b: { needs: "a", if: true } })["b"]).toEqual({
+      status: "skipped",
+      reason: "needs 'a' which is skipped",
+      needs: ["a"],
+    });
+  });
+
   it("tolerates a job whose body is empty", () => {
     expect(statuses({ a: null })).toEqual({ a: "run" });
   });

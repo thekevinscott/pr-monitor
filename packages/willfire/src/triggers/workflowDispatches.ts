@@ -2,8 +2,6 @@ import { matchFilters } from "../filters/matchFilters.js";
 import { getPrTrigger, MISSING, type PrEvent } from "./getPrTrigger.js";
 import type { Ctx, Workflow } from "../types.js";
 
-const DEFAULT_TYPES = ["opened", "synchronize", "reopened"];
-
 // A predicate: does this workflow produce a run for the PR? Every workflow-level
 // verdict is decidable, so there is no third answer to express. Only job
 // expansion can be genuinely undecidable (dynamic matrix, an unreadable
@@ -20,7 +18,7 @@ export function workflowDispatches(
     return [false, `no ${event} trigger`];
   }
 
-  const types = (trig["types"] ?? DEFAULT_TYPES) as string[];
+  const types = (trig["types"] ?? ["opened", "synchronize", "reopened"]) as string[];
   if (!types.includes(ctx.action)) {
     return [false, `action '${ctx.action}' not in types [${types}]`];
   }

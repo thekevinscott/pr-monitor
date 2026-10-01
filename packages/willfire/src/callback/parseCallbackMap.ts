@@ -13,14 +13,13 @@ export type ParsedMap = { ok: true; map: CallbackMap } | { ok: false; reason: st
 
 type Res<T> = { ok: true; v: T } | { ok: false; reason: string };
 
-const err = (reason: string): { ok: false; reason: string } => ({ ok: false, reason });
-
 /**
  * Strict, because a shape error silently dropped here would surface later as a
  * wrong prediction: anything that is not exactly the documented map refuses to
  * parse, with the path to the offending piece.
  */
 export function parseCallbackMap(stdout: string): ParsedMap {
+  const err = (reason: string): { ok: false; reason: string } => ({ ok: false, reason });
   const stringMap = (v: unknown, label: string): Res<Record<string, string>> => {
     if (!isPlainObject(v)) {
       return err(`${label} is not an object`);
