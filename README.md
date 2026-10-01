@@ -105,7 +105,7 @@ The map is keyed by `owner/repo/.github/workflows/file.yml:job-id` — repo-qual
 ## How it works
 
 1. Reads its own workflow path from `GITHUB_WORKFLOW_REF`, so it can exclude itself
-2. Calls willfire's `predict()` for the PR, producing the entries GitHub should create
+2. Calls `willfire()` for the PR, producing the entries GitHub should create
 3. Turns those entries into the expected set:
    - **check names** — every entry willfire can resolve to a name. Matrix legs expand, `name:` overrides apply, reusable-workflow callers prefix their children
    - **workflow files** — every workflow that will dispatch. Kept alongside the names because a run can conclude before it creates a single job: a `startup_failure` creates none, and a comparison made only of names cannot see it

@@ -1,4 +1,4 @@
-import { predict, type PredictOptions, type WorkflowSource } from 'willfire';
+import { willfire, type PredictOptions, type WorkflowSource } from 'willfire';
 import type { ExpectedChecks, MonitorParams, PredictClient } from '../types';
 import { formatSourceMoves } from '../messages/formatSourceMoves';
 import { formatUnresolvedFailure } from '../messages/formatUnresolvedFailure';
@@ -39,7 +39,7 @@ export async function reconcile({
     };
   }
 
-  const prediction = await predict(github, slug, pullNumber, options);
+  const prediction = await willfire(github, slug, pullNumber, options);
   const expected = expectedChecks(prediction, selfPath);
   const moved = `Refs behind the prediction moved: ${formatSourceMoves(moves)}.`;
   if (expected.unresolved.length > 0) {
