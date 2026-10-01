@@ -2,3 +2,6 @@ node_modules/
 coverage/
 dist/
 *.log
+
+# Stryker copies its vitest setup next to the config on every in-place run.
+stryker-setup-*.js
