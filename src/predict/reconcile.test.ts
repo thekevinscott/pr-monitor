@@ -1,5 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import { reconcile } from './reconcile';
+import type { GithubClient } from 'willfire';
 import type { PredictClient } from '../types';
 
 const HEAD = 'head-sha';
@@ -33,13 +34,15 @@ function makeGithub(tagSha: string | null) {
     Object.keys(OWN).map((path) => ({ path, state: 'active' })),
   );
   const github = {
-    getPull: async () => ({
+    getPull: async (): ReturnType<GithubClient['getPull']> => ({
       commits: 1,
       draft: false,
+      mergeable: true,
       labels: [],
       user: { login: 'someone' },
-      base: { ref: 'main' },
+      base: { ref: 'main', repo: { default_branch: 'main', owner: { type: 'User' } } },
       head: { sha: HEAD, ref: 'topic', repo: { full_name: 'o/r' } },
+      merge_commit_sha: null,
     }),
     listPullFiles: async () => [{ filename: 'src/index.ts' }],
     getCommit: async ({ ref }: { ref: string }) => {
