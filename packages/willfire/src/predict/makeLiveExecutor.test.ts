@@ -156,10 +156,11 @@ describe("makeLiveExecutor", () => {
   it("routes a history request to the clone provider, not the tarball", async () => {
     // The tarball exists but the clone remote does not: failing proves routing.
     hoisted.cloneProvide.mockClear();
+    const remoteUrl = vi.fn(() => "file:///nonexistent-willfire-remote");
     const ex = makeLiveExecutor(githubOf({ [`o/r@${SHA}`]: WRAPPED_TB }), WORKSPACE, resolveRef, {
       runCommand: runShell,
       token: null,
-      remoteUrl: () => "file:///nonexistent-willfire-remote",
+      remoteUrl,
     });
     const o = await ex.executeJob(
       "detect",
@@ -169,6 +170,7 @@ describe("makeLiveExecutor", () => {
     );
     expect(o).toEqual({ ok: false, reason: `cannot materialize workspace o/r@${SHA}` });
     expect(hoisted.cloneProvide).toHaveBeenCalledWith(WORKSPACE, { history: true });
+    expect(remoteUrl).toHaveBeenCalledWith(WORKSPACE);
   });
 
   it("routes a request that wants no history to the tarball provider", async () => {

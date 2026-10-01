@@ -169,8 +169,7 @@ describe("makeSandboxRunner", () => {
     const r = await run(spec());
     expect(r.code).toBe(125);
     expect(r.stdout).toBe("");
-    expect(r.stderr).toContain("cannot build sandbox image");
-    expect(r.stderr).toContain("stub build broke");
+    expect(r.stderr).toBe(`cannot build sandbox image ${imageTag("FROM x\n")} (stub build broke)`);
     // The failure is remembered: no retry for the next spec.
     expect((await run(spec())).code).toBe(125);
     expect(kinds()).toEqual(["image", "build"]);
