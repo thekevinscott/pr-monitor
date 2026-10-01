@@ -3,3 +3,87 @@ path = "willfire.ts"
 rules = ["mutation"]
 lines = [369]
 reason = "the null guard is defensive — the path was just listed in the same commit's tree, and `parseYaml(null)` throws into the catch beside it, so dropping the guard is unobservable"
+
+[[typescript.exempt]]
+path = "willfire.ts"
+rules = ["mutation"]
+lines = [199]
+reason = "the `{ vars: {} }` fallback and `{}` are indistinguishable: `lookup` reads `scope.vars ?? {}`, and the cached `varsRead` promise means the warning still logs once"
+
+[[typescript.exempt]]
+path = "willfire.ts"
+rules = ["mutation"]
+lines = [437]
+reason = "the null guard is defensive, as at line 369 — `parseYaml(null)` throws into the catch beside it, so dropping the guard is unobservable"
+
+[[typescript.exempt]]
+path = "cli.ts"
+rules = ["mutation"]
+lines = [10]
+reason = "the `?? \"\"` fallback only feeds the entrypoint regex, and neither `\"\"` nor the mutated string can match it (it needs a `cli.ts`, `cli.js` or `/willfire` suffix)"
+
+[[typescript.exempt]]
+path = "cli.ts"
+rules = ["mutation"]
+lines = [12]
+reason = "`process.argv` vs `.slice(2)`: `arg` collects the node binary and script path as positionals, which `parseArgs` never reads"
+
+[[typescript.exempt]]
+path = "expr/compare.ts"
+rules = ["mutation"]
+lines = [42]
+reason = "line 23 has already returned when the sides differ in type, so `a` and `b` share a type here and either `typeof` decides the other; TypeScript needs both for narrowing"
+
+[[typescript.exempt]]
+path = "expr/containsCall.ts"
+rules = ["mutation"]
+lines = [25, 31]
+reason = "TypeScript narrowing guards: `compare(\"==\")` on two values always returns a value (25), and a non-value haystack has no string `v`, so line 34 returns unknown anyway (31)"
+
+[[typescript.exempt]]
+path = "expr/indexVal.ts"
+rules = ["mutation"]
+lines = [13]
+reason = "TypeScript narrowing guard: a non-value index has an undefined or object `v`, which the type checks below reject"
+
+[[typescript.exempt]]
+path = "expr/joinCall.ts"
+rules = ["mutation"]
+lines = [16]
+reason = "TypeScript narrowing guard: non-json kinds carry no array `v`, so the `Array.isArray` check rejects them"
+
+[[typescript.exempt]]
+path = "expr/fromJson.ts"
+rules = ["mutation"]
+lines = [14]
+reason = "TypeScript narrowing guard: the `typeof` half of the condition rejects every non-value on its own"
+
+[[typescript.exempt]]
+path = "expr/truthy.ts"
+rules = ["mutation"]
+lines = [18]
+reason = "removing `case \"json\"` falls through to the value case, where an array or object is never `\"\"`, so it is still true"
+
+[[typescript.exempt]]
+path = "expr/lookup.ts"
+rules = ["mutation"]
+lines = [6]
+reason = "`dot <= 0`: a leading dot yields an empty head, which matches no context, so it is unknown either way"
+
+[[typescript.exempt]]
+path = "uses/parseUses.ts"
+rules = ["mutation"]
+lines = [23]
+reason = "`at < 0`: an `@` at index 0 leaves an empty owner, which line 32 rejects"
+
+[[typescript.exempt]]
+path = "matrix/expandMatrixDetailed.ts"
+rules = ["mutation"]
+lines = [41]
+reason = "the seed combination is overwritten by the first axis, and with no axes the list is cleared, so its contents are never read"
+
+[[typescript.exempt]]
+path = "predict/stackTargetRef.ts"
+rules = ["mutation"]
+lines = [33, 51]
+reason = "without the guard a TypeError lands in the function's catch, which returns the same last proven target the `break` does; TypeScript needs both guards for narrowing"
