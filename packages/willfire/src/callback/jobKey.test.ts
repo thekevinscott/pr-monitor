@@ -22,6 +22,12 @@ describe("jobKey", () => {
     );
   });
 
+  it("keeps the job id verbatim, case and punctuation included", () => {
+    expect(jobKey(site("o", "r", ".github/workflows/w.yml"), "Build-linux_x64")).toBe(
+      "o/r/.github/workflows/w.yml:Build-linux_x64",
+    );
+  });
+
   it("carries neither the ref nor the sha", () => {
     const a = jobKey(site("o", "r", ".github/workflows/w.yml"), "j");
     const b = jobKey(

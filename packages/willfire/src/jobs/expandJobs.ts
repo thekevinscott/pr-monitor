@@ -46,11 +46,6 @@ export class ReusableDepthError extends Error {
   }
 }
 
-/** `ref` is already a commit id, so resolving it is a no-op. */
-const SHA_RE = /^[0-9a-f]{40}$/i;
-
-const isSha = (ref: string): boolean => SHA_RE.test(ref);
-
 export interface ExpandJobsArgs {
   wf: Workflow;
   reader: WorkflowReader;
@@ -177,18 +172,6 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           status: "unknown",
           reason: "dynamic matrix on reusable workflow call" + execNote(needs),
         });
-      } else if (depth + 1 > MAX_REUSABLE_DEPTH) {
-        // The one graph error whose dispatch shape has never been read off a
-        // live run, so it still stops at the caller rather than taking the
-        // workflow with it.
-        for (const combo of combos) {
-          entries.push({
-            job: prefix + jobDisplayName(jobId, job, combo, scoped.github).name,
-            checkName: null,
-            status: "unknown",
-            reason: `reusable workflow nested deeper than ${MAX_REUSABLE_DEPTH} levels`,
-          });
-        }
       } else {
         // Resolve the called workflow once, not once per matrix combination.
         let subWf: Workflow | null = null;
@@ -209,7 +192,8 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
           let resolved: WorkflowSource | null = site.source;
           if (target.source !== null) {
             const { ref } = target.source;
-            const sha = isSha(ref) ? ref : await reader.resolveRef(target.source);
+            // A ref that is already a commit id needs no lookup.
+            const sha = /^[0-9a-f]{40}$/i.test(ref) ? ref : await reader.resolveRef(target.source);
             resolved = sha === null ? null : { ...target.source, sha };
           }
           if (resolved === null) {

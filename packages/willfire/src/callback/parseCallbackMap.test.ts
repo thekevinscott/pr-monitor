@@ -78,6 +78,14 @@ describe("parseCallbackMap", () => {
     ).toEqual({ ok: false, reason: `'${KEY}'[0].outputs value 'ok' is not a string` });
   });
 
+  it("refuses the whole map when a later key is broken", () => {
+    const doc = { [KEY]: [{ inputs: {}, outputs: {} }], other: 5 };
+    expect(parseCallbackMap(JSON.stringify(doc))).toEqual({
+      ok: false,
+      reason: "'other' is not an array",
+    });
+  });
+
   it("names the failing entry by index, not just the key", () => {
     const doc = { [KEY]: [{ inputs: {}, outputs: {} }, { inputs: {}, outputs: { n: 2 } }] };
     expect(parseCallbackMap(JSON.stringify(doc))).toEqual({

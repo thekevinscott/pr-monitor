@@ -10,5 +10,6 @@ describe("isPlainObject", () => {
     expect(isPlainObject("x")).toBe(false);
     expect(isPlainObject(3)).toBe(false);
     expect(isPlainObject(undefined)).toBe(false);
+    expect(isPlainObject(() => ({}))).toBe(false);
   });
 });

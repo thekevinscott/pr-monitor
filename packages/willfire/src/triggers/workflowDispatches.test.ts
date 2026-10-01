@@ -27,9 +27,12 @@ describe("workflowDispatches", () => {
     ]);
   });
 
-  it("accepts the default types when none are declared", () => {
-    expect(workflowDispatches(onPr(null), CTX)).toEqual([true, "trigger matched"]);
-  });
+  it.each(["opened", "synchronize", "reopened"])(
+    "accepts the default type %s when none are declared",
+    (action) => {
+      expect(workflowDispatches(onPr(null), { ...CTX, action })).toEqual([true, "trigger matched"]);
+    },
+  );
 
   // The default is exactly opened/synchronize/reopened: a widened action still
   // needs a `types:` that names it.

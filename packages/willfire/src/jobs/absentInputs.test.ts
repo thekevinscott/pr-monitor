@@ -33,6 +33,14 @@ describe("absentInputs", () => {
     ).toEqual({ a: EMPTY, b: EMPTY });
   });
 
+  it("binds an input both triggers declare once", () => {
+    expect(
+      absentInputs({
+        on: { workflow_dispatch: { inputs: { v: null } }, workflow_call: { inputs: { v: null } } },
+      } as Workflow),
+    ).toEqual({ v: EMPTY });
+  });
+
   it("reads the YAML 1.1 `on` -> true key", () => {
     expect(
       absentInputs({ true: { workflow_dispatch: { inputs: { v: null } } } } as Workflow),
