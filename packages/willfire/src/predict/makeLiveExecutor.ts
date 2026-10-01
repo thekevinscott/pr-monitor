@@ -57,11 +57,7 @@ export function makeLiveExecutor(
       : { run: opts.runCommand, dispose: async () => {} };
   const runCommand = sandbox.run;
   const tarballs = makeTreeProvider(download, runCommand);
-  const clones = makeCloneProvider(
-    runShell,
-    token,
-    opts.remoteUrl === undefined ? {} : { remoteUrl: opts.remoteUrl },
-  );
+  const clones = makeCloneProvider(runShell, token, { remoteUrl: opts.remoteUrl });
   const provideTree: ProvideTree = (src, o = {}) =>
     o.history === true ? clones.provide(src, o) : tarballs.provide(src, o);
   const executor = makeExecutor({

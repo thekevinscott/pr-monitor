@@ -1,1 +1,3 @@
-export const err = (reason: string): { ok: false; reason: string } => ({ ok: false, reason });
+export function err(reason: string): { ok: false; reason: string } {
+  return { ok: false, reason };
+}

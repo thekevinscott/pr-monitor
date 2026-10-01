@@ -17,10 +17,6 @@ import type { ActionModel, Res, StepModel, WalkCtx } from "./types.js";
 /** A cycle guard, not a fidelity claim — a self-including composite would recurse forever. */
 const MAX_ACTION_DEPTH = 4;
 
-const SETUP_NODE_RE = /^actions\/setup-node@/;
-
-const SHA_RE = /^[0-9a-f]{40}$/i;
-
 /** A `uses:` step: a runner-provided postcondition, an action to run, or a stop. */
 export async function runUses(
   step: StepModel,
@@ -48,7 +44,7 @@ export async function runUses(
     }
     return err(`${label}: actions/checkout with inputs is not modelled`);
   }
-  if (SETUP_NODE_RE.test(uses)) {
+  if (/^actions\/setup-node@/.test(uses)) {
     // The execution world ships exactly one node: asking for it is already
     // satisfied, asking for anything else cannot be. setup-node reads every
     // input through core.getInput, which trims and cannot tell an empty value
@@ -90,7 +86,7 @@ export async function runUses(
       return err(`${label}: unresolvable uses: ${uses}`);
     }
     const { ref } = target.source;
-    const sha = SHA_RE.test(ref) ? ref : await ctx.deps.resolveRef(target.source);
+    const sha = /^[0-9a-f]{40}$/i.test(ref) ? ref : await ctx.deps.resolveRef(target.source);
     if (sha === null) {
       return err(`${label}: cannot resolve ref for ${uses}`);
     }

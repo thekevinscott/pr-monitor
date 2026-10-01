@@ -34,7 +34,7 @@ describe("finalize", () => {
       status: "unknown",
       reason: "dynamic matrix",
     };
-    expect(finalize(drafted).checkName).toBeNull();
+    expect(finalize(drafted)).toEqual({ ...drafted, checkName: null });
     expect(finalize({ ...drafted, checkName: "A" }).checkName).toBe("A");
   });
 });

@@ -11,5 +11,6 @@ describe("isCheckout", () => {
     expect(isCheckout("someone/actions/checkout@v6")).toBe(false);
     expect(isCheckout("actions/checkout-extra@v1")).toBe(false);
     expect(isCheckout("actions/checkout")).toBe(false);
+    expect(isCheckout("./actions/checkout@v6")).toBe(false);
   });
 });
