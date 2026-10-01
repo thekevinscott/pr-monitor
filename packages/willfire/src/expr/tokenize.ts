@@ -6,14 +6,14 @@ export type Tok =
   | { t: "path"; v: string }
   | { t: "op"; v: string };
 
-const OPS = ["&&", "||", "==", "!=", "<=", ">=", "!", "<", ">", "(", ")", "[", "]", ","];
-
 /**
  * Split a condition into tokens, or return null if it contains something this
  * evaluator has no token for. Returning null rather than throwing keeps the
  * "unrecognized is unknown" rule in one place at the top of `evaluate`.
  */
 export function tokenize(src: string): Tok[] | null {
+  // Built per call: a module-level table is invisible to the mutation gate.
+  const ops = ["&&", "||", "==", "!=", "<=", ">=", "!", "<", ">", "(", ")", "[", "]", ","];
   const out: Tok[] = [];
   let i = 0;
   while (i < src.length) {
@@ -26,7 +26,7 @@ export function tokenize(src: string): Tok[] | null {
       let s = "";
       let closed = false;
       while (!closed) {
-        if (j >= src.length) {
+        if (j === src.length) {
           return null; // unterminated
         }
         if (src[j] === "'") {
@@ -45,7 +45,7 @@ export function tokenize(src: string): Tok[] | null {
       out.push({ t: "str", v: s });
       i = j;
     } else {
-      const op = OPS.find((o) => src.startsWith(o, i));
+      const op = ops.find((o) => src.startsWith(o, i));
       if (op !== undefined) {
         out.push({ t: "op", v: op });
         i += op.length;

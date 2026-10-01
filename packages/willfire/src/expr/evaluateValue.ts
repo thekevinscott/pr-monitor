@@ -17,9 +17,6 @@ import { UNKNOWN, type Scope, type Val } from "./val.js";
  */
 export function evaluateValue(expr: string, scope: Scope = {}): Val {
   const stripped = expr.trim().replace(/^\$\{\{(.*)\}\}$/s, "$1").trim();
-  if (stripped === "") {
-    return UNKNOWN;
-  }
   if (stripped.includes("${{")) {
     return UNKNOWN;
   }

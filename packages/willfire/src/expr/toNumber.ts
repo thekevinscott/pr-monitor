@@ -7,11 +7,5 @@
  * and `'abc'` false against `<`, `>` and `>=`.
  */
 export function toNumber(v: string | number | boolean): number {
-  if (typeof v === "number") {
-    return v;
-  }
-  if (typeof v === "boolean") {
-    return v ? 1 : 0;
-  }
   return Number(v);
 }

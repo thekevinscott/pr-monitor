@@ -41,9 +41,6 @@ export function applyFunction(name: string, args: Val[], scope: Scope): Val {
   }
   if ((name === "startswith" || name === "endswith") && args.length === 2) {
     const [s, part] = args;
-    if (s.kind !== "value" || part.kind !== "value") {
-      return UNKNOWN;
-    }
     if (typeof s.v !== "string" || typeof part.v !== "string") {
       return UNKNOWN;
     }
