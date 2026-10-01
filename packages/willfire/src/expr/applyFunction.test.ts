@@ -91,10 +91,13 @@ describe("applyFunction", () => {
       kind: "unknown",
     });
     expect(applyFunction("endswith", [S("abc"), S(1)], {})).toEqual({ kind: "unknown" });
+    expect(applyFunction("startswith", [S(1), S("1")], {})).toEqual({ kind: "unknown" });
+    expect(applyFunction("startswith", [S("abc")], {})).toEqual({ kind: "unknown" });
   });
 
   it("leaves every unmodelled function unknown", () => {
     expect(applyFunction("success", [], {})).toEqual({ kind: "unknown" });
     expect(applyFunction("tojson", [S("a")], {})).toEqual({ kind: "unknown" });
+    expect(applyFunction("tojson", [S("abc"), S("ab")], {})).toEqual({ kind: "unknown" });
   });
 });

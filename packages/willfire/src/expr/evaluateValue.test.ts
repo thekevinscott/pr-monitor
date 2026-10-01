@@ -42,6 +42,8 @@ describe("evaluateValue", () => {
     expect(evaluateValue("")).toEqual({ kind: "unknown" });
     expect(evaluateValue("${{ }}")).toEqual({ kind: "unknown" });
     expect(evaluateValue("a ${{ b }} c")).toEqual({ kind: "unknown" });
+    expect(evaluateValue("${{ 'a' }} == 'a'")).toEqual({ kind: "unknown" });
+    expect(evaluateValue("'a' == ${{ 'a' }}")).toEqual({ kind: "unknown" });
     expect(evaluateValue("'a' 'b'")).toEqual({ kind: "unknown" });
     expect(evaluateValue("@")).toEqual({ kind: "unknown" });
   });
@@ -50,5 +52,6 @@ describe("evaluateValue", () => {
     expect(evaluateValue("${{ 'a' }}")).toEqual({ kind: "value", v: "a" });
     // A YAML block scalar keeps its newlines, so the wrapper spans lines.
     expect(evaluateValue("${{\n  'a'\n}}")).toEqual({ kind: "value", v: "a" });
+    expect(evaluateValue("  ${{ 'a' }}\n")).toEqual({ kind: "value", v: "a" });
   });
 });

@@ -27,6 +27,10 @@ describe("compare", () => {
     expect(compare(">", S("10"), S(9))).toEqual(S(true));
   });
 
+  it("keeps a mixed-type == apart from ordering", () => {
+    expect(compare("==", S("2"), S(1))).toEqual(S(false));
+  });
+
   it("makes a NaN cast false under == and ordering, true under !=", () => {
     expect(compare("==", S("abc"), S(0))).toEqual(S(false));
     expect(compare("==", S(true), S("true"))).toEqual(S(false));
@@ -49,6 +53,7 @@ describe("compare", () => {
   it("refuses sides that are not concrete values", () => {
     expect(compare("==", { kind: "unknown" }, S("a"))).toEqual({ kind: "unknown" });
     expect(compare("==", { kind: "falsy" }, S(""))).toEqual({ kind: "unknown" });
+    expect(compare("==", S("a"), { kind: "unknown" })).toEqual({ kind: "unknown" });
   });
 
   it("compares a json side by instance: never equal, never ordered", () => {

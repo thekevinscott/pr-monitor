@@ -22,6 +22,11 @@ describe("tokenize", () => {
     ]);
   });
 
+  it("reads every operator", () => {
+    const ops = ["&&", "||", "==", "!=", "<=", ">=", "!", "<", ">", "(", ")", "[", "]", ","];
+    expect(tokenize(ops.join(" "))).toEqual(ops.map((v) => ({ t: "op", v })));
+  });
+
   it("reads keywords case-insensitively and keeps a path's case", () => {
     expect(tokenize("True FALSE Null foo.Bar-baz")).toEqual([
       { t: "bool", v: true },
