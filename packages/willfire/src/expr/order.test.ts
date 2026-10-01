@@ -8,10 +8,12 @@ describe("order", () => {
   it.each<[string, string | number, string | number, boolean]>([
     ["<", 1, 2, true],
     ["<", 2, 1, false],
+    ["<", 2, 2, false],
     ["<=", 2, 2, true],
     ["<=", 3, 2, false],
     [">", 2, 1, true],
     [">", 1, 2, false],
+    [">", 2, 2, false],
     [">=", 2, 2, true],
     [">=", 1, 2, false],
     ["<", "a", "b", true],

@@ -12,6 +12,7 @@ const SCOPE: Scope = {
 describe("lookup", () => {
   it("leaves a bare name unknown", () => {
     expect(lookup(SCOPE, "something")).toEqual({ kind: "unknown" });
+    expect(lookup({ vars: {}, varsComplete: true }, "varsX")).toEqual({ kind: "unknown" });
   });
 
   it("resolves inputs and leaves absent ones unknown", () => {
@@ -49,6 +50,8 @@ describe("lookup", () => {
     expect(lookup(SCOPE, "needs.detect.outputs.missing")).toEqual({ kind: "value", v: "" });
     expect(lookup(SCOPE, "needs.other.outputs.x")).toEqual({ kind: "unknown" });
     expect(lookup(SCOPE, "needs.detect.result")).toEqual({ kind: "unknown" });
+    expect(lookup(SCOPE, "needs.detect.outputs.x.y")).toEqual({ kind: "unknown" });
+    expect(lookup(SCOPE, "needs.detect.inputs.x")).toEqual({ kind: "unknown" });
     expect(lookup({}, "needs.detect.outputs.x")).toEqual({ kind: "unknown" });
     // An empty needs map behaves like an absent one.
     expect(lookup({ needs: {} }, "needs.detect.outputs.x")).toEqual({ kind: "unknown" });
@@ -59,6 +62,8 @@ describe("lookup", () => {
     expect(lookup(SCOPE, "steps.scan.outputs.missing")).toEqual({ kind: "value", v: "" });
     expect(lookup(SCOPE, "steps.other.outputs.x")).toEqual({ kind: "unknown" });
     expect(lookup(SCOPE, "steps.scan.outcome")).toEqual({ kind: "unknown" });
+    expect(lookup(SCOPE, "steps.scan.outputs.x.y")).toEqual({ kind: "unknown" });
+    expect(lookup(SCOPE, "steps.scan.inputs.x")).toEqual({ kind: "unknown" });
     expect(lookup({}, "steps.scan.outputs.x")).toEqual({ kind: "unknown" });
     expect(lookup({ steps: {} }, "steps.scan.outputs.x")).toEqual({ kind: "unknown" });
   });

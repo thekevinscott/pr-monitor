@@ -52,7 +52,18 @@ describe("parseAtom", () => {
     expect(parseAtom(cur, {})).toEqual({ kind: "value", v: true });
   });
 
-  it("is unknown on a stray operator", () => {
+  it("is unknown on a stray operator, and leaves it unconsumed", () => {
     expect(parseAtom(new Cursor([{ t: "op", v: "," }]), {})).toEqual({ kind: "unknown" });
+    const cur = new Cursor([
+      { t: "op", v: "!" },
+      { t: "bool", v: true },
+      { t: "op", v: ")" },
+    ]);
+    expect(parseAtom(cur, {})).toEqual({ kind: "unknown" });
+    expect(cur.peek()).toEqual({ t: "op", v: "!" });
+  });
+
+  it("reads a string that spells ( as a string, not a group", () => {
+    expect(parseAtom(new Cursor([{ t: "str", v: "(" }]), {})).toEqual({ kind: "value", v: "(" });
   });
 });
