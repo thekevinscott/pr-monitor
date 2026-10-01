@@ -1,7 +1,5 @@
 import { UNKNOWN, type Val } from "./val.js";
 
-const SLOT_RE = /\{\{|\}\}|\{(\d+)\}/g;
-
 /**
  * `format('{0} {1}', a, b)`. `{{` and `}}` are the runner's escapes for a
  * literal brace, and it coerces a non-string first argument rather than
@@ -16,7 +14,7 @@ export function formatCall(args: Val[]): Val {
   const text = String(spec.v);
   const out: string[] = [];
   let at = 0;
-  for (const m of text.matchAll(SLOT_RE)) {
+  for (const m of text.matchAll(/\{\{|\}\}|\{(\d+)\}/g)) {
     out.push(text.slice(at, m.index));
     at = m.index + m[0].length;
     const index = m[1];

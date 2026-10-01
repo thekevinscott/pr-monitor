@@ -16,6 +16,11 @@ describe("formatMatrixValue", () => {
     expect(formatMatrixValue([1, 2])).toBe("1, 2");
   });
 
+  it("renders an empty list or object as nothing", () => {
+    expect(formatMatrixValue([])).toBe("");
+    expect(formatMatrixValue({})).toBe("");
+  });
+
   it("flattens an object to its own values", () => {
     expect(formatMatrixValue({ os: "linux", arch: "x64" })).toBe("linux, x64");
   });

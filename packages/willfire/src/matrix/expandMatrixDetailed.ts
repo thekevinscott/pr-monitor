@@ -59,7 +59,7 @@ export function expandMatrixDetailed(
     const targets = combos.filter((c) =>
       Object.entries(overlapping).every(([k, v]) => c.values[k] === v),
     );
-    if (axisKeys.length > 0 && targets.length > 0) {
+    if (targets.length > 0) {
       // Merge into the matching combinations. With no overlapping keys this
       // matches every combination, per the docs ("added to each of the matrix
       // combinations if none of the key:value pairs overwrite any of the
