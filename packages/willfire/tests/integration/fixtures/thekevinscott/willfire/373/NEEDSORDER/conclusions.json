@@ -1,0 +1,10 @@
+{
+  "CI Gate": "failure",
+  "caller-first": "skipped",
+  "ctl-caller": "skipped",
+  "ctl-gone": "skipped",
+  "ctl-needs": "skipped",
+  "gone": "skipped",
+  "needs-first": "skipped",
+  "prt-noop": "success"
+}

@@ -767,13 +767,51 @@ describe("workflow-level verdicts", () => {
 describe("willfire", () => {
   // Scratch probe willfire#386 opened already conflicting with its base: no
   // `pull_request` run at 3c7f61e4 in the 25 minutes it stayed open.
-  it("predicts no checks when an unmergeable pull request has dispatched nothing", async () => {
-    const prediction = await run("on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n", {
+  it("predicts no pull_request checks when an unmergeable pull request has dispatched nothing", async () => {
+    const { entries, checkNames, skip } = await run(
+      "on: pull_request\njobs:\n  build:\n    runs-on: ubuntu-latest\n",
+      { mergeable: false, headRuns: [] },
+    );
+
+    expect(entries).toEqual([
+      {
+        workflow: WF,
+        job: "*",
+        checkName: null,
+        status: "no-dispatch",
+        reason: "pull request conflicts with its base and has no pull_request run",
+      },
+    ]);
+    expect(checkNames).toEqual([]);
+    expect(skip).toBeNull();
+  });
+
+  it("names no startup-failure run for an unparseable workflow on an unmergeable pull request", async () => {
+    const { entries } = await run("on: pull_request\njobs: [\n", { mergeable: false, headRuns: [] });
+
+    expect(entries).toEqual([
+      {
+        workflow: WF,
+        job: "*",
+        checkName: null,
+        status: "no-dispatch",
+        reason: "pull request conflicts with its base and has no pull_request run",
+      },
+    ]);
+  });
+
+  // The same probe still got its `prt-noop` run (36430470124): a target run
+  // never needs the test merge a conflict prevents.
+  it("still predicts a pull_request_target run on an unmergeable pull request", async () => {
+    const target = "on: pull_request_target\njobs:\n  label: {}\n";
+    const { checkNames } = await run(target, {
       mergeable: false,
       headRuns: [],
+      refs: { "o/r@main": DEFAULT_SHA },
+      defaultContents: { [WF]: target },
     });
 
-    expect(prediction).toEqual({ entries: [], checkNames: [], skip: null, sources: [] });
+    expect(checkNames).toEqual(["label"]);
   });
 
   // Scratch probe willfire#388 conflicted after its dispatch: runs 36430507327
