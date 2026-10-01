@@ -67,11 +67,12 @@ describe("makeGithubClient", () => {
   it("gets a pull request", async () => {
     const pr = {
       commits: 1,
-      base: { ref: "main", repo: { default_branch: "main" } },
+      base: { ref: "main", repo: { default_branch: "main", owner: { type: "User" } } },
       head: { ref: "topic", sha: "abc", repo: { full_name: "o/r" } },
       merge_commit_sha: null,
       mergeable: null,
       draft: false,
+      labels: [{ name: "ci" }],
       user: { login: "octocat" },
     };
     stage(json(pr));

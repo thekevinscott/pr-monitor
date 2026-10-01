@@ -20,10 +20,11 @@ export interface GithubPull extends GithubPullSummary {
   mergeable: boolean | null;
   commits: number;
   draft: boolean;
+  labels: { name: string }[];
   /** `repo` is null when the fork the head branch lived in was deleted. */
   head: { ref: string; sha: string; repo: { full_name: string } | null };
   /** The default branch is the ref a `pull_request_target` workflow is read from. */
-  base: { ref: string; repo: { default_branch: string } };
+  base: { ref: string; repo: { default_branch: string; owner: { type: string } } };
   user: { login: string };
 }
 

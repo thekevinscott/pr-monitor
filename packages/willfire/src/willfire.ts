@@ -12,7 +12,10 @@ import { jobName } from "./entries/jobName.js";
 import { errorStatus } from "./predict/errorStatus.js";
 import type { Scope } from "./expr/val.js";
 import type { JobExecutor } from "./execute/types.js";
-import { expandJobs } from "./jobs/expandJobs.js";
+import { expandJobs, ReusableDepthError } from "./jobs/expandJobs.js";
+import { isStartupFailure } from "./jobs/isStartupFailure.js";
+import { rejectedIfContext } from "./jobs/rejectedIfContext.js";
+import { emptyMatrixAxis } from "./matrix/emptyMatrixAxis.js";
 import { getPrTrigger, MISSING } from "./triggers/getPrTrigger.js";
 import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
@@ -23,6 +26,7 @@ import { stackTargetRef } from "./predict/stackTargetRef.js";
 import type {
   Ctx,
   DraftEntry,
+  ExpandedJob,
   FetchWorkflow,
   Prediction,
   PredictOptions,
@@ -94,15 +98,11 @@ export async function willfire(
   const sources = new Map<string, WorkflowSource>([[sourceKey(headSource), headSource]]);
 
   const headCommit = await github.getCommit({ ...base, ref: headSha });
-  const headMsg = headCommit.commit.message;
-
-  if (hasSkipInstruction(headMsg)) {
-    return finalizePrediction(
-      [],
-      "head commit message contains a skip instruction",
-      sources,
-    );
-  }
+  // A skip instruction suppresses the `pull_request` run only: probe #380 and
+  // #394 each dispatched nothing but the `pull_request_target` workflow.
+  const skip = hasSkipInstruction(headCommit.commit.message)
+    ? "head commit message contains a skip instruction"
+    : null;
 
   sources.set(sourceKey(readSource), readSource);
 
@@ -180,17 +180,20 @@ export async function willfire(
   // token cannot see the variables — so every lookup honestly stays unknown;
   // anything else is "could not read" and aborts rather than degrading a
   // decidable guard to unknown only on bad days.
-  let varsRead: Promise<Record<string, string>> | undefined;
-  const repoVars = (): Promise<Record<string, string>> => {
+  let varsRead: Promise<Pick<Scope, "vars" | "varsComplete">> | undefined;
+  const repoVars = (): Promise<Pick<Scope, "vars" | "varsComplete">> => {
     varsRead ??= github.listRepoVariables(base).then(
-      (vars) => Object.fromEntries(vars.map((v) => [v.name, v.value])),
+      (vars) => ({
+        vars: Object.fromEntries(vars.map((v) => [v.name, v.value])),
+        varsComplete: pr.base.repo.owner.type === "User",
+      }),
       (e) => {
         const status = errorStatus(e);
         if (status !== 403 && status !== 404) {
           throw e;
         }
         console.warn(`willfire: cannot list variables for ${repo} (${String(e)})`);
-        return {};
+        return { vars: {} };
       },
     );
     return varsRead;
@@ -243,8 +246,17 @@ export async function willfire(
       repository_owner: owner,
       base_ref: pr.base.ref,
       head_ref: pr.head.ref,
+      // Every trigger willfire matches is `pull_request`, and on one of those
+      // `github.ref` is the merge ref — measured on probe #383, run
+      // 36430453531. Whoever adds `pull_request_target` (#356) has to thread
+      // the trigger kind here: on that event the ref is the base branch.
+      ref: `refs/pull/${prNumber}/merge`,
       "event.action": ctx.action,
       "event.pull_request.draft": pr.draft,
+      // The label set the run sees is the one attached when it dispatched —
+      // probe #383 run 36430375629 skipped the guard before the label existed
+      // and run 36430454044 ran it after.
+      "event.pull_request.labels.*.name": pr.labels.map((l) => l.name),
       ...(pr.head.repo === null
         ? {}
         : { "event.pull_request.head.repo.full_name": pr.head.repo.full_name }),
@@ -261,24 +273,61 @@ export async function willfire(
     jobExecutor: JobExecutor | undefined,
     reason: string,
   ): Promise<DraftEntry[]> => {
+    // A file GitHub refuses at startup is refused whole: the failure hangs off
+    // the push that introduced it, never the pull request, so no job in it is
+    // named. It is a property of the file, so it settles before expansion.
+    const rejected = rejectedIfContext(wf);
+    if (rejected !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: rejected }];
+    }
+    // A literal empty matrix axis is rejected before any job is scheduled, so
+    // no job in the file gets a check — the sibling included. The failure
+    // hangs off the push and there is no `pull_request` run for the file at
+    // all (probe PR #372, run 36431252913), which is why this is
+    // `no-dispatch` rather than the parse error's `run`. Unlike the
+    // both-filters startup failures, whose entries #7 deliberately left
+    // expanding, this one is cheap to answer exactly and the sibling is a
+    // real over-prediction.
+    const emptyAxis = emptyMatrixAxis(wf);
+    if (emptyAxis !== null) {
+      return [
+        {
+          workflow: path,
+          job: "*",
+          status: "no-dispatch",
+          reason: `empty matrix axis '${emptyAxis}': startup failure`,
+        },
+      ];
+    }
     // `github.workflow` is the top-level workflow's `name:` — the path when
     // unnamed — all the way down its reusable call tree, so it seeds per
     // workflow here and travels into callees with the rest of the facts.
     const wfName = wf["name"] ?? path;
-    const jobs = await expandJobs({
-      wf,
-      reader,
-      site: { path, source },
-      scope: {
-        github: {
-          ...facts.github,
-          ...(typeof wfName === "string" ? { workflow: wfName } : {}),
+    let jobs: ExpandedJob[];
+    try {
+      jobs = await expandJobs({
+        wf,
+        reader,
+        site: { path, source },
+        scope: {
+          github: {
+            ...facts.github,
+            ...(typeof wfName === "string" ? { workflow: wfName } : {}),
+          },
         },
-      },
-      vars: repoVars,
-      executor: jobExecutor,
-      callbacks: callbackMap,
-    });
+        vars: repoVars,
+        executor: jobExecutor,
+        callbacks: callbackMap,
+      });
+    } catch (e) {
+      // Past the nesting limit, or with a callee it cannot read, GitHub fails
+      // the whole run at startup — it exists but has zero jobs, legal siblings
+      // included — the same shape as the unparseable-file run above.
+      if (e instanceof ReusableDepthError || isStartupFailure(e)) {
+        return [{ workflow: path, job: "*", status: "run", reason: e.message }];
+      }
+      throw e;
+    }
     return jobs.map((j) => ({
       workflow: path,
       job: jobName(j.job),
@@ -320,6 +369,9 @@ export async function willfire(
     try {
       wf = parseYaml(content);
     } catch (e) {
+      if (skip !== null) {
+        return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
+      }
       // GitHub creates a run for an unparseable workflow file and concludes it
       // `startup_failure`. The run exists but has no jobs, so this is a
       // workflow-level "it dispatches" with nothing to expand.
@@ -327,6 +379,9 @@ export async function willfire(
     }
     if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
       targetTriggered = true;
+    }
+    if (skip !== null) {
+      return [{ workflow: path, job: "*", status: "no-dispatch", reason: skip }];
     }
     const [dispatches, reason] = workflowDispatches(wf, ctx);
     if (!dispatches) {
@@ -413,5 +468,5 @@ export async function willfire(
       await exec?.cleanup?.();
     }
   }
-  return finalizePrediction(entries, null, sources);
+  return finalizePrediction(entries, skip, sources);
 }

@@ -34,6 +34,14 @@ describe("lookup", () => {
     });
   });
 
+  it("reads a seeded object filter as an array", () => {
+    const scope: Scope = { github: { "event.pull_request.labels.*.name": ["skip-ci"] } };
+    expect(lookup(scope, "github.event.pull_request.labels.*.name")).toEqual({
+      kind: "json",
+      v: ["skip-ci"],
+    });
+  });
+
   it("models only needs.<job>.outputs.<name>", () => {
     expect(lookup(SCOPE, "needs.detect.outputs.x")).toEqual({ kind: "value", v: "y" });
     // A supplied job's missing output is the empty string, per the
@@ -93,5 +101,12 @@ describe("lookup", () => {
     expect(lookup({ vars: { OTHER: "x" } }, "vars.RUN_EXTRA")).toEqual({ kind: "unknown" });
     expect(lookup({ vars: {} }, "vars.RUN_EXTRA")).toEqual({ kind: "unknown" });
     expect(lookup(SCOPE, "vars.RUN_EXTRA")).toEqual({ kind: "unknown" });
+  });
+
+  it("reads an unlisted variable as the empty string once the listing is complete", () => {
+    const scope: Scope = { vars: { OTHER: "x" }, varsComplete: true };
+    expect(lookup(scope, "vars.RUN_EXTRA")).toEqual({ kind: "value", v: "" });
+    expect(lookup(scope, "vars.other")).toEqual({ kind: "value", v: "x" });
+    expect(lookup({ vars: {}, varsComplete: false }, "vars.X")).toEqual({ kind: "unknown" });
   });
 });
