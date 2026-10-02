@@ -1769,6 +1769,30 @@ describe("the executor seam through willfire", () => {
     });
   });
 
+  it("clones a history checkout from cloneRemote", async () => {
+    const asked: string[] = [];
+    const history = JSON.stringify({
+      on: "pull_request",
+      jobs: {
+        detect: { steps: [{ uses: "actions/checkout@v4", with: { "fetch-depth": 0 } }] },
+        cover: {
+          needs: "detect",
+          strategy: { matrix: { language: "${{ fromJSON(needs.detect.outputs.langs) }}" } },
+        },
+      },
+    });
+    const { entries } = await willfire(fakeGithub({ contents: { [WF]: history } }), "o/r", 1, {
+      cloneRemote: (s) => {
+        asked.push(`${s.owner}/${s.repo}@${s.sha}`);
+        return "/nonexistent/clone.bundle";
+      },
+    });
+    expect(asked).toEqual([`o/r@${HEAD_SHA}`]);
+    expect(entries[1]).toMatchObject({
+      reason: `dynamic matrix; executing 'detect' failed: cannot materialize workspace o/r@${HEAD_SHA}`,
+    });
+  });
+
   it("turns execution off under executor: null", async () => {
     const e = await coverEntry({}, { executor: null });
     expect(e).toMatchObject({ status: "unknown", reason: "dynamic matrix" });

@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790939248,
+  "exit_code": 0,
+  "commit": "4832825a84c8431db57c0790e3747d5eaf61ec62",
+  "branch": "refactor/cli-argv-exemptions"
+}

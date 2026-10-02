@@ -159,6 +159,14 @@ describe("the CLI entrypoint", () => {
     expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
   });
 
+  it("runs when node is pointed at the compiled cli.js", async () => {
+    hoisted.github = fakeGithub({ contents: { [WF]: WORKFLOW } });
+    process.argv = ["node", "/somewhere/dist/cli.js", "--repo", "o/r", "--pr", "1"];
+    vi.resetModules();
+    await import("./cli.js");
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+  });
+
   it("predicts through willfire", async () => {
     await invoke(["--repo", "o/r", "--pr", "1"], { contents: { [WF]: WORKFLOW } });
     expect(hoisted.entered).toEqual(["o/r"]);
