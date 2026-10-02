@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { DetailedCombo, PredictOptions, Workflow } from "./types.js";
+import type { DetailedCombo, PredictOptions, Workflow, WorkflowSource } from "./types.js";
 
 describe("the document types", () => {
   it("yields a document value on a read, not `any`", () => {
@@ -29,5 +29,11 @@ describe("the document types", () => {
     };
     expectTypeOf<NonNullable<PredictOptions["executor"]>["executeJob"]>().not.toBeAny();
     expect(typeof opts.executor?.executeJob).toBe("function");
+  });
+
+  it("takes the clone remote as a function of the source being cloned", () => {
+    const opts: PredictOptions = { cloneRemote: (s) => `/b/${s.owner}-${s.repo}.bundle` };
+    expectTypeOf(opts.cloneRemote).toEqualTypeOf<((source: WorkflowSource) => string) | undefined>();
+    expect(opts.cloneRemote?.({ owner: "o", repo: "r", sha: "s" } as WorkflowSource)).toBe("/b/o-r.bundle");
   });
 });
