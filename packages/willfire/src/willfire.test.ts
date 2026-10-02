@@ -2109,6 +2109,18 @@ describe("pull_request_target workflows", () => {
     expect(entries).toEqual([HEAD_DECLINE]);
   });
 
+  it("still predicts the target workflows read after an absent one", async () => {
+    const { checkNames } = await run(TARGET, {
+      ...resolved,
+      defaultContents: { [WF]: TARGET },
+      defaultTreeFiles: [
+        { path: SUB, type: "file" },
+        { path: WF, type: "file" },
+      ],
+    });
+    expect(checkNames).toEqual(["label"]);
+  });
+
   it("skips an unparseable default-branch copy", async () => {
     // Its triggers are unreadable, so no target run is enumerable from it.
     const { entries } = await run(TARGET, {

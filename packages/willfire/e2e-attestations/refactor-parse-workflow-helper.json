@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790939246,
+  "exit_code": 0,
+  "commit": "4f70e04715d821eb2a3df8f969fdef8f490a3009",
+  "branch": "refactor/parse-workflow-helper"
+}
