@@ -6,6 +6,7 @@ import { isJobEntry, willfire, type Prediction } from "willfire";
 import { discoverCases } from "../cases.js";
 import { getResponse } from "../getResponse.js";
 import { getCalls } from "./getCalls.js";
+import { getCloneRemote } from "./getCloneRemote.js";
 import { replayClient } from "./mocks/replayClient.js";
 
 const CASES = discoverCases(new URL("./fixtures/", import.meta.url)).map((c) => ({
@@ -22,7 +23,7 @@ type Case = (typeof CASES)[number];
 const recordingKey = (c: Case): string => {
   const h = createHash("sha256");
   for (const f of readdirSync(c.dir)
-    .filter((f) => f === "calls.json" || f.endsWith(".bin"))
+    .filter((f) => f === "calls.json" || f.endsWith(".bin") || f.endsWith(".bundle"))
     .sort()) {
     h.update(f).update(readFileSync(join(c.dir, f)));
   }
@@ -37,6 +38,7 @@ const predictOnce = (c: Case): Promise<Prediction> => {
   if (prediction === undefined) {
     prediction = willfire(replayClient(getCalls(c.dir)), `${c.owner}/${c.repo}`, c.pr, {
       action: c.action,
+      cloneRemote: getCloneRemote(c.dir),
     });
     predictions.set(key, prediction);
   }

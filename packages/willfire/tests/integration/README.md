@@ -109,6 +109,35 @@ The runs API reports no activity type, so partition by workflow `.path` —
 each file's `types:` says which action could have dispatched it — and
 corroborate with `created_at`. Name the action in `action.json`.
 
+### Record the history clone
+
+A step checked out with `fetch-depth: 0` makes willfire `git clone` the repo
+instead of unpacking a tarball. Replay serves that clone from
+`clone-<owner>-<repo>.bundle` beside `calls.json`, and an unrecorded clone
+throws. Without the recording the replay drifts: a live clone carries every
+tag pushed since, and a step that reads tags (putitoutthere's `plan`) answers
+for today, not for the pull request.
+
+The bundle holds the workspace commit (the test merge commit, which may only
+be reachable by SHA) and the tags created before the pull request's first run.
+
+```sh
+CUTOFF=$(gh api "repos/$OWNER/$REPO/actions/runs?head_sha=$HEAD_SHA" --paginate \
+  --jq '.workflow_runs[] | select(.event == "pull_request" or .event == "pull_request_target") | .created_at' \
+  | sort | head -1)
+git clone --quiet "https://github.com/$OWNER/$REPO.git" clone
+cd clone
+git fetch --quiet origin "$MERGE_SHA"
+git checkout --quiet --detach "$MERGE_SHA"
+git bundle create "../clone-$OWNER-$REPO.bundle" HEAD $(git for-each-ref refs/tags \
+  --format='%(creatordate:unix) %(refname)' | awk -v c="$(date -d "$CUTOFF" +%s)" '$1 <= c {print $2}')
+```
+
+Branches are left out: their tips have moved since, and no recorded step has
+needed them. A lightweight tag's `creatordate` is its commit's date, not its
+push date, so a lightweight tag pushed late onto an old commit slips past the
+cutoff.
+
 ### Re-record, never edit
 
 A hand-edited fixture asserts what someone believed GitHub would answer. Re-run
