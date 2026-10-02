@@ -15,6 +15,11 @@ describe("lookup", () => {
     expect(lookup({ vars: {}, varsComplete: true }, "varsX")).toEqual({ kind: "unknown" });
   });
 
+  it("leaves a leading-dot path unknown: its empty head names no context", () => {
+    expect(lookup(SCOPE, ".inputs.mode")).toEqual({ kind: "unknown" });
+    expect(lookup({ vars: {}, varsComplete: true }, ".vars.X")).toEqual({ kind: "unknown" });
+  });
+
   it("resolves inputs and leaves absent ones unknown", () => {
     expect(lookup(SCOPE, "inputs.mode")).toEqual({ kind: "value", v: "fast" });
     expect(lookup(SCOPE, "inputs.other")).toEqual({ kind: "unknown" });

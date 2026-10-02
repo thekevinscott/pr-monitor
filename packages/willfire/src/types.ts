@@ -150,6 +150,8 @@ export interface PredictOptions {
    * {@link JobExecutor} is a test seam, not configuration.
    */
   executor?: JobExecutor | null;
+  /** Where a history clone comes from; github.com when omitted. A test seam for replay. */
+  cloneRemote?: (source: WorkflowSource) => string;
   callbacks?: readonly string[];
 }
 
