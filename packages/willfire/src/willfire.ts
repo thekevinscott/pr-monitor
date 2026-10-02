@@ -21,6 +21,7 @@ import { workflowDispatches } from "./triggers/workflowDispatches.js";
 import { finalizePrediction } from "./predict/finalizePrediction.js";
 import type { GithubClient } from "./predict/makeGithubClient.js";
 import { makeLiveExecutor } from "./predict/makeLiveExecutor.js";
+import { parseWorkflow } from "./predict/parseWorkflow.js";
 import { sourceKey } from "./predict/sourceKey.js";
 import { stackTargetRef } from "./predict/stackTargetRef.js";
 import type {
@@ -434,7 +435,7 @@ export async function willfire(
       // answered by the main loop.
       let wf: Workflow | null = null;
       try {
-        wf = content === null ? null : parseYaml(content);
+        wf = parseWorkflow(content);
       } catch {
         // Unparseable: `wf` stays null.
       }

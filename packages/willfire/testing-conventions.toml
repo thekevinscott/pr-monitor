@@ -1,20 +1,8 @@
 [[typescript.exempt]]
 path = "willfire.ts"
 rules = ["mutation"]
-lines = [369]
-reason = "the null guard is defensive — the path was just listed in the same commit's tree, and `parseYaml(null)` throws into the catch beside it, so dropping the guard is unobservable"
-
-[[typescript.exempt]]
-path = "willfire.ts"
-rules = ["mutation"]
-lines = [199]
+lines = [200]
 reason = "the `{ vars: {} }` fallback and `{}` are indistinguishable: `lookup` reads `scope.vars ?? {}`, and the cached `varsRead` promise means the warning still logs once"
-
-[[typescript.exempt]]
-path = "willfire.ts"
-rules = ["mutation"]
-lines = [437]
-reason = "the null guard is defensive, as at line 369 — `parseYaml(null)` throws into the catch beside it, so dropping the guard is unobservable"
 
 [[typescript.exempt]]
 path = "cli.ts"
