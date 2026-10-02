@@ -7,9 +7,10 @@ import { isWorkflowEntry } from "./entries/isWorkflowEntry.js";
 import { makeGithubClient } from "./predict/makeGithubClient.js";
 import { willfire } from "./willfire.js";
 
-const isMain = /cli\.(ts|js)$|\/willfire$/.test(process.argv[1] ?? "");
+const [, script, ...argv] = process.argv;
+const isMain = /cli\.(ts|js)$|\/willfire$/.test(script);
 if (isMain) {
-  const args = parseArgs(process.argv.slice(2));
+  const args = parseArgs(argv);
   const prediction = await willfire(makeGithubClient(), args.repo, args.pr, {
     action: args.action,
     callbacks: args.callbacks,
