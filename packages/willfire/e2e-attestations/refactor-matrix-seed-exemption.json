@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790938649,
+  "exit_code": 0,
+  "commit": "7e99111073484c3383727fff998ea9d7042a8237",
+  "branch": "refactor/matrix-seed-exemption"
+}
