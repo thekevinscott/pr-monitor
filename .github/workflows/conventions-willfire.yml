@@ -4,10 +4,8 @@ name: Testing Conventions (willfire)
 # the gates read `packages/willfire/package.json` and its `e2e-attestations/`.
 #
 # `gates` allowlists every gate except `unit-coverage` (willfire enforces no
-# coverage floor), `packaging` and `changelog` (willfire is private and no
-# longer published), and `mutation` — the move reclassifies every willfire line
-# as changed, so the gate reports 156 pre-existing surviving mutants it had
-# never audited. #103 tracks killing them and putting this back.
+# coverage floor), and `packaging` and `changelog` (willfire is private and no
+# longer published).
 
 on:
   pull_request:
@@ -25,4 +23,4 @@ jobs:
       source: packages/willfire/src
       gates: >-
         ["colocated-test", "one-function-per-file", "unit-lint",
-        "integration-lint", "e2e-verify"]
+        "integration-lint", "e2e-verify", "mutation"]
