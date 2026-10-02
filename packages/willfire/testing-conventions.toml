@@ -71,12 +71,6 @@ lines = [6]
 reason = "`dot <= 0`: a leading dot yields an empty head, which matches no context, so it is unknown either way"
 
 [[typescript.exempt]]
-path = "uses/parseUses.ts"
-rules = ["mutation"]
-lines = [23]
-reason = "`at < 0`: an `@` at index 0 leaves an empty owner, which line 32 rejects"
-
-[[typescript.exempt]]
 path = "matrix/expandMatrixDetailed.ts"
 rules = ["mutation"]
 lines = [41]

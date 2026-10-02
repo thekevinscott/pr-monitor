@@ -20,7 +20,7 @@ export function parseUses(uses: string): UsesTarget | null {
     return path === "" ? null : { path, source: null };
   }
   const at = uses.lastIndexOf("@");
-  if (at <= 0) {
+  if (at === -1) {
     return null;
   }
   const ref = uses.slice(at + 1);
