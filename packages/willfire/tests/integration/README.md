@@ -114,7 +114,9 @@ corroborate with `created_at`. Name the action in `action.json`.
 A step checked out with `fetch-depth: 0` makes willfire `git clone` the repo
 instead of unpacking a tarball. Replay serves that clone from
 `clone-<owner>-<repo>.bundle` beside `calls.json`, and an unrecorded clone
-throws. Without the recording the replay drifts: a live clone carries every
+throws. A case dir falls back to its pull request's bundle, so record it once
+in `<pr>/` rather than copying it: every committed byte lands in the tarball a
+live prediction of this repo downloads (#166). Without the recording the replay drifts: a live clone carries every
 tag pushed since, and a step that reads tags (putitoutthere's `plan`) answers
 for today, not for the pull request.
 

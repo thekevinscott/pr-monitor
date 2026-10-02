@@ -6,7 +6,7 @@ import { isJobEntry, willfire, type Prediction } from "willfire";
 import { discoverCases } from "../cases.js";
 import { getResponse } from "../getResponse.js";
 import { getCalls } from "./getCalls.js";
-import { getCloneRemote } from "./getCloneRemote.js";
+import { bundleDirs, getCloneRemote } from "./getCloneRemote.js";
 import { replayClient } from "./mocks/replayClient.js";
 
 const CASES = discoverCases(new URL("./fixtures/", import.meta.url)).map((c) => ({
@@ -23,9 +23,16 @@ type Case = (typeof CASES)[number];
 const recordingKey = (c: Case): string => {
   const h = createHash("sha256");
   for (const f of readdirSync(c.dir)
-    .filter((f) => f === "calls.json" || f.endsWith(".bin") || f.endsWith(".bundle"))
+    .filter((f) => f === "calls.json" || f.endsWith(".bin"))
     .sort()) {
     h.update(f).update(readFileSync(join(c.dir, f)));
+  }
+  for (const d of bundleDirs(c.dir)) {
+    for (const f of readdirSync(d)
+      .filter((f) => f.endsWith(".bundle"))
+      .sort()) {
+      h.update(f).update(readFileSync(join(d, f)));
+    }
   }
   return `${c.owner}/${c.repo}#${c.pr}:${c.action ?? ""}:${h.digest("hex")}`;
 };
