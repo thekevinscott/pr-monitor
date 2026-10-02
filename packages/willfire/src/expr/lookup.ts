@@ -3,7 +3,7 @@ import { UNKNOWN, type Scope, type Val } from "./val.js";
 
 export function lookup(scope: Scope, path: string): Val {
   const dot = path.indexOf(".");
-  if (dot < 0) {
+  if (dot === -1) {
     return UNKNOWN;
   }
   const head = path.slice(0, dot);
