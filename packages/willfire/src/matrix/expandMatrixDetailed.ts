@@ -38,12 +38,11 @@ export function expandMatrixDetailed(
     }
   }
   const axisKeys = Object.keys(axes);
-  let combos: DetailedCombo[] = [{ values: {}, displayKeys: axisKeys }];
+  let products: YamlMap[] = [{}];
   for (const [k, vals] of Object.entries(axes)) {
-    combos = combos.flatMap((c) =>
-      vals.map((v) => ({ values: { ...c.values, [k]: v }, displayKeys: axisKeys })),
-    );
+    products = products.flatMap((p) => vals.map((v) => ({ ...p, [k]: v })));
   }
+  let combos: DetailedCombo[] = products.map((values) => ({ values, displayKeys: axisKeys }));
   if (axisKeys.length === 0) {
     combos = [];
   }
