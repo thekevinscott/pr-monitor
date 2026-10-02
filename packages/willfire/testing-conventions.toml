@@ -53,24 +53,6 @@ lines = [18]
 reason = "removing `case \"json\"` falls through to the value case, where an array or object is never `\"\"`, so it is still true"
 
 [[typescript.exempt]]
-path = "expr/lookup.ts"
-rules = ["mutation"]
-lines = [6]
-reason = "`dot <= 0`: a leading dot yields an empty head, which matches no context, so it is unknown either way"
-
-[[typescript.exempt]]
-path = "uses/parseUses.ts"
-rules = ["mutation"]
-lines = [23]
-reason = "`at < 0`: an `@` at index 0 leaves an empty owner, which line 32 rejects"
-
-[[typescript.exempt]]
-path = "matrix/expandMatrixDetailed.ts"
-rules = ["mutation"]
-lines = [41]
-reason = "the seed combination is overwritten by the first axis, and with no axes the list is cleared, so its contents are never read"
-
-[[typescript.exempt]]
 path = "predict/stackTargetRef.ts"
 rules = ["mutation"]
 lines = [33, 51]

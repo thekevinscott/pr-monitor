@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e",
+  "ran_at": 1790939828,
+  "exit_code": 0,
+  "commit": "06a51d756213160a658671b59586fb05fe38c5cc",
+  "branch": "refactor/lookup-boundary-exemption"
+}

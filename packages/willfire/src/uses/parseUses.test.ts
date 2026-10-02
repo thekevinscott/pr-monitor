@@ -36,6 +36,7 @@ describe("parseUses", () => {
     ["owner/repo@v1", "no path between the repo and the ref"],
     ["owner/repo/x.yml@", "an empty ref"],
     ["@v1", "an empty address"],
+    ["@o/r/x.yml", "a leading @, which leaves no address before the ref"],
   ])("rejects %j — %s", (uses) => {
     expect(parseUses(uses)).toBeNull();
   });
