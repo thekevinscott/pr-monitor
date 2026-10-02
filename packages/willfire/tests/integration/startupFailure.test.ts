@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { predict } from "willfire";
+import { willfire } from "willfire";
 import { getCalls } from "./getCalls.js";
 import { replayClient } from "./mocks/replayClient.js";
 
@@ -10,7 +10,7 @@ const DIR = new URL("./fixtures/thekevinscott/willfire/409/IFCTX/", import.meta.
 // case fixture asserts the names; this asserts the verdict behind them, which
 // a name list cannot distinguish from a job that merely resolved no name.
 test("a workflow GitHub refuses at startup contributes one no-dispatch entry", async () => {
-  const { entries } = await predict(replayClient(getCalls(DIR)), "thekevinscott/willfire", 409, {
+  const { entries } = await willfire(replayClient(getCalls(DIR)), "thekevinscott/willfire", 409, {
     action: "opened",
   });
   const refused = entries

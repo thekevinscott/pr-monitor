@@ -4,7 +4,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GithubClient } from "./predict/makeGithubClient.js";
-import { predict } from "./predict/predict.js";
 
 // `makeGithubClient` is the seam the entrypoint reaches the network through.
 // Replacing the module lets the CLI be driven without a token or a network.
@@ -23,9 +22,6 @@ vi.mock("./predict/makeGithubClient.js", async () => {
   return { ...actual, makeGithubClient: () => hoisted.github as GithubClient };
 });
 
-// `predict` forwards to `willfire`, so a spy on `willfire` alone fires on both
-// routes and cannot tell them apart. The deprecated alias is the discriminator:
-// it is untouched when the CLI enters directly.
 vi.mock("./willfire.js", async () => {
   const actual = await vi.importActual<typeof import("./willfire.js")>("./willfire.js");
   const recording: typeof actual.willfire = (github, repo, prNumber, opts) => {
@@ -33,13 +29,6 @@ vi.mock("./willfire.js", async () => {
     return actual.willfire(github, repo, prNumber, opts);
   };
   return { ...actual, willfire: recording };
-});
-
-vi.mock("./predict/predict.js", async () => {
-  const actual = await vi.importActual<typeof import("./predict/predict.js")>(
-    "./predict/predict.js",
-  );
-  return { ...actual, predict: vi.fn(actual.predict) };
 });
 
 // Records what the prediction was asked to resolve, without spawning anything.
@@ -170,10 +159,9 @@ describe("the CLI entrypoint", () => {
     expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
   });
 
-  it("predicts through willfire, not the deprecated predict alias", async () => {
+  it("predicts through willfire", async () => {
     await invoke(["--repo", "o/r", "--pr", "1"], { contents: { [WF]: WORKFLOW } });
     expect(hoisted.entered).toEqual(["o/r"]);
-    expect(predict).not.toHaveBeenCalled();
   });
 
   it("prints one line per entry", async () => {

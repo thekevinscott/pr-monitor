@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { isJobEntry, predict, type Prediction } from "willfire";
+import { isJobEntry, willfire, type Prediction } from "willfire";
 import { discoverCases } from "../cases.js";
 import { getResponse } from "../getResponse.js";
 import { getCalls } from "./getCalls.js";
@@ -35,7 +35,7 @@ const predictOnce = (c: Case): Promise<Prediction> => {
   const key = recordingKey(c);
   let prediction = predictions.get(key);
   if (prediction === undefined) {
-    prediction = predict(replayClient(getCalls(c.dir)), `${c.owner}/${c.repo}`, c.pr, {
+    prediction = willfire(replayClient(getCalls(c.dir)), `${c.owner}/${c.repo}`, c.pr, {
       action: c.action,
     });
     predictions.set(key, prediction);

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { makeGithubClient, predict } from "willfire";
+import { makeGithubClient, willfire } from "willfire";
 import { discoverCases } from "../cases.js";
 import { getResponse } from "../getResponse.js";
 
@@ -12,7 +12,7 @@ test.each(CASES)(
   async ({ owner, repo, pr, dir, action }) => {
     const expected = getResponse(dir);
 
-    const { checkNames } = await predict(github, `${owner}/${repo}`, pr, { action });
+    const { checkNames } = await willfire(github, `${owner}/${repo}`, pr, { action });
 
     expect(checkNames).toEqual(expected);
   },

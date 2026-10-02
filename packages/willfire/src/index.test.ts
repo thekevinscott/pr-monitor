@@ -11,7 +11,6 @@ import {
   matchFilters,
   parseUses,
   patternToRegex,
-  predict,
   willfire,
 } from "./index.js";
 import type {
@@ -55,7 +54,6 @@ describe("root barrel", () => {
       "matchFilters",
       "parseUses",
       "patternToRegex",
-      "predict",
       "willfire",
     ]);
     // Each name is re-exported from the module that defines it, so the
@@ -348,8 +346,5 @@ describe("root barrel", () => {
       opts?: PredictOptions,
     ) => Promise<Prediction> = willfire;
     expect(typeof run).toBe("function");
-
-    const deprecated: typeof willfire = predict;
-    expect(typeof deprecated).toBe("function");
   });
 });
