@@ -45,7 +45,7 @@ export async function willfire(
 ): Promise<Prediction> {
   const [owner, name] = repo.split("/");
   const base = { owner, repo: name };
-  const liveOpts = opts.cloneRemote === undefined ? {} : { remoteUrl: opts.cloneRemote };
+  const liveOpts = { remoteUrl: opts.cloneRemote };
 
   const pr = await github.getPull({ ...base, pull_number: prNumber });
   let conflicted: string | null = null;
