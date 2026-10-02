@@ -71,12 +71,6 @@ lines = [23]
 reason = "`at < 0`: an `@` at index 0 leaves an empty owner, which line 32 rejects"
 
 [[typescript.exempt]]
-path = "matrix/expandMatrixDetailed.ts"
-rules = ["mutation"]
-lines = [41]
-reason = "the seed combination is overwritten by the first axis, and with no axes the list is cleared, so its contents are never read"
-
-[[typescript.exempt]]
 path = "predict/stackTargetRef.ts"
 rules = ["mutation"]
 lines = [33, 51]

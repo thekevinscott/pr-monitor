@@ -96,6 +96,22 @@ describe("expandMatrixDetailed", () => {
     ).toEqual([{ values: { a: "z" }, displayKeys: ["a"] }]);
   });
 
+  it("builds only the include entries when there are no axes", () => {
+    expect(expandMatrixDetailed({ matrix: { include: [{ os: "linux" }, { os: "mac", n: 1 }] } })).toEqual([
+      { values: { os: "linux" }, displayKeys: ["os"] },
+      { values: { os: "mac", n: 1 }, displayKeys: ["os", "n"] },
+    ]);
+  });
+
+  it("gives each combination of a single axis its own values map", () => {
+    expect(
+      expandMatrixDetailed({ matrix: { os: ["linux", "mac"], include: [{ os: "mac", x: 1 }] } }),
+    ).toEqual([
+      { values: { os: "linux" }, displayKeys: ["os"] },
+      { values: { os: "mac", x: 1 }, displayKeys: ["os"] },
+    ]);
+  });
+
   it("keeps zero combinations for an empty axis, which exclude did not cause", () => {
     expect(expandMatrixDetailed({ matrix: { a: [] } })).toEqual([]);
     expect(expandMatrixDetailed({ matrix: { a: [], b: ["x"] } })).toEqual([]);
