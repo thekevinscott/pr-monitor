@@ -45,6 +45,7 @@ export async function willfire(
 ): Promise<Prediction> {
   const [owner, name] = repo.split("/");
   const base = { owner, repo: name };
+  const liveOpts = { remoteUrl: opts.cloneRemote };
 
   const pr = await github.getPull({ ...base, pull_number: prNumber });
   let conflicted: string | null = null;
@@ -205,7 +206,7 @@ export async function willfire(
   // Execution is on by default and costs nothing until a workflow needs it.
   const executor =
     opts.executor === undefined
-      ? makeLiveExecutor(github, readSource, resolveRef)
+      ? makeLiveExecutor(github, readSource, resolveRef, liveOpts)
       : (opts.executor ?? undefined);
 
   // Callbacks run once, before any workflow is expanded, so every invocation
@@ -415,7 +416,7 @@ export async function willfire(
       return [];
     }
     targetExecutor =
-      opts.executor === undefined ? makeLiveExecutor(github, targetSource, resolveRef) : executor;
+      opts.executor === undefined ? makeLiveExecutor(github, targetSource, resolveRef, liveOpts) : executor;
     const states = new Map(workflows.map((w) => [w.path, w.state]));
     // GITHUB_SHA is the default branch tip here, not the test merge the
     // `pull_request` pass seeds.

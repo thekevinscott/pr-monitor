@@ -1,0 +1,7 @@
+{
+  "command": "pnpm run test:e2e -t \"^(?!.*putitoutthere)\"",
+  "ran_at": 1790967167,
+  "exit_code": 0,
+  "commit": "e690903045e6a610973dbd94e50685b2a9920587",
+  "branch": "fix/predict-clone-remote"
+}
