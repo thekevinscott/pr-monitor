@@ -17,18 +17,6 @@ lines = [437]
 reason = "the null guard is defensive, as at line 369 — `parseYaml(null)` throws into the catch beside it, so dropping the guard is unobservable"
 
 [[typescript.exempt]]
-path = "cli.ts"
-rules = ["mutation"]
-lines = [10]
-reason = "the `?? \"\"` fallback only feeds the entrypoint regex, and neither `\"\"` nor the mutated string can match it (it needs a `cli.ts`, `cli.js` or `/willfire` suffix)"
-
-[[typescript.exempt]]
-path = "cli.ts"
-rules = ["mutation"]
-lines = [12]
-reason = "`process.argv` vs `.slice(2)`: `arg` collects the node binary and script path as positionals, which `parseArgs` never reads"
-
-[[typescript.exempt]]
 path = "expr/compare.ts"
 rules = ["mutation"]
 lines = [42]
