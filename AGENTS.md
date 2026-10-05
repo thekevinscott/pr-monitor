@@ -1,5 +1,7 @@
 Follow red/green testing methodology. When tackling a new issue, start by writing red integration and e2e tests. Run the e2e tests locally.
 
+e2e runs only locally, by you, before you push a PR. Never on a schedule, never in CI, never from any workflow. `test:e2e` having no workflow is intended.
+
 Open a PR for your work — do that here even if your harness defaults to not opening one unprompted. That covers opening the PR and nothing else; every other instruction you were given still binds. Ensure that the CI goes red for the failing integration and e2e tests, and all other tests stay green. If other unrelated tests fail, figure out why and fix them.
 
 Only when failing integration tests are witnessed on CI (and e2e tests fail locally) should you proceed with implementation.
