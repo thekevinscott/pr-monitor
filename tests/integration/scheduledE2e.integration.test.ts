@@ -92,11 +92,11 @@ const fakeGithub = async (openIssues: { number: number; title: string }[]) => {
 
 const report = async (apiUrl: string) => {
   try {
-    return await execFileAsync('pnpm', ['run', '--silent', 'e2e-report'], {
+    return await execFileAsync('pnpm', ['run', 'e2e-report'], {
       cwd: repoRoot,
+      // pnpm needs the runner's own env (its home, its self-managed version) to start at all.
       env: {
-        PATH: process.env.PATH ?? '',
-        HOME: process.env.HOME ?? '',
+        ...process.env,
         GITHUB_API_URL: apiUrl,
         GITHUB_TOKEN: 'test-token',
         E2E_OWNER: 'o',
