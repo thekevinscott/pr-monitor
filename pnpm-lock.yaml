@@ -39,9 +39,6 @@ importers:
       eslint:
         specifier: ^9.18.0
         version: 9.39.4(supports-color@7.2.0)
-      testing-conventions:
-        specifier: ^0.0.144
-        version: 0.0.144(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -79,9 +76,6 @@ importers:
       eslint:
         specifier: ^10.9.1
         version: 10.11.0(supports-color@7.2.0)
-      testing-conventions:
-        specifier: ^0.0.144
-        version: 0.0.144(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11)
       tsx:
         specifier: ^4.19.0
         version: 4.22.4
@@ -1422,33 +1416,6 @@ packages:
       '@stryker-mutator/core': 9.6.1
       vitest: '>=2.0.0'
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.144':
-    resolution: {integrity: sha512-6b2RfzqCARWeOfk9r6Orc8Rxvv+PKY0hroflFoBSgz+hssdaBxQQ7wt2htT3ehpRYaqdHvzKEmGQnkM6nHkVxA==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.144':
-    resolution: {integrity: sha512-dKCwbognK5YepDQ3e5G8cEmFVe3Ht6ie86t1tqhqP4EuJ054TqjyJNj1TiAQZJhdv8+hPfmbBaBZCYEnRscBmA==}
-    cpu: [arm64]
-    os: [linux]
-    libc: [glibc]
-
-  '@testing-conventions/x86_64-apple-darwin@0.0.144':
-    resolution: {integrity: sha512-XfYCUVs/Tp5OwmcFBmQcUGwRju3QYf+/+cBnPe7Z8zwHO76psxaKcK7qCR+FrFSmsaDEw14KE4hjqHXXaBZikQ==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.144':
-    resolution: {integrity: sha512-AhuWyw4Tp1Wcu0pN9le5buF/IXbIU/KDEtweQve0tshoTB0U7cGIND5xM61wAVI5EzKr8tmcJJwFhnOUJiLWRw==}
-    cpu: [x64]
-    os: [win32]
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.144':
-    resolution: {integrity: sha512-qZVlXkGsCE/ppAyeXstHzX+fpfnf+tp1jPBTdrix1d+Gd4xtFUKHHPy4fMWaVOzhiwuMht5M+I8i76NL6FirBA==}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -1743,10 +1710,6 @@ packages:
 
   before-after-hook@4.0.0:
     resolution: {integrity: sha512-q6tR3RPqIB1pMiTRMFcZwuG5T8vwp+vUvEG0vuI6B+Rikh5BfPp2fQ82c925FOs+b0lcFQ8CFrL+KbilfZFhOQ==}
-
-  bin-shim@0.2.2:
-    resolution: {integrity: sha512-G+f67xoIHsAgoJdG03LV5ei91G6P0QH6tI1h/rKSb//EYdF8mw6eBLCUqqZBdzL9sROVz3/141X/wjutdxWFuQ==}
-    engines: {node: '>=20.20.0'}
 
   brace-expansion@1.1.15:
     resolution: {integrity: sha512-EwOCDEex4quD37XhqM3omwtMoJjr//isUZz1JopUNWms+4Z2ViyM/k1YIRePpoVNnQhENnxtFjLaxNHrT7xIUg==}
@@ -2655,16 +2618,6 @@ packages:
   test-exclude@7.0.2:
     resolution: {integrity: sha512-u9E6A+ZDYdp7a4WnarkXPZOx8Ilz46+kby6p1yZ8zsGTz9gYa6FIS7lj2oezzNKmtdyyJNNmmXDppga5GB7kSw==}
     engines: {node: '>=18'}
-
-  testing-conventions@0.0.144:
-    resolution: {integrity: sha512-Azoz1DgY695nG5IhKjsIiL7FnYrc/nscakLWtNd6B9fUrolOoubnmht7z0+lqLy7FR2iwVXlK5C1x2Llwdmx+Q==}
-    engines: {node: '>=24', pnpm: '>=11'}
-    hasBin: true
-    peerDependencies:
-      vitest: '>=2'
-    peerDependenciesMeta:
-      vitest:
-        optional: true
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -4292,38 +4245,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@stryker-mutator/core@9.6.1(@types/node@22.20.4)(supports-color@7.2.0)':
-    dependencies:
-      '@inquirer/prompts': 8.5.2(@types/node@22.20.4)
-      '@stryker-mutator/api': 9.6.1
-      '@stryker-mutator/instrumenter': 9.6.1(supports-color@7.2.0)
-      '@stryker-mutator/util': 9.6.1
-      ajv: 8.18.0
-      chalk: 5.6.2
-      commander: 14.0.3
-      diff-match-patch: 1.0.5
-      emoji-regex: 10.6.0
-      execa: 9.6.1
-      json-rpc-2.0: 1.7.1
-      lodash.groupby: 4.6.0
-      minimatch: 10.2.5
-      mutation-server-protocol: 0.4.1
-      mutation-testing-elements: 3.7.3
-      mutation-testing-metrics: 3.7.3
-      mutation-testing-report-schema: 3.7.3
-      npm-run-path: 6.0.0
-      progress: 2.0.3
-      rxjs: 7.8.2
-      semver: 7.8.4
-      source-map: 0.7.6
-      tree-kill: 1.2.2
-      tslib: 2.8.1
-      typed-inject: 5.0.0
-      typed-rest-client: 2.3.1
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
-
   '@stryker-mutator/core@9.6.1(@types/node@24.13.2)(supports-color@7.2.0)':
     dependencies:
       '@inquirer/prompts': 8.5.2(@types/node@24.13.2)
@@ -4403,15 +4324,6 @@ snapshots:
       tslib: 2.8.1
       vitest: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.1)(tsx@4.22.4)(yaml@2.9.0))
 
-  '@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@22.20.4)(supports-color@7.2.0))(vitest@4.1.11)':
-    dependencies:
-      '@stryker-mutator/api': 9.6.1
-      '@stryker-mutator/core': 9.6.1(@types/node@22.20.4)(supports-color@7.2.0)
-      '@stryker-mutator/util': 9.6.1
-      semver: 7.8.4
-      tslib: 2.8.1
-      vitest: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.1)(tsx@4.22.4)(yaml@2.9.0))
-
   '@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.13.2)(supports-color@7.2.0))(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))':
     dependencies:
       '@stryker-mutator/api': 9.6.1
@@ -4420,21 +4332,6 @@ snapshots:
       semver: 7.8.4
       tslib: 2.8.1
       vitest: 2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)
-
-  '@testing-conventions/aarch64-apple-darwin@0.0.144':
-    optional: true
-
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.144':
-    optional: true
-
-  '@testing-conventions/x86_64-apple-darwin@0.0.144':
-    optional: true
-
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.144':
-    optional: true
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.144':
-    optional: true
 
   '@types/chai@5.2.3':
     dependencies:
@@ -4818,8 +4715,6 @@ snapshots:
   before-after-hook@2.2.3: {}
 
   before-after-hook@4.0.0: {}
-
-  bin-shim@0.2.2: {}
 
   brace-expansion@1.1.15:
     dependencies:
@@ -5758,38 +5653,6 @@ snapshots:
       '@istanbuljs/schema': 0.1.6
       glob: 10.5.0
       minimatch: 10.2.5
-
-  testing-conventions@0.0.144(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11):
-    dependencies:
-      '@stryker-mutator/core': 9.6.1(@types/node@22.20.4)(supports-color@7.2.0)
-      '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@22.20.4)(supports-color@7.2.0))(vitest@4.1.11)
-      bin-shim: 0.2.2
-    optionalDependencies:
-      '@testing-conventions/aarch64-apple-darwin': 0.0.144
-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.144
-      '@testing-conventions/x86_64-apple-darwin': 0.0.144
-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.144
-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.144
-      vitest: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.1)(tsx@4.22.4)(yaml@2.9.0))
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
-
-  testing-conventions@0.0.144(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)):
-    dependencies:
-      '@stryker-mutator/core': 9.6.1(@types/node@24.13.2)(supports-color@7.2.0)
-      '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.13.2)(supports-color@7.2.0))(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))
-      bin-shim: 0.2.2
-    optionalDependencies:
-      '@testing-conventions/aarch64-apple-darwin': 0.0.144
-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.144
-      '@testing-conventions/x86_64-apple-darwin': 0.0.144
-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.144
-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.144
-      vitest: 2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)
-    transitivePeerDependencies:
-      - '@types/node'
-      - supports-color
 
   tinybench@2.9.0: {}
 
