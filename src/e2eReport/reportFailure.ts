@@ -1,10 +1,9 @@
 import type { Octokit } from '../types';
 
-export const REPORT_TITLE = 'Scheduled e2e run failed';
-
 export async function reportFailure(github: Octokit, owner: string, repo: string, runUrl: string): Promise<string> {
+  const title = 'Scheduled e2e run failed';
   const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', per_page: 100 });
-  const existing = open.find((issue) => issue.title === REPORT_TITLE);
+  const existing = open.find((issue) => issue.title === title);
 
   if (existing) {
     const { data } = await github.rest.issues.createComment({
@@ -19,7 +18,7 @@ export async function reportFailure(github: Octokit, owner: string, repo: string
   const { data } = await github.rest.issues.create({
     owner,
     repo,
-    title: REPORT_TITLE,
+    title,
     body: `The scheduled e2e run failed: ${runUrl}`,
   });
   return `Opened ${data.html_url}`;

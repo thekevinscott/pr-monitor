@@ -1,7 +1,8 @@
 import { expect, test, vi } from 'vitest';
-import { REPORT_TITLE, reportFailure } from './reportFailure';
+import { reportFailure } from './reportFailure';
 import type { Octokit } from '../types';
 
+const TITLE = 'Scheduled e2e run failed';
 const RUN_URL = 'https://github.com/o/r/actions/runs/42';
 
 function makeClient(openIssues: { number: number; title: string }[]) {
@@ -12,10 +13,6 @@ function makeClient(openIssues: { number: number; title: string }[]) {
   const github = { paginate, rest: { issues: { listForRepo, create, createComment } } } as unknown as Octokit;
   return { github, paginate, listForRepo, create, createComment };
 }
-
-test('the report has a fixed title, so the next failure can find it', () => {
-  expect(REPORT_TITLE).toBe('Scheduled e2e run failed');
-});
 
 test('reads every open issue', async () => {
   const { github, paginate, listForRepo } = makeClient([]);
@@ -33,7 +30,7 @@ test('opens a report when none is open', async () => {
   expect(create).toHaveBeenCalledWith({
     owner: 'o',
     repo: 'r',
-    title: REPORT_TITLE,
+    title: TITLE,
     body: `The scheduled e2e run failed: ${RUN_URL}`,
   });
   expect(createComment).not.toHaveBeenCalled();
@@ -43,7 +40,7 @@ test('opens a report when none is open', async () => {
 test('comments on the open report instead of opening another', async () => {
   const { github, create, createComment } = makeClient([
     { number: 3, title: 'unrelated' },
-    { number: 5, title: REPORT_TITLE },
+    { number: 5, title: TITLE },
   ]);
 
   const line = await reportFailure(github, 'o', 'r', RUN_URL);
