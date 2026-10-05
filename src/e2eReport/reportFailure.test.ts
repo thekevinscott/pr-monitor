@@ -13,6 +13,10 @@ function makeClient(openIssues: { number: number; title: string }[]) {
   return { github, paginate, listForRepo, create, createComment };
 }
 
+test('the report has a fixed title, so the next failure can find it', () => {
+  expect(REPORT_TITLE).toBe('Scheduled e2e run failed');
+});
+
 test('reads every open issue', async () => {
   const { github, paginate, listForRepo } = makeClient([]);
 

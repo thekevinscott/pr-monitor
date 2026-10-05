@@ -38,8 +38,8 @@ test('reports the run named in the environment and logs the outcome', async () =
   expect(console.log).toHaveBeenCalledWith('Opened x');
 });
 
-test('refuses to run without a run URL', async () => {
-  delete process.env.E2E_RUN_URL;
+test.each(['GITHUB_TOKEN', 'E2E_OWNER', 'E2E_REPO', 'E2E_RUN_URL'])('refuses to run without %s', async (name) => {
+  delete process.env[name];
 
-  await expect(run()).rejects.toThrow('E2E_RUN_URL is required');
+  await expect(run()).rejects.toThrow(`${name} is required`);
 });

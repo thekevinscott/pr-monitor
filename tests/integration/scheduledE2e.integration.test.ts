@@ -90,19 +90,25 @@ const fakeGithub = async (openIssues: { number: number; title: string }[]) => {
   return { requests, url: `http://127.0.0.1:${port}`, close: () => server.close() };
 };
 
-const report = async (apiUrl: string) =>
-  execFileAsync('pnpm', ['run', '--silent', 'e2e-report'], {
-    cwd: repoRoot,
-    env: {
-      PATH: process.env.PATH ?? '',
-      HOME: process.env.HOME ?? '',
-      GITHUB_API_URL: apiUrl,
-      GITHUB_TOKEN: 'test-token',
-      E2E_OWNER: 'o',
-      E2E_REPO: 'r',
-      E2E_RUN_URL: RUN_URL,
-    },
-  });
+const report = async (apiUrl: string) => {
+  try {
+    return await execFileAsync('pnpm', ['run', '--silent', 'e2e-report'], {
+      cwd: repoRoot,
+      env: {
+        PATH: process.env.PATH ?? '',
+        HOME: process.env.HOME ?? '',
+        GITHUB_API_URL: apiUrl,
+        GITHUB_TOKEN: 'test-token',
+        E2E_OWNER: 'o',
+        E2E_REPO: 'r',
+        E2E_RUN_URL: RUN_URL,
+      },
+    });
+  } catch (err) {
+    const { stdout = '', stderr = '' } = err as { stdout?: string; stderr?: string };
+    throw new Error(`e2e-report failed\nstdout: ${stdout}\nstderr: ${stderr}`);
+  }
+};
 
 test('a failure with no open report opens one', async () => {
   const github = await fakeGithub([]);
