@@ -14,6 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "promote": "tsx src/promote/entry.ts",
+    "e2e-report": "tsx src/e2eReport/entry.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "verify": "pnpm run typecheck && pnpm run lint && pnpm run test:coverage"
