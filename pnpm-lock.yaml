@@ -40,8 +40,8 @@ importers:
         specifier: ^9.18.0
         version: 9.39.4(supports-color@7.2.0)
       testing-conventions:
-        specifier: ^0.0.98
-        version: 0.0.98(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))
+        specifier: ^0.0.144
+        version: 0.0.144(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -80,8 +80,8 @@ importers:
         specifier: ^10.9.1
         version: 10.11.0(supports-color@7.2.0)
       testing-conventions:
-        specifier: ^0.0.94
-        version: 0.0.94(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11)
+        specifier: ^0.0.144
+        version: 0.0.144(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11)
       tsx:
         specifier: ^4.19.0
         version: 4.22.4
@@ -1422,56 +1422,29 @@ packages:
       '@stryker-mutator/core': 9.6.1
       vitest: '>=2.0.0'
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.94':
-    resolution: {integrity: sha512-Y5tDpfDpn9qT8UkcJW3ZXfECrboOMXUZNc0Xv/1roOFvtgDotomV1Jrl4idIpwQG6WOqC2+k5MDYA/djL/WDaQ==}
+  '@testing-conventions/aarch64-apple-darwin@0.0.144':
+    resolution: {integrity: sha512-6b2RfzqCARWeOfk9r6Orc8Rxvv+PKY0hroflFoBSgz+hssdaBxQQ7wt2htT3ehpRYaqdHvzKEmGQnkM6nHkVxA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.98':
-    resolution: {integrity: sha512-TU52dAx4LBP3pd9kElt47O9CBfJcWDBb+Sx7L8Gaf/6uXHipCaAoKfX7qdFIG5Jg/C/UYC2Bdyaiqf69TVlB2w==}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.94':
-    resolution: {integrity: sha512-xEwu6wEOWANSfdmexioyqlLjJIyQpzirZElCEdl8R3yUe9IVgGOJAAt9/BI0grdl03uTY82tingQeGo/l1jawA==}
+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.144':
+    resolution: {integrity: sha512-dKCwbognK5YepDQ3e5G8cEmFVe3Ht6ie86t1tqhqP4EuJ054TqjyJNj1TiAQZJhdv8+hPfmbBaBZCYEnRscBmA==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.98':
-    resolution: {integrity: sha512-aVVvyXw0LfVZrkAzSfbYC/X3SXDteoJ29bGoBAhHd6ayiGp15EwryDSHE6JEWyrlu8lzvqYL1MganZIpcYKMRg==}
-    cpu: [arm64]
-    os: [linux]
-    libc: [glibc]
-
-  '@testing-conventions/x86_64-apple-darwin@0.0.94':
-    resolution: {integrity: sha512-Vo1vrV5QMR5svldRUuy9YIDG+qrHhzwMpRpR1p0XMkVvHZ9L+b79tg4/syk/YMLQTYD/Q5csrS3Uvs59fRO3pg==}
+  '@testing-conventions/x86_64-apple-darwin@0.0.144':
+    resolution: {integrity: sha512-XfYCUVs/Tp5OwmcFBmQcUGwRju3QYf+/+cBnPe7Z8zwHO76psxaKcK7qCR+FrFSmsaDEw14KE4hjqHXXaBZikQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@testing-conventions/x86_64-apple-darwin@0.0.98':
-    resolution: {integrity: sha512-+UknjW17km7SCMVwrP3xy7nPFEaZcKpYPdxA0YxnzfPgZSZelqmwXrDsodE2DrnrY9Of194i2APB8Qqs1uDOWg==}
-    cpu: [x64]
-    os: [darwin]
-
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.94':
-    resolution: {integrity: sha512-293gB4Yh7a/d6atwe2lBxKJXzDjmdloTKtyv6BPZVS0f5lIs2my+Q2kovuAsU7vSb6HVjB5rpgNuPmhbcjhdWQ==}
+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.144':
+    resolution: {integrity: sha512-AhuWyw4Tp1Wcu0pN9le5buF/IXbIU/KDEtweQve0tshoTB0U7cGIND5xM61wAVI5EzKr8tmcJJwFhnOUJiLWRw==}
     cpu: [x64]
     os: [win32]
 
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.98':
-    resolution: {integrity: sha512-RVdc6nb3HYDfXonYdwGf0TLRE8Tt9frbeLZoSvgLSF9v6oz1U18MY8+/HSzFEPGiqy0nVIOS95MIy72mL+5E7Q==}
-    cpu: [x64]
-    os: [win32]
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.94':
-    resolution: {integrity: sha512-0Qvb5v0rVsRuItH6IpPK5F2vyeqddAkAT23uLpECw7tLQYBuF0DnGXUMDRwlhzogGWkLlDDiqzXv779TL4Wnig==}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.98':
-    resolution: {integrity: sha512-Y3WWQL9bkk+hcUHiGdgFmjloGZ6G0X6fG/Ro7L1VdJCf+yvhk+IIErU4JkzUs5jeTQHiUb13/JwJypcu4I4VCA==}
+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.144':
+    resolution: {integrity: sha512-qZVlXkGsCE/ppAyeXstHzX+fpfnf+tp1jPBTdrix1d+Gd4xtFUKHHPy4fMWaVOzhiwuMht5M+I8i76NL6FirBA==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
@@ -2683,18 +2656,8 @@ packages:
     resolution: {integrity: sha512-u9E6A+ZDYdp7a4WnarkXPZOx8Ilz46+kby6p1yZ8zsGTz9gYa6FIS7lj2oezzNKmtdyyJNNmmXDppga5GB7kSw==}
     engines: {node: '>=18'}
 
-  testing-conventions@0.0.94:
-    resolution: {integrity: sha512-jrrn8ww6Cnyc+Z4bMLbo+byaWyrzIxzUHboyb79arGI0l1jEMFX66O0sPLewcvrJcS1YanSChJZgDaMEsiMaVA==}
-    engines: {node: '>=24', pnpm: '>=11'}
-    hasBin: true
-    peerDependencies:
-      vitest: '>=2'
-    peerDependenciesMeta:
-      vitest:
-        optional: true
-
-  testing-conventions@0.0.98:
-    resolution: {integrity: sha512-SZJ+2/JlrWnBFQTzCk562XT3mAqIgOxyIFbmIHbjqFuVQ8a0XQ0Ca88atwOpRi8S+UbMXDcQyY8bCPuYZ6bbkQ==}
+  testing-conventions@0.0.144:
+    resolution: {integrity: sha512-Azoz1DgY695nG5IhKjsIiL7FnYrc/nscakLWtNd6B9fUrolOoubnmht7z0+lqLy7FR2iwVXlK5C1x2Llwdmx+Q==}
     engines: {node: '>=24', pnpm: '>=11'}
     hasBin: true
     peerDependencies:
@@ -4458,34 +4421,19 @@ snapshots:
       tslib: 2.8.1
       vitest: 2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.94':
+  '@testing-conventions/aarch64-apple-darwin@0.0.144':
     optional: true
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.98':
+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.144':
     optional: true
 
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.94':
+  '@testing-conventions/x86_64-apple-darwin@0.0.144':
     optional: true
 
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.98':
+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.144':
     optional: true
 
-  '@testing-conventions/x86_64-apple-darwin@0.0.94':
-    optional: true
-
-  '@testing-conventions/x86_64-apple-darwin@0.0.98':
-    optional: true
-
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.94':
-    optional: true
-
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.98':
-    optional: true
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.94':
-    optional: true
-
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.98':
+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.144':
     optional: true
 
   '@types/chai@5.2.3':
@@ -5226,9 +5174,9 @@ snapshots:
     dependencies:
       fast-string-width: 3.0.2
 
-  fdir@6.5.0(picomatch@4.0.4):
+  fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
-      picomatch: 4.0.4
+      picomatch: 4.0.7
 
   figures@6.1.0:
     dependencies:
@@ -5811,33 +5759,33 @@ snapshots:
       glob: 10.5.0
       minimatch: 10.2.5
 
-  testing-conventions@0.0.94(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11):
+  testing-conventions@0.0.144(@types/node@22.20.4)(supports-color@7.2.0)(vitest@4.1.11):
     dependencies:
       '@stryker-mutator/core': 9.6.1(@types/node@22.20.4)(supports-color@7.2.0)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@22.20.4)(supports-color@7.2.0))(vitest@4.1.11)
       bin-shim: 0.2.2
     optionalDependencies:
-      '@testing-conventions/aarch64-apple-darwin': 0.0.94
-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.94
-      '@testing-conventions/x86_64-apple-darwin': 0.0.94
-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.94
-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.94
+      '@testing-conventions/aarch64-apple-darwin': 0.0.144
+      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.144
+      '@testing-conventions/x86_64-apple-darwin': 0.0.144
+      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.144
+      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.144
       vitest: 4.1.11(@types/node@22.20.4)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.1)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
 
-  testing-conventions@0.0.98(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)):
+  testing-conventions@0.0.144(@types/node@24.13.2)(supports-color@7.2.0)(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)):
     dependencies:
       '@stryker-mutator/core': 9.6.1(@types/node@24.13.2)(supports-color@7.2.0)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.13.2)(supports-color@7.2.0))(vitest@2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0))
       bin-shim: 0.2.2
     optionalDependencies:
-      '@testing-conventions/aarch64-apple-darwin': 0.0.98
-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.98
-      '@testing-conventions/x86_64-apple-darwin': 0.0.98
-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.98
-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.98
+      '@testing-conventions/aarch64-apple-darwin': 0.0.144
+      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.144
+      '@testing-conventions/x86_64-apple-darwin': 0.0.144
+      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.144
+      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.144
       vitest: 2.1.9(@types/node@24.13.2)(lightningcss@1.33.0)(supports-color@7.2.0)
     transitivePeerDependencies:
       - '@types/node'
@@ -5851,8 +5799,8 @@ snapshots:
 
   tinyglobby@0.2.17:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.7)
+      picomatch: 4.0.7
 
   tinypool@1.1.1: {}
 
