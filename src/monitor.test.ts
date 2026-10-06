@@ -35,6 +35,7 @@ const CALLER = '.github/workflows/caller.yml';
 const GATED = '.github/workflows/gated.yml';
 const PINNED = '.github/workflows/pinned.yml';
 const SCAN = '.github/workflows/scan.yml';
+const PUSH_ONLY = '.github/workflows/push-only.yml';
 const HEAD_SHA = 'head-sha';
 const POLL_CAP = 50;
 
@@ -88,6 +89,7 @@ const YAML: Record<string, string> = {
     DISPATCH_ON,
   ),
   [SCAN]: wf('Scan', gatedJob('scan_hermetic'), CALL_ON),
+  [PUSH_ONLY]: wf('Push Only', plainJob('build'), 'on: push'),
 };
 
 // A one-file tree as `repos.downloadTarballArchive` serves it: single root dir, gzipped tar.
@@ -316,6 +318,17 @@ afterEach(() => {
 });
 
 describe('predicted check set', () => {
+  test('fails visibly when push-only CI is present but the PR prediction is empty', async () => {
+    const { failures, polls } = await gate({
+      workflows: [SELF_PATH, PUSH_ONLY],
+      polls: [[self, run(PUSH_ONLY, { event: 'push' })]],
+    });
+    expect(failures).toEqual([
+      expect.stringContaining('Push-only CI is outside this PR gate'),
+    ]);
+    expect(polls).toBe(1);
+  });
+
   test('every predicted check present and green -> pass', async () => {
     const { failures, polls } = await gate({ polls: [[self, run(TESTS)]] });
     expect(failures).toEqual([]);
