@@ -70,7 +70,7 @@ describe("makeGithubClient", () => {
       base: { ref: "main", repo: { default_branch: "main", owner: { type: "User" } } },
       head: { ref: "topic", sha: "abc", repo: { full_name: "o/r" } },
       merge_commit_sha: null,
-      mergeable: null,
+      mergeable: true,
       draft: false,
       labels: [{ name: "ci" }],
       user: { login: "octocat" },

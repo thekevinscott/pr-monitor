@@ -10,11 +10,11 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-const stage = (mergeable: Array<boolean | null>) => {
+const stage = (mergeable: Array<boolean | null>, state = "open") => {
   const fetch = vi.fn(async (_url: URL) => {
     const value = mergeable.shift();
     if (value === undefined) throw new Error("unexpected extra getPull request");
-    return new Response(JSON.stringify({ mergeable: value }));
+    return new Response(JSON.stringify({ mergeable: value, state }));
   });
   vi.stubGlobal("fetch", fetch);
   vi.stubEnv("GH_TOKEN", "test-token");
@@ -42,4 +42,10 @@ test("an indefinitely unknown mergeability fails after a bounded number of reads
   expect(await outcome).toBeInstanceOf(Error);
   expect(String(await outcome)).toMatch(/mergeab/i);
   expect(fetch).toHaveBeenCalledTimes(5);
+});
+
+test("a closed historical PR with null mergeability returns without polling", async () => {
+  const fetch = stage([null], "closed");
+  expect((await makeGithubClient().getPull(params)).mergeable).toBeNull();
+  expect(fetch).toHaveBeenCalledTimes(1);
 });
