@@ -2,8 +2,38 @@ name: Tests
 
 on:
   pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'packages/willfire/**'
+      - '!packages/willfire/*.md'
+      - 'action.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - 'eslint.config.mjs'
+      - 'vitest.config.mts'
+      - 'stryker.config.json'
+      - 'testing-conventions.toml'
+      - '.github/workflows/**'
   push:
     branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'packages/willfire/**'
+      - '!packages/willfire/*.md'
+      - 'action.yml'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - 'eslint.config.mjs'
+      - 'vitest.config.mts'
+      - 'stryker.config.json'
+      - 'testing-conventions.toml'
+      - '.github/workflows/**'
 
 jobs:
   typecheck:

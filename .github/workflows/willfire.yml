@@ -6,8 +6,22 @@ name: willfire
 
 on:
   pull_request:
+    paths:
+      - 'packages/willfire/**'
+      - '!packages/willfire/*.md'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/willfire.yml'
   push:
     branches: [main]
+    paths:
+      - 'packages/willfire/**'
+      - '!packages/willfire/*.md'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/willfire.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
