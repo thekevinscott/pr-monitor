@@ -81,7 +81,7 @@ export async function monitor({
       // Both events attach to the PR. A `push` run shares the head SHA without attaching, and
       // `merge_group` runs carry the queue's own commit, so neither reaches the comparison.
       const allRuns = await fetchWorkflowRuns(github, owner, repo, sha);
-      if (expected.names.length === 0 && expected.workflows.length === 0) {
+      if (expected.names.length === 0) {
         const pushRuns = allRuns.filter((r) => r.event === 'push' && r.path !== selfPath);
         if (pushRuns.length > 0) {
           core.setFailed(

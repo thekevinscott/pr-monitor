@@ -36,6 +36,7 @@ const GATED = '.github/workflows/gated.yml';
 const PINNED = '.github/workflows/pinned.yml';
 const SCAN = '.github/workflows/scan.yml';
 const PUSH_ONLY = '.github/workflows/push-only.yml';
+const PUSH_ONLY_2 = '.github/workflows/push-only-2.yml';
 const HEAD_SHA = 'head-sha';
 const POLL_CAP = 50;
 
@@ -90,6 +91,7 @@ const YAML: Record<string, string> = {
   ),
   [SCAN]: wf('Scan', gatedJob('scan_hermetic'), CALL_ON),
   [PUSH_ONLY]: wf('Push Only', plainJob('build'), 'on: push'),
+  [PUSH_ONLY_2]: wf('Push Only 2', plainJob('build'), 'on: push'),
 };
 
 // A one-file tree as `repos.downloadTarballArchive` serves it: single root dir, gzipped tar.
@@ -324,9 +326,37 @@ describe('predicted check set', () => {
       polls: [[self, run(PUSH_ONLY, { event: 'push' })]],
     });
     expect(failures).toEqual([
-      expect.stringContaining('Push-only CI is outside this PR gate'),
+      `No pull request checks were predicted, but push workflow runs exist for ${HEAD_SHA}: ` +
+        `${PUSH_ONLY}. Push-only CI is outside this PR gate.`,
     ]);
     expect(polls).toBe(1);
+  });
+
+  test('names every push workflow behind an empty PR prediction', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, PUSH_ONLY, PUSH_ONLY_2],
+      polls: [[self, run(PUSH_ONLY, { event: 'push' }), run(PUSH_ONLY_2, { event: 'push' })]],
+    });
+    expect(failures).toEqual([
+      `No pull request checks were predicted, but push workflow runs exist for ${HEAD_SHA}: ` +
+        `${PUSH_ONLY}, ${PUSH_ONLY_2}. Push-only CI is outside this PR gate.`,
+    ]);
+  });
+
+  test('ignores an unrelated event and the gate workflow when the prediction is empty', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, PUSH_ONLY],
+      polls: [[run(SELF_PATH, { event: 'push' }), run(PUSH_ONLY, { event: 'workflow_dispatch' })]],
+    });
+    expect(failures).toEqual([]);
+  });
+
+  test('a push run does not fail a gate that predicts PR checks', async () => {
+    const { failures } = await gate({
+      workflows: [SELF_PATH, TESTS, PUSH_ONLY],
+      polls: [[self, run(TESTS), run(PUSH_ONLY, { event: 'push' })]],
+    });
+    expect(failures).toEqual([]);
   });
 
   test('every predicted check present and green -> pass', async () => {
