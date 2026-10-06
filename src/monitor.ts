@@ -80,7 +80,18 @@ export async function monitor({
     try {
       // Both events attach to the PR. A `push` run shares the head SHA without attaching, and
       // `merge_group` runs carry the queue's own commit, so neither reaches the comparison.
-      runs = (await fetchWorkflowRuns(github, owner, repo, sha)).filter(
+      const allRuns = await fetchWorkflowRuns(github, owner, repo, sha);
+      if (expected.names.length === 0 && expected.workflows.length === 0) {
+        const pushRuns = allRuns.filter((r) => r.event === 'push' && r.path !== selfPath);
+        if (pushRuns.length > 0) {
+          core.setFailed(
+            `No pull request checks were predicted, but push workflow runs exist for ${sha}: ` +
+              `${pushRuns.map((r) => r.path).join(', ')}. Push-only CI is outside this PR gate.`,
+          );
+          return;
+        }
+      }
+      runs = allRuns.filter(
         (r) =>
           (r.event === 'pull_request' || r.event === 'pull_request_target') &&
           r.path !== selfPath,
