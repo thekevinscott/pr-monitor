@@ -25,11 +25,11 @@ importers:
         version: link:packages/willfire
     devDependencies:
       '@stryker-mutator/core':
-        specifier: ^9.6.1
-        version: 9.6.1(@types/node@24.19.1)(supports-color@7.2.0)
+        specifier: ^10.0.0
+        version: 10.0.0(@types/node@24.19.1)
       '@stryker-mutator/vitest-runner':
-        specifier: ^9.6.1
-        version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.19.1)(supports-color@7.2.0))(vitest@2.1.9(@types/node@24.19.1)(lightningcss@1.33.0)(supports-color@7.2.0))
+        specifier: ^10.0.0
+        version: 10.0.0(@stryker-mutator/core@10.0.0(@types/node@24.19.1))(vitest@2.1.9(@types/node@24.19.1)(lightningcss@1.33.0)(supports-color@7.2.0))
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.1
@@ -3951,6 +3951,37 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@stryker-mutator/core@10.0.0(@types/node@24.19.1)':
+    dependencies:
+      '@inquirer/prompts': 8.5.2(@types/node@24.19.1)
+      '@stryker-mutator/api': 10.0.0
+      '@stryker-mutator/instrumenter': 10.0.0
+      '@stryker-mutator/util': 10.0.0
+      ajv: 8.20.0
+      chalk: 5.6.2
+      commander: 14.0.3
+      diff-match-patch: 1.0.5
+      emoji-regex: 10.6.0
+      execa: 9.6.1
+      json-rpc-2.0: 1.7.1
+      lodash.groupby: 4.6.0
+      minimatch: 10.2.5
+      mutation-server-protocol: 0.4.1
+      mutation-testing-elements: 3.8.4
+      mutation-testing-metrics: 3.8.4
+      mutation-testing-report-schema: 3.8.4
+      npm-run-path: 6.0.0
+      progress: 2.0.3
+      rxjs: 7.8.2
+      semver: 7.8.4
+      source-map: 0.7.6
+      tree-kill: 1.2.2
+      tslib: 2.8.1
+      typed-inject: 5.0.0
+      typed-rest-client: 2.3.1
+    transitivePeerDependencies:
+      - '@types/node'
+
   '@stryker-mutator/core@9.6.1(@types/node@22.20.5)(supports-color@7.2.0)':
     dependencies:
       '@inquirer/prompts': 8.5.2(@types/node@22.20.5)
@@ -4061,6 +4092,15 @@ snapshots:
       semver: 7.8.4
       tslib: 2.8.1
       vitest: 4.1.11(@types/node@22.20.5)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@22.20.5)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
+
+  '@stryker-mutator/vitest-runner@10.0.0(@stryker-mutator/core@10.0.0(@types/node@24.19.1))(vitest@2.1.9(@types/node@24.19.1)(lightningcss@1.33.0)(supports-color@7.2.0))':
+    dependencies:
+      '@stryker-mutator/api': 10.0.0
+      '@stryker-mutator/core': 10.0.0(@types/node@24.19.1)
+      '@stryker-mutator/util': 10.0.0
+      semver: 7.8.4
+      tslib: 2.8.1
+      vitest: 2.1.9(@types/node@24.19.1)(lightningcss@1.33.0)(supports-color@7.2.0)
 
   '@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@22.20.5)(supports-color@7.2.0))(vitest@4.1.11)':
     dependencies:
