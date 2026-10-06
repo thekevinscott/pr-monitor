@@ -7,3 +7,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - testing-conventions
+  - '@testing-conventions/*'
