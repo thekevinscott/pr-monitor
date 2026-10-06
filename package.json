@@ -23,7 +23,7 @@
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^2.1.8",
-    "eslint": "^9.18.0",
+    "eslint": "^10.0.0",
     "testing-conventions": "^0.0.145",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.20.0",
