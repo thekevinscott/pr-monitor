@@ -74,7 +74,6 @@ export async function monitor({
 
   let current = prediction;
   let reconciled = false;
-  let judgedByRun = false;
   let stalledPolls = 0;
 
   while (true) {
@@ -136,8 +135,7 @@ export async function monitor({
 
     // An executed job's outputs are an answer for a run starting now. The run judged here already
     // computed its own, and a job reading mutable state (git tags) disagrees with it forever (#217).
-    if (divergence !== null && !judgedByRun) {
-      judgedByRun = true;
+    if (divergence !== null) {
       const unexecuted = await willfire(predictClient, slug, pullNumber, {
         action: options.action,
         executor: null,
