@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.minimumReleaseAge=0 --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791394440,
+  "exit_code": 0,
+  "commit": "c33d5b322c0a0ed45d8a8503caf0eb6dcdaad6e5",
+  "branch": "chore/trim-willfire-unit-tests"
+}

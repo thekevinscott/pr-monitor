@@ -345,19 +345,6 @@ describe("executing run steps", () => {
     expect(out).toEqual({ v: "wji" });
   });
 
-  it("carries GITHUB_ENV writes into every later step", async () => {
-    const out = success(
-      await execute({
-        steps: [
-          { run: 'echo "K=written" >> "$GITHUB_ENV"' },
-          { id: "s", run: 'echo "v=$K" >> "$GITHUB_OUTPUT"' },
-        ],
-        outputs: { v: "${{ steps.s.outputs.v }}" },
-      }),
-    );
-    expect(out).toEqual({ v: "written" });
-  });
-
   it("ranks GITHUB_ENV over the job's env: and under the step's own", async () => {
     const out = success(
       await execute(

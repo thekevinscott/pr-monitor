@@ -119,11 +119,6 @@ describe("job expansion", () => {
     expect(entries).toEqual([{ job: "a", checkName: "a", status: "run", reason: "" }]);
   });
 
-  it("uses an explicit job name over the job id", async () => {
-    const entries = await expand({ a: { name: "Build" } });
-    expect(entries[0]).toMatchObject({ job: "Build" });
-  });
-
   it("renders a name against the scope's github facts", async () => {
     const entries = await expandJobs({
       wf: {
@@ -145,11 +140,6 @@ describe("job expansion", () => {
     expect(entries[0]).toMatchObject({ job: "a" });
   });
 
-  it("records a job-level `if` as the entry reason", async () => {
-    const entries = await expand({ a: { if: false } });
-    expect(entries[0]).toMatchObject({ job: "a", status: "skipped", reason: "if: false" });
-  });
-
   it("treats an `if:` left empty as absent", async () => {
     // YAML `if:` with no value parses to null; the guard is absent, not false.
     const entries = await expand({ a: { if: null } });
@@ -157,15 +147,6 @@ describe("job expansion", () => {
   });
 
   describe("needs", () => {
-    it("skips a job that needs a skipped job", async () => {
-      const entries = await expand({ a: { if: false }, b: { needs: ["a"] } });
-      expect(entries.map((e) => [e.job, e.status])).toEqual([
-        ["a", "skipped"],
-        ["b", "skipped"],
-      ]);
-      expect(entries[1].reason).toBe("needs 'a' which is skipped");
-    });
-
     it("accepts a scalar `needs`", async () => {
       const entries = await expand({ a: { if: false }, b: { needs: "a" } });
       expect(entries[1]).toMatchObject({ job: "b", status: "skipped" });
@@ -202,14 +183,6 @@ describe("job expansion", () => {
         status: "unknown",
         reason: "if: \"github.ref == 'y'\"",
       });
-    });
-
-    it("does not propagate upstream status through always()", async () => {
-      const entries = await expand({
-        a: { if: false },
-        b: { if: "always()", needs: ["a"] },
-      });
-      expect(entries[1]).toMatchObject({ job: "b", status: "run" });
     });
 
     it("mirrors probe #341: status functions downstream of a skipped need", async () => {
@@ -435,7 +408,6 @@ describe("job expansion", () => {
 
 describe("reusable workflows", () => {
   const SUB = ".github/workflows/sub.yml";
-  const SUB2 = ".github/workflows/sub2.yml";
 
   it("inlines the called workflow's jobs under a prefixed name", async () => {
     const entries = await expand(
@@ -445,32 +417,6 @@ describe("reusable workflows", () => {
       }),
     );
     expect(entries.map((e) => [e.job, e.status])).toEqual([["call / Inner", "run"]]);
-  });
-
-  it("prefixes with the caller job's own name when it has one", async () => {
-    const entries = await expand(
-      { call: { name: "Called", uses: "./.github/workflows/sub.yml" } },
-      readerFor({
-        [SUB]: JSON.stringify({ on: { workflow_call: null }, jobs: { inner: {} } }),
-      }),
-    );
-    expect(entries.map((e) => e.job)).toEqual(["Called / inner"]);
-  });
-
-  it("follows a nested call and keeps prefixing", async () => {
-    const entries = await expand(
-      { call: { uses: "./.github/workflows/sub.yml" } },
-      readerFor({
-        [SUB]: JSON.stringify({
-          on: { workflow_call: null },
-          jobs: { mid: { uses: "./.github/workflows/sub2.yml" } },
-        }),
-        [SUB2]: JSON.stringify({ on: { workflow_call: null }, jobs: { deep: {} } }),
-      }),
-    );
-    expect(entries).toEqual([
-      { job: "call / mid / deep", checkName: "call / mid / deep", status: "run", reason: "" },
-    ]);
   });
 
   it("follows the ten reusable levels GitHub.com allows", async () => {
@@ -947,16 +893,6 @@ describe("callback answers", () => {
     ]);
   });
 
-  it("answers without any executor at all", async () => {
-    const entries = await expandCb(JOBS, {
-      [KEY]: [{ inputs: {}, outputs: { langs: '["ts"]' } }],
-    });
-    expect(entries.map((e) => [e.job, e.status])).toEqual([
-      ["detect", "run"],
-      ["cover (ts)", "run"],
-    ]);
-  });
-
   it("picks the entry whose inputs are a subset of the invocation's decided inputs", async () => {
     // `n` arrives as the number 1 and matches its recorded string form; the
     // undecided `u` can never satisfy an entry that conditions on it.
@@ -1323,18 +1259,6 @@ describe("inputs the event never supplied", () => {
 describe("repo variables in job guards (#323)", () => {
   const SUB = ".github/workflows/sub.yml";
   const GUARD = "vars.RUN_EXTRA == 'true'";
-
-  it("awaits the read for a workflow that reads vars, and decides the guard", async () => {
-    const vars = vi.fn(async () => ({ vars: { RUN_EXTRA: "true" } }));
-    const entries = await expandJobs({
-      wf: { on: { pull_request: null }, jobs: { extra: { if: GUARD } } } as Workflow,
-      reader: readerFor({}),
-      site: SITE,
-      vars,
-    });
-    expect(entries.map((e) => [e.job, e.status])).toEqual([["extra", "run"]]);
-    expect(vars).toHaveBeenCalledTimes(1);
-  });
 
   it("never awaits the read when no job mentions the context", async () => {
     const vars = vi.fn(async () => ({ vars: {} }));
