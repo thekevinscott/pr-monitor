@@ -70,7 +70,7 @@ describe("makeGithubClient", () => {
       base: { ref: "main", repo: { default_branch: "main", owner: { type: "User" } } },
       head: { ref: "topic", sha: "abc", repo: { full_name: "o/r" } },
       merge_commit_sha: null,
-      mergeable: null,
+      mergeable: true,
       draft: false,
       labels: [{ name: "ci" }],
       user: { login: "octocat" },
@@ -78,6 +78,44 @@ describe("makeGithubClient", () => {
     stage(json(pr));
     expect(await client().getPull({ ...REPO, pull_number: 5 })).toEqual(pr);
     expect(calls[0].url).toBe("https://api.github.com/repos/o/r/pulls/5");
+  });
+
+  it("waits between unknown mergeability reads and returns the settled pull", async () => {
+    vi.useFakeTimers();
+    try {
+      const settled = { state: "open", mergeable: false };
+      stage(json({ state: "open", mergeable: null }), json(settled));
+      const response = client().getPull({ ...REPO, pull_number: 5 });
+      await vi.advanceTimersByTimeAsync(999);
+      expect(calls).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(await response).toEqual(settled);
+      expect(calls).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("stops after five unknown mergeability reads and reports the pull", async () => {
+    vi.useFakeTimers();
+    try {
+      stage(...Array.from({ length: 5 }, () => json({ state: "open", mergeable: null })));
+      const outcome = client().getPull({ ...REPO, pull_number: 5 }).catch((error: unknown) => error);
+      await vi.advanceTimersByTimeAsync(3999);
+      expect(calls).toHaveLength(4);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(String(await outcome)).toContain("o/r#5");
+      expect(calls).toHaveLength(5);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("returns a historical closed pull with unknown mergeability immediately", async () => {
+    const closed = { state: "closed", mergeable: null };
+    stage(json(closed));
+    expect(await client().getPull({ ...REPO, pull_number: 5 })).toEqual(closed);
+    expect(calls).toHaveLength(1);
   });
 
   it("lists pull requests with the filters in the query", async () => {

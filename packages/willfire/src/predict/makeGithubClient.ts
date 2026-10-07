@@ -83,6 +83,8 @@ export interface GithubClient {
 }
 
 const PER_PAGE = 100;
+const MERGEABILITY_READS = 5;
+const MERGEABILITY_RETRY_MS = 1_000;
 
 export function makeGithubClient(): GithubClient {
   const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN;
@@ -143,8 +145,20 @@ export function makeGithubClient(): GithubClient {
   };
 
   return {
-    getPull: ({ owner, repo, pull_number }) =>
-      json<GithubPull>(`/repos/${owner}/${repo}/pulls/${pull_number}`),
+    getPull: async ({ owner, repo, pull_number }) => {
+      const path = `/repos/${owner}/${repo}/pulls/${pull_number}`;
+      for (let read = 0; read < MERGEABILITY_READS; read++) {
+        const pull = await json<GithubPull & { state?: string }>(path);
+        // Historical closed PRs can keep null forever; only open PRs need a settled answer.
+        if (pull.mergeable !== null || pull.state === "closed") {
+          return pull;
+        }
+        if (read < MERGEABILITY_READS - 1) {
+          await new Promise((resolve) => setTimeout(resolve, MERGEABILITY_RETRY_MS));
+        }
+      }
+      throw new Error(`GitHub did not settle mergeability for ${owner}/${repo}#${pull_number}`);
+    },
     listPulls: ({ owner, repo, state, head }) =>
       pages(`/repos/${owner}/${repo}/pulls`, (b: GithubPullSummary[]) => b, { state, head }),
     listPullFiles: ({ owner, repo, pull_number }) =>

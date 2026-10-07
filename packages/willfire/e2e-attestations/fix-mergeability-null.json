@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791309045,
+  "exit_code": 0,
+  "commit": "e98cc649defbdc1866b97e14063cca37e90e213c",
+  "branch": "fix/mergeability-null"
+}
