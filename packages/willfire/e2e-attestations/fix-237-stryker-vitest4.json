@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.verifyDepsBeforeRun=false --filter willfire run test:e2e",
+  "ran_at": 1791396895,
+  "exit_code": 0,
+  "commit": "77f24b4703c683c46032ffe579d64519073fb06b",
+  "branch": "fix/237-stryker-vitest4"
+}
