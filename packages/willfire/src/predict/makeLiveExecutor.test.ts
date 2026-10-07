@@ -199,10 +199,12 @@ describe("makeLiveExecutor", () => {
 
   it("builds one runner and hands it to both extraction and the step walk", () => {
     hoisted.makeTreeProvider.mockClear();
+    hoisted.makeCloneProvider.mockClear();
     hoisted.makeExecutor.mockClear();
     const runCommand: RunCommand = async () => ({ code: 0, stdout: "", stderr: "" });
     makeLiveExecutor(githubOf({}), WORKSPACE, resolveRef, { token: null, runCommand });
     expect(hoisted.makeTreeProvider).toHaveBeenCalledWith(expect.any(Function), runCommand);
+    expect(hoisted.makeCloneProvider).toHaveBeenCalledWith(runCommand, null, expect.anything());
     expect(hoisted.makeExecutor).toHaveBeenCalledWith(
       expect.objectContaining({ deps: expect.objectContaining({ runCommand }) }),
     );

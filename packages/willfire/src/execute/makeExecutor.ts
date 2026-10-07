@@ -51,7 +51,9 @@ export function makeExecutor(opts: {
       const steps = job.steps as (StepModel | null)[];
       // Only the supported full-history checkout needs a clone.
       const needsHistory = steps.some((s) => {
-        if (s === null || typeof s.uses !== "string" || !isCheckout(s.uses)) return false;
+        if (s === null || typeof s.uses !== "string" || !isCheckout(s.uses)) {
+          return false;
+        }
         const withBlock = s.with ?? {};
         return Object.keys(withBlock).length === 1 && String(withBlock["fetch-depth"]) === "0";
       });
