@@ -12,7 +12,7 @@ vi.mock('@actions/github', async () => {
 
 vi.mock('@octokit/rest', async () => {
   const actual = await vi.importActual<typeof import('@octokit/rest')>('@octokit/rest');
-  return { ...actual, Octokit: vi.fn(() => ({ rest: {} })) };
+  return { ...actual, Octokit: vi.fn(function () { return { rest: {} }; }) };
 });
 
 vi.mock('willfire', async () => {
