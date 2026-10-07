@@ -611,6 +611,27 @@ describe("executing run steps", () => {
     expect(history).toEqual([false]);
   });
 
+  it("does not clone for checkout inputs the step walker refuses", async () => {
+    for (const withBlock of [
+      { ref: "main" },
+      { "fetch-depth": 1 },
+      { "fetch-depth": 0, ref: "main" },
+    ]) {
+      const history: (boolean | undefined)[] = [];
+      await execute(
+        { steps: [{ uses: "actions/checkout@v6", with: withBlock }] },
+        {},
+        {
+          provideTree: async (_src, opts) => {
+            history.push(opts?.history);
+            return null;
+          },
+        },
+      );
+      expect(history).toEqual([false]);
+    }
+  });
+
   it("fails when the workspace cannot be materialized", async () => {
     const ex = executorOf({}); // no trees at all
     const o = await ex.executeJob("detect", { steps: [] }, {}, {});

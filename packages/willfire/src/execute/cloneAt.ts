@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import { scratch } from "./scratch.js";
 import type { WorkflowSource } from "../types.js";
 import type { ProvidedTree, RunCommand } from "./types.js";
@@ -30,6 +31,12 @@ export async function cloneAt(
   }
   // A PR head commit may live only under `refs/pull/N/head`, which a plain
   // clone does not fetch, so a failed checkout retries via a direct fetch.
+  const mounts = [{ path: dir, writable: true }];
+  // Replay fixtures use local git bundles. The production HTTPS remote needs
+  // no host mount; a recorded bundle is exposed read-only to the clone only.
+  if (isAbsolute(remote) && existsSync(remote)) {
+    mounts.push({ path: remote, writable: false });
+  }
   const r = await runCommand({
     script: [
       `git${auth} clone --quiet "$WILLFIRE_REMOTE" "$WILLFIRE_DEST"`,
@@ -42,6 +49,7 @@ export async function cloneAt(
     shell: "bash",
     cwd: dir,
     env,
+    mounts,
   });
   if (r.code !== 0) {
     await remove();

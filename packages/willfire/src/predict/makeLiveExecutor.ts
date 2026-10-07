@@ -1,7 +1,6 @@
 import { makeCloneProvider } from "../execute/makeCloneProvider.js";
 import { makeExecutor } from "../execute/makeExecutor.js";
 import { makeTreeProvider } from "../execute/makeTreeProvider.js";
-import { runShell } from "../execute/runShell.js";
 import type { JobExecutor, ProvideTree, RunCommand } from "../execute/types.js";
 import type { GithubClient } from "./makeGithubClient.js";
 import { makeSandboxRunner, type SandboxRunner } from "../sandbox/makeSandboxRunner.js";
@@ -16,15 +15,13 @@ export interface LiveExecutorOpts {
    * from the environment; `null` clones anonymously.
    */
   token?: string | null;
-  /** Where clones come from — a seam for tests that serve `file://` fixtures. */
+  /** Where clones come from — a seam for recorded local git bundles. */
   remoteUrl?: (source: WorkflowSource) => string;
 }
 
 /**
- * The executor `predict` uses by default. Repo-authored steps and the `tar`
- * that unpacks a downloaded repo both run in the docker sandbox; `git clone`
- * runs on the host, where the token can travel per-invocation without ever
- * riding into the sandbox.
+ * The executor `predict` uses by default. Tree extraction, history clones,
+ * and repo-authored steps all run in the docker sandbox.
  */
 export function makeLiveExecutor(
   github: Pick<GithubClient, "downloadTarball">,
@@ -57,7 +54,7 @@ export function makeLiveExecutor(
       : { run: opts.runCommand, dispose: async () => {} };
   const runCommand = sandbox.run;
   const tarballs = makeTreeProvider(download, runCommand);
-  const clones = makeCloneProvider(runShell, token, { remoteUrl: opts.remoteUrl });
+  const clones = makeCloneProvider(runCommand, token, { remoteUrl: opts.remoteUrl });
   const provideTree: ProvideTree = (src, o = {}) =>
     o.history === true ? clones.provide(src, o) : tarballs.provide(src, o);
   const executor = makeExecutor({

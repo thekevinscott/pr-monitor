@@ -4,10 +4,8 @@ import type { WorkflowSource } from "../types.js";
 import type { RunCommand, TreeSource } from "./types.js";
 
 /**
- * Materialize repo trees by full clone, on the host, keeping auth out of the
- * sandbox. The token never touches the URL or persisted git config, because
- * `.git/config` later rides into the sandbox: auth travels as a
- * per-invocation `http.extraheader` and is gone when the command is.
+ * Materialize repo trees by full clone. Auth travels as a per-invocation
+ * `http.extraheader`, never in the URL or persisted git config.
  */
 export function makeCloneProvider(
   runCommand: RunCommand,

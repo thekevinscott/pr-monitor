@@ -49,15 +49,12 @@ export function makeExecutor(opts: {
       }
       // A sequence entry can be null — `- ` with nothing after it.
       const steps = job.steps as (StepModel | null)[];
-      // Any checkout input might be the `fetch-depth: 0` form. Over-asking for
-      // one the walk will refuse anyway costs a clone, never correctness.
-      const needsHistory = steps.some(
-        (s) =>
-          s !== null &&
-          typeof s.uses === "string" &&
-          isCheckout(s.uses) &&
-          Object.keys(s.with ?? {}).length > 0,
-      );
+      // Only the supported full-history checkout needs a clone.
+      const needsHistory = steps.some((s) => {
+        if (s === null || typeof s.uses !== "string" || !isCheckout(s.uses)) return false;
+        const withBlock = s.with ?? {};
+        return Object.keys(withBlock).length === 1 && String(withBlock["fetch-depth"]) === "0";
+      });
       const tree = await deps.provideTree(workspace, { history: needsHistory });
       if (tree === null) {
         return fail(
