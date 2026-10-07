@@ -7,6 +7,11 @@
       "rangeStrategy": "bump",
       "minimumReleaseAge": null,
       "automerge": true
+    },
+    {
+      "description": "typescript-eslint 8.71 supports typescript <6.1. Lift once it supports 7.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
     }
   ]
 }
