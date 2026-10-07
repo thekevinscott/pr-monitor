@@ -483,6 +483,28 @@ describe('predicted check set', () => {
     expect(polls).toBe(1);
   });
 
+  test('a dynamic matrix that drifted from its run is judged by the run, once', async () => {
+    const { failures, polls, predicts, log } = await gate({
+      workflows: [SELF_PATH, DYNAMIC],
+      eventAction: 'synchronize',
+      executor: {
+        executeJob: async () => ({ ok: true, outputs: { matrix: '["x"]' } }),
+      },
+      checks: { [DYNAMIC]: ['setup', 'spread (y)'] },
+      polls: [
+        [self, run(DYNAMIC, { status: 'in_progress', conclusion: null })],
+        [self, run(DYNAMIC)],
+      ],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(2);
+    expect(predicts).toBe(2);
+    expect(log).toContain(
+      `Names depend on executed jobs; judged by run conclusion: ${JSON.stringify([DYNAMIC])}`,
+    );
+    expect(willfireSpy.mock.calls.at(-1)?.[3]).toEqual({ action: 'synchronize', executor: null });
+  });
+
   test('resolver callbacks ride the predict options', async () => {
     const { failures } = await gate({
       callbacks: ['echo {}', 'printf {}'],
@@ -676,7 +698,7 @@ describe('a callee tag that moves mid-flight', () => {
   });
 
   test('nothing moved -> the divergence stands, and nothing is re-predicted', async () => {
-    const { failures, predicts } = await gate({
+    const { failures, predicts, log } = await gate({
       ...caller,
       refShas: ['callee-a'],
       checks: { [CALLER]: ['call / alpha', 'call / extra', 'call / rogue'] },
@@ -684,7 +706,9 @@ describe('a callee tag that moves mid-flight', () => {
     });
     expect(failures[0]).toMatch(/rogue/);
     expect(failures[0]).toMatch(/Unpredicted check names/);
-    expect(predicts).toBe(1);
+    // The second is the execution-free pass, which names nothing new.
+    expect(predicts).toBe(2);
+    expect(log).not.toContain('judged by run conclusion');
   });
 
   test('a move that does not explain the divergence -> still red', async () => {
@@ -695,7 +719,7 @@ describe('a callee tag that moves mid-flight', () => {
       polls: [[self, run(CALLER)]],
     });
     expect(failures[0]).toMatch(/rogue/);
-    expect(predicts).toBe(2);
+    expect(predicts).toBe(3);
   });
 
   test('a ref that stops resolving -> red, never green', async () => {

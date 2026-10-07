@@ -136,6 +136,10 @@ Waiting longer buys nothing: no run exists, so no check name from it can ever re
 
 So the gate records which commits each prediction was read from, and on divergence re-resolves those refs **once**. If any moved, it predicts again at the new commits and judges the same observation against the fresh expectation; the move is named in the log. If nothing moved, the divergence is real and stands — and no second prediction runs, so jobs are never executed twice to confirm a tag that held still. A move that still does not explain the observation is red, and so is a ref that stopped resolving: the gate will not vouch for a check set whose commits it cannot name.
 
+**An executed matrix that drifted.** A job willfire executes answers for a run starting now. The run being judged already executed its own copy, and a job that reads mutable state — putitoutthere's `plan` reads git tags — answers differently once a release lands in between. Every leg then disagrees, and no rerun converges ([#217](https://github.com/thekevinscott/pr-monitor/issues/217)).
+
+So when a divergence survives reconciliation, the gate predicts once more with execution off. A workflow whose entries change between the two predictions has names that hang on execution, and it is judged by its run alone: the run must exist and pass, but its check names are neither required nor flagged. Every other workflow stays judged by name, so a rogue check outside those workflows is still red.
+
 ## Limitations
 
 - **Workflows willfire does not model.** `workflow_run` chains and `pull_request_target` are not predicted, so their runs read as unexpected. If you use them, this gate is not for you yet.

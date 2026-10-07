@@ -41,6 +41,8 @@ export interface ExpectedChecks {
   names: string[];
   workflows: string[];
   unresolved: string[];
+  /** Judged by run conclusion alone: their names hang on jobs executed at gate time (#217). */
+  runLevel: string[];
 }
 
 export interface GateComparison {

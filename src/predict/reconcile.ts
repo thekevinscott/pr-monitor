@@ -1,4 +1,4 @@
-import { willfire, type PredictOptions, type WorkflowSource } from 'willfire';
+import { willfire, type Prediction, type PredictOptions, type WorkflowSource } from 'willfire';
 import type { ExpectedChecks, MonitorParams, PredictClient } from '../types';
 import { formatSourceMoves } from '../messages/formatSourceMoves';
 import { formatUnresolvedFailure } from '../messages/formatUnresolvedFailure';
@@ -17,7 +17,7 @@ export interface ReconcileParams {
 export type Reconciliation =
   | { kind: 'unchanged' }
   | { kind: 'failed'; detail: string }
-  | { kind: 'repredicted'; expected: ExpectedChecks; detail: string };
+  | { kind: 'repredicted'; prediction: Prediction; expected: ExpectedChecks; detail: string };
 
 /** Re-predicting executes jobs again, so re-resolve first and predict only if something moved. */
 export async function reconcile({
@@ -50,6 +50,7 @@ export async function reconcile({
   }
   return {
     kind: 'repredicted',
+    prediction,
     expected,
     detail: `${moved} Re-predicted at the new commits.`,
   };

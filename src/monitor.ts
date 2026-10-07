@@ -11,6 +11,7 @@ import { resolveSelfWorkflowPath } from './github/resolveSelfWorkflowPath';
 import { compareObserved } from './checks/compareObserved';
 import { describeDivergence } from './checks/describeDivergence';
 import { isStalled } from './checks/isStalled';
+import { executionDependent } from './predict/executionDependent';
 import { expectedChecks } from './predict/expectedChecks';
 import { reconcile } from './predict/reconcile';
 import { formatNeverStarted } from './messages/formatNeverStarted';
@@ -71,6 +72,7 @@ export async function monitor({
   console.log(`Expected checks: ${JSON.stringify(expected.names)}`);
   console.log(`Expected runs: ${JSON.stringify(expected.workflows)}`);
 
+  let current = prediction;
   let reconciled = false;
   let stalledPolls = 0;
 
@@ -122,9 +124,26 @@ export async function monitor({
       }
       if (outcome.kind === 'repredicted') {
         console.log(outcome.detail);
+        current = outcome.prediction;
         expected = outcome.expected;
         console.log(`Expected checks: ${JSON.stringify(expected.names)}`);
         console.log(`Expected runs: ${JSON.stringify(expected.workflows)}`);
+        comparison = compareObserved(runs, jobs, expected);
+        divergence = describeDivergence(comparison);
+      }
+    }
+
+    // An executed job's outputs are an answer for a run starting now. The run judged here already
+    // computed its own, and a job reading mutable state (git tags) disagrees with it forever (#217).
+    if (divergence !== null) {
+      const unexecuted = await willfire(predictClient, slug, pullNumber, {
+        action: options.action,
+        executor: null,
+      });
+      const runLevel = executionDependent(current, unexecuted);
+      if (runLevel.length > 0) {
+        console.log(`Names depend on executed jobs; judged by run conclusion: ${JSON.stringify(runLevel)}`);
+        expected = expectedChecks(current, selfPath, runLevel);
         comparison = compareObserved(runs, jobs, expected);
         divergence = describeDivergence(comparison);
       }

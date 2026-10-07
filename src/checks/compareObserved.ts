@@ -17,6 +17,7 @@ export function compareObserved(
 ): GateComparison {
   const expectedRuns = new Set(expected.workflows);
   const expectedNames = new Set(expected.names);
+  const runLevel = new Set(expected.runLevel);
 
   const unexpected = new Set<string>();
   const seen = new Set<string>();
@@ -46,7 +47,7 @@ export function compareObserved(
       seenNames.add(name);
       continue;
     }
-    if (!expectedRuns.has(workflowPath)) continue;
+    if (!expectedRuns.has(workflowPath) || runLevel.has(workflowPath)) continue;
     unexpectedNames.add(`${workflowPath} :: ${name}`);
   }
 
