@@ -40,7 +40,7 @@
   "devDependencies": {
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^10.9.1",
     "testing-conventions": "^0.0.147",
