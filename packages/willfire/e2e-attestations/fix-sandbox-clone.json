@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791387940,
+  "exit_code": 0,
+  "commit": "3a890dca67aae26c43e053df283565794b85d3b7",
+  "branch": "fix/sandbox-clone"
+}

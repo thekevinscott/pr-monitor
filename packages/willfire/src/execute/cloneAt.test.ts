@@ -49,5 +49,28 @@ describe("cloneAt", () => {
     const [spec] = specs;
     expect("WILLFIRE_AUTH" in spec.env).toBe(false);
     expect(spec.script).not.toContain("-c ");
+    expect(spec.mounts).toEqual([{ path: spec.cwd, writable: true }]);
+  });
+
+  it("mounts a local replay bundle read-only alongside the scratch directory", async () => {
+    const remote = new URL("./cloneAt.test.ts", import.meta.url).pathname;
+    let spec: RunSpec | undefined;
+    await cloneAt(SOURCE, remote, null, async (run) => {
+      spec = run;
+      return { code: 1, stdout: "", stderr: "" };
+    });
+    expect(spec?.mounts).toEqual([
+      { path: spec?.cwd, writable: true },
+      { path: remote, writable: false },
+    ]);
+  });
+
+  it("does not mount a relative remote even when the host has that file", async () => {
+    let spec: RunSpec | undefined;
+    await cloneAt(SOURCE, "package.json", null, async (run) => {
+      spec = run;
+      return { code: 1, stdout: "", stderr: "" };
+    });
+    expect(spec?.mounts).toEqual([{ path: spec?.cwd, writable: true }]);
   });
 });
