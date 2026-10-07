@@ -41,13 +41,13 @@
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
     "@types/node": "^24.0.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^5.0.0",
     "eslint": "^10.9.1",
     "testing-conventions": "^0.0.147",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.68.0",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.0"
   },
   "private": true,
   "description": "Predict the set of CI check entries GitHub Actions will create for a pull request"
