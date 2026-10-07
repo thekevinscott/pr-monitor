@@ -306,6 +306,7 @@ async function gate(scenario: Scenario): Promise<GateResult> {
 }
 
 beforeEach(() => {
+  vi.mocked(sleep).mockClear();
   vi.spyOn(console, 'log').mockImplementation(() => {});
   vi.spyOn(global, 'setTimeout').mockImplementation(((cb: () => void) => {
     cb();
