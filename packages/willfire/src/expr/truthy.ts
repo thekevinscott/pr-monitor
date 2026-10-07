@@ -23,7 +23,7 @@ export function truthy(val: Val): boolean | null {
         return v;
       }
       if (typeof v === "number") {
-        return v !== 0;
+        return 0 !== v;
       }
       return v !== "";
     }
