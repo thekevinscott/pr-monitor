@@ -31,7 +31,7 @@ const wfEntry = (workflow: string, status: WorkflowEntry['status']): WorkflowEnt
 
 test('a resolved check name is expected, and its workflow with it', () => {
   const result = expectedChecks(prediction(jobEntry('a.yml', 'build', 'Build', 'run')), SELF);
-  expect(result).toEqual({ names: ['Build'], workflows: ['a.yml'], unresolved: [] });
+  expect(result).toEqual({ names: ['Build'], workflows: ['a.yml'], unresolved: [], runLevel: [] });
 });
 
 test('matrix legs are separate check names under one workflow', () => {
@@ -58,12 +58,12 @@ test('a nameable job whose run/skip is unknown is still expected by name', () =>
 
 test('no-dispatch expects nothing at all, not even the run', () => {
   const result = expectedChecks(prediction(wfEntry('a.yml', 'no-dispatch')), SELF);
-  expect(result).toEqual({ names: [], workflows: [], unresolved: [] });
+  expect(result).toEqual({ names: [], workflows: [], unresolved: [], runLevel: [] });
 });
 
 test('a workflow-level verdict requires the run but names no check', () => {
   const result = expectedChecks(prediction(wfEntry('a.yml', 'run')), SELF);
-  expect(result).toEqual({ names: [], workflows: ['a.yml'], unresolved: [] });
+  expect(result).toEqual({ names: [], workflows: ['a.yml'], unresolved: [], runLevel: [] });
 });
 
 test('a job willfire cannot name is unresolved, and names the reason', () => {
@@ -81,7 +81,7 @@ test("the gate's own workflow is dropped from every set", () => {
     prediction(jobEntry(SELF, 'monitor', 'Monitor', 'run'), jobEntry('a.yml', 'one', 'One', 'run')),
     SELF,
   );
-  expect(result).toEqual({ names: ['One'], workflows: ['a.yml'], unresolved: [] });
+  expect(result).toEqual({ names: ['One'], workflows: ['a.yml'], unresolved: [], runLevel: [] });
 });
 
 test('a repeated check name is expected once', () => {
@@ -111,5 +111,35 @@ test('an empty prediction ([skip ci]) expects nothing', () => {
     names: [],
     workflows: [],
     unresolved: [],
+    runLevel: [],
   });
+});
+
+test('a run-level workflow is still required as a run, but none of its names are', () => {
+  const result = expectedChecks(
+    prediction(
+      jobEntry('a.yml', 'build', 'Build (1)', 'run'),
+      jobEntry('a.yml', 'lint', 'Lint', 'run'),
+      jobEntry('b.yml', 'unit', 'Unit', 'run'),
+      jobEntry(SELF, 'monitor', 'Monitor', 'run'),
+    ),
+    SELF,
+    ['b.yml', 'a.yml'],
+  );
+  expect(result).toEqual({
+    names: [],
+    workflows: ['a.yml', 'b.yml'],
+    unresolved: [],
+    runLevel: ['a.yml', 'b.yml'],
+  });
+});
+
+test('only the run-level workflow loses its names', () => {
+  const result = expectedChecks(
+    prediction(jobEntry('a.yml', 'build', null, 'unknown'), jobEntry('b.yml', 'unit', 'Unit', 'run')),
+    SELF,
+    ['a.yml'],
+  );
+  expect(result.names).toEqual(['Unit']);
+  expect(result.unresolved).toEqual([]);
 });

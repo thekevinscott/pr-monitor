@@ -29,7 +29,18 @@ const expected = (over: Partial<ExpectedChecks> = {}): ExpectedChecks => ({
   names: [],
   workflows: [],
   unresolved: [],
+  runLevel: [],
   ...over,
+});
+
+test('a run-level workflow reports names nobody predicted without them counting against it', () => {
+  const result = compareObserved(
+    [run('a.yml'), run('b.yml')],
+    [job('a.yml', 'build (0.4.83)'), job('b.yml', 'rogue')],
+    expected({ workflows: ['a.yml', 'b.yml'], runLevel: ['a.yml'] }),
+  );
+  expect(result.unexpectedNames).toEqual(['b.yml :: rogue']);
+  expect(result.matched).toEqual(['a.yml', 'b.yml']);
 });
 
 test('every predicted run and check present and green', () => {

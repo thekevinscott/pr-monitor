@@ -1,7 +1,11 @@
 import type { Prediction } from 'willfire';
 import type { ExpectedChecks } from '../types';
 
-export function expectedChecks(prediction: Prediction, selfPath: string): ExpectedChecks {
+export function expectedChecks(
+  prediction: Prediction,
+  selfPath: string,
+  runLevel: readonly string[] = [],
+): ExpectedChecks {
   const names = new Set<string>();
   const workflows = new Set<string>();
   const unresolved = new Set<string>();
@@ -11,6 +15,7 @@ export function expectedChecks(prediction: Prediction, selfPath: string): Expect
     if (entry.status === 'no-dispatch') continue;
 
     workflows.add(entry.workflow);
+    if (runLevel.includes(entry.workflow)) continue;
 
     // Loose on purpose: null and absent are the same fact here.
     if (entry.checkName != null) {
@@ -25,5 +30,6 @@ export function expectedChecks(prediction: Prediction, selfPath: string): Expect
     names: [...names].sort(),
     workflows: [...workflows].sort(),
     unresolved: [...unresolved].sort(),
+    runLevel: [...runLevel].sort(),
   };
 }
