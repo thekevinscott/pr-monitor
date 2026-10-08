@@ -251,10 +251,8 @@ export async function willfire(
       repository_owner: owner,
       base_ref: pr.base.ref,
       head_ref: pr.head.ref,
-      // Every trigger willfire matches is `pull_request`, and on one of those
-      // `github.ref` is the merge ref — measured on probe #383, run
-      // 36430453531. Whoever adds `pull_request_target` (#356) has to thread
-      // the trigger kind here: on that event the ref is the base branch.
+      // The merge ref on `pull_request` — measured on probe #383, run
+      // 36430453531. The target pass overrides it.
       ref: `refs/pull/${prNumber}/merge`,
       "event.action": ctx.action,
       "event.pull_request.draft": pr.draft,
@@ -419,10 +417,15 @@ export async function willfire(
     targetExecutor =
       opts.executor === undefined ? makeLiveExecutor(github, targetSource, resolveRef, liveOpts) : executor;
     const states = new Map(workflows.map((w) => [w.path, w.state]));
-    // GITHUB_SHA is the default branch tip here, not the test merge the
-    // `pull_request` pass seeds.
+    // GITHUB_SHA and GITHUB_REF are the default branch here, not the test
+    // merge the `pull_request` pass seeds (ref measured on pr-monitor#248).
     const targetFacts: Scope = {
-      github: { ...prFacts.github, event_name: "pull_request_target", sha },
+      github: {
+        ...prFacts.github,
+        event_name: "pull_request_target",
+        sha,
+        ref: `refs/heads/${defaultBranch}`,
+      },
     };
     const out: DraftEntry[] = [];
     const paths = files

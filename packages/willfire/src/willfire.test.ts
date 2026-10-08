@@ -1997,6 +1997,29 @@ describe("pull_request_target workflows", () => {
     ]);
   });
 
+  it("decides github.ref as the default branch ref inside the target pass", async () => {
+    // pr-monitor#250 (base `probe/173-old-base`) named its target check
+    // `target ref refs/heads/main`.
+    const guarded = JSON.stringify({
+      on: { pull_request: null, pull_request_target: null },
+      jobs: {
+        merge: { if: "github.ref == 'refs/pull/1/merge'" },
+        main: { if: "github.ref == 'refs/heads/main'" },
+      },
+    });
+    const { entries } = await run(guarded, {
+      ...resolved,
+      baseRef: "dev",
+      defaultContents: { [WF]: guarded },
+    });
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["merge", "run"],
+      ["main", "skipped"],
+      ["merge", "skipped"],
+      ["main", "run"],
+    ]);
+  });
+
   it("expands the target workflow under the default branch source", async () => {
     vi.mocked(expandJobs).mockClear();
     await run(TARGET, { ...resolved, defaultContents: { [WF]: TARGET } });
