@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.verifyDepsBeforeRun=false --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791472782,
+  "exit_code": 0,
+  "commit": "d2bf85edf4b12704bc284175d585788cf233599b",
+  "branch": "fix/173-target-gap"
+}
