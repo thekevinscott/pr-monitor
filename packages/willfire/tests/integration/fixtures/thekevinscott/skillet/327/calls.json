@@ -1269,5 +1269,317 @@
       "ref": "492d8aba848c5c94224f05ce357ff6d41b28cb37"
     },
     "result": "name: Type Check\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/typecheck.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/typecheck.yml'\n\njobs:\n  typecheck:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Type check\n        run: uv run just typecheck\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": [
+      {
+        "name": "build.yml",
+        "path": ".github/workflows/build.yml",
+        "sha": "fb138e2c124e7e6a7cb88614fa17509efedf0c75",
+        "size": 557,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/build.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/build.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/fb138e2c124e7e6a7cb88614fa17509efedf0c75",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/build.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/build.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/fb138e2c124e7e6a7cb88614fa17509efedf0c75",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/build.yml"
+        }
+      },
+      {
+        "name": "changelog.yml",
+        "path": ".github/workflows/changelog.yml",
+        "sha": "9c1b719d65bf1b5b2c6cde82f3ad5223d218e55e",
+        "size": 1017,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/changelog.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/changelog.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/9c1b719d65bf1b5b2c6cde82f3ad5223d218e55e",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/changelog.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/changelog.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/9c1b719d65bf1b5b2c6cde82f3ad5223d218e55e",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/changelog.yml"
+        }
+      },
+      {
+        "name": "docs.yml",
+        "path": ".github/workflows/docs.yml",
+        "sha": "c86b5e8794c60683405035471bc9f786ced16bc9",
+        "size": 1273,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/docs.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/docs.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/c86b5e8794c60683405035471bc9f786ced16bc9",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/docs.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/docs.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/c86b5e8794c60683405035471bc9f786ced16bc9",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/docs.yml"
+        }
+      },
+      {
+        "name": "integration.yml",
+        "path": ".github/workflows/integration.yml",
+        "sha": "7e5cf308e524aefc094226d943927eecb938181d",
+        "size": 668,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/integration.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/integration.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/7e5cf308e524aefc094226d943927eecb938181d",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/integration.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/integration.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/7e5cf308e524aefc094226d943927eecb938181d",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/integration.yml"
+        }
+      },
+      {
+        "name": "lint.yml",
+        "path": ".github/workflows/lint.yml",
+        "sha": "e3e95b3a7321ad97f28644b1982f8f3e4ae19d65",
+        "size": 771,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/lint.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/lint.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/e3e95b3a7321ad97f28644b1982f8f3e4ae19d65",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/lint.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/lint.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/e3e95b3a7321ad97f28644b1982f8f3e4ae19d65",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/lint.yml"
+        }
+      },
+      {
+        "name": "minor-release.yml",
+        "path": ".github/workflows/minor-release.yml",
+        "sha": "9bb325ca087de8b77be4b4fdbee50e96075c07d8",
+        "size": 200,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/minor-release.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/minor-release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/9bb325ca087de8b77be4b4fdbee50e96075c07d8",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/minor-release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/minor-release.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/9bb325ca087de8b77be4b4fdbee50e96075c07d8",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/minor-release.yml"
+        }
+      },
+      {
+        "name": "patch-release.yml",
+        "path": ".github/workflows/patch-release.yml",
+        "sha": "2f2dd9b30fb4636169e804a8261615c9f97ce61c",
+        "size": 1314,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/patch-release.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/patch-release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/2f2dd9b30fb4636169e804a8261615c9f97ce61c",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/patch-release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/patch-release.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/2f2dd9b30fb4636169e804a8261615c9f97ce61c",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/patch-release.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "53ffed5e7e67d6c3f4b1821c49ecd4603517f34f",
+        "size": 741,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/pr-monitor.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/53ffed5e7e67d6c3f4b1821c49ecd4603517f34f",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/pr-monitor.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/53ffed5e7e67d6c3f4b1821c49ecd4603517f34f",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "publish.yml",
+        "path": ".github/workflows/publish.yml",
+        "sha": "ef56faaa4ea0abc6f001aa182cbea6bb64f38b57",
+        "size": 4631,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/publish.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/publish.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/ef56faaa4ea0abc6f001aa182cbea6bb64f38b57",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/publish.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/publish.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/ef56faaa4ea0abc6f001aa182cbea6bb64f38b57",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/publish.yml"
+        }
+      },
+      {
+        "name": "security.yml",
+        "path": ".github/workflows/security.yml",
+        "sha": "4a89e228a43a305491d31333ec831423aea83a57",
+        "size": 538,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/security.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/security.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/4a89e228a43a305491d31333ec831423aea83a57",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/security.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/security.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/4a89e228a43a305491d31333ec831423aea83a57",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/security.yml"
+        }
+      },
+      {
+        "name": "test.yml",
+        "path": ".github/workflows/test.yml",
+        "sha": "229f2104d4c7dbc6053b2fdcb3d95e176cd22899",
+        "size": 876,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/test.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/test.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/229f2104d4c7dbc6053b2fdcb3d95e176cd22899",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/test.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/test.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/229f2104d4c7dbc6053b2fdcb3d95e176cd22899",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/test.yml"
+        }
+      },
+      {
+        "name": "typecheck.yml",
+        "path": ".github/workflows/typecheck.yml",
+        "sha": "54f0c03c66741dd807d0d8f2a6d6452fb7f1cfaa",
+        "size": 539,
+        "url": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/typecheck.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+        "html_url": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/typecheck.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/54f0c03c66741dd807d0d8f2a6d6452fb7f1cfaa",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/skillet/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/typecheck.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/skillet/contents/.github/workflows/typecheck.yml?ref=63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b",
+          "git": "https://api.github.com/repos/thekevinscott/skillet/git/blobs/54f0c03c66741dd807d0d8f2a6d6452fb7f1cfaa",
+          "html": "https://github.com/thekevinscott/skillet/blob/63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b/.github/workflows/typecheck.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/build.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Build\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/build.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/build.yml'\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Build package\n        run: uv run just build\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/changelog.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Changelog\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened, labeled, unlabeled]\n\njobs:\n  check:\n    runs-on: ubuntu-latest\n    # Skip for dependabot PRs and PRs with skip-changelog label\n    if: github.actor != 'dependabot[bot]'\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n\n      - name: Skip if labeled\n        if: contains(github.event.pull_request.labels.*.name, 'skip-changelog')\n        run: echo \"Skipping changelog check (skip-changelog label present)\"\n\n      - name: Install uv\n        if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}\n        run: uv sync --extra dev\n\n      - name: Check changelog\n        if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}\n        run: uv run just check-changelog origin/${{ github.base_ref }}\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/docs.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Docs\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'docs/**'\n      - 'netlify.toml'\n  pull_request:\n    paths:\n      - 'docs/**'\n      - 'netlify.toml'\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      pull-requests: write\n    defaults:\n      run:\n        working-directory: docs\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Setup Node.js\n        uses: actions/setup-node@v6\n        with:\n          node-version: '20'\n\n      - name: Install dependencies\n        run: npm install\n\n      - name: Check required files exist\n        run: |\n          test -f .vitepress/config.ts\n          test -f index.md\n          test -f favicon.svg\n\n      - name: Build VitePress\n        run: npm run build\n\n      - name: Deploy to Netlify\n        uses: nwtgck/actions-netlify@v4\n        with:\n          publish-dir: docs/.vitepress/dist\n          production-deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}\n          github-token: ${{ secrets.GITHUB_TOKEN }}\n          deploy-message: ${{ github.event.head_commit.message || github.event.pull_request.title }}\n        env:\n          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}\n          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/integration.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Integration Tests\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/integration/**'\n      - '.github/workflows/integration.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/integration/**'\n      - '.github/workflows/integration.yml'\n\njobs:\n  integration:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Run integration tests\n        run: uv run just test-integration\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/lint.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Lint\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/lint.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/lint.yml'\n\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Lint\n        run: uv run just lint\n\n      - name: Format check\n        run: uv run just format-check\n\n      - name: Check conventions\n        run: uv run just check-conventions\n\n      - name: Check test conventions\n        run: uv run just check-test-conventions\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/minor-release.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Minor Release\n\non:\n  workflow_dispatch:\n\njobs:\n  release:\n    uses: ./.github/workflows/publish.yml\n    with:\n      bump_type: minor\n    permissions:\n      contents: write\n      id-token: write\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened, labeled, unlabeled]\n\nconcurrency:\n  # A superseded gate run polls a stale SHA until it finishes. Cancel it.\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  # willfire reads the PR and its changed files to predict which workflows dispatch.\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own (see monitor.ts) -- this is the\n    # backstop. If a predicted run never dispatches, the gate waits here\n    # until the job is killed.\n    timeout-minutes: 20\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/publish.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Publish Release\n\non:\n  workflow_call:\n    inputs:\n      bump_type:\n        description: 'Version bump type: patch or minor'\n        required: true\n        type: string\n\njobs:\n  release:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: write\n      id-token: write  # Required for PyPI trusted publishing\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n\n      - name: Get current version\n        id: current\n        run: |\n          latest_tag=$(git tag --sort=-v:refname | grep -E '^v[0-9]' | head -n1)\n\n          if [ -z \"$latest_tag\" ]; then\n            echo \"No tags found\"\n            echo \"version=0.0.0\" >> $GITHUB_OUTPUT\n            echo \"has_tags=false\" >> $GITHUB_OUTPUT\n          else\n            echo \"Latest tag: $latest_tag\"\n            echo \"version=${latest_tag#v}\" >> $GITHUB_OUTPUT\n            echo \"has_tags=true\" >> $GITHUB_OUTPUT\n\n            # Check for commits since last tag (for patch releases)\n            commits_since_tag=$(git rev-list ${latest_tag}..HEAD --count)\n            echo \"commits_since_tag=$commits_since_tag\" >> $GITHUB_OUTPUT\n          fi\n\n      - name: Check for changes (patch only)\n        if: inputs.bump_type == 'patch' && steps.current.outputs.has_tags == 'true'\n        id: check_changes\n        run: |\n          if [ \"${{ steps.current.outputs.commits_since_tag }}\" -eq 0 ]; then\n            echo \"No new commits since last tag, skipping release\"\n            echo \"should_release=false\" >> $GITHUB_OUTPUT\n          else\n            echo \"Found ${{ steps.current.outputs.commits_since_tag }} commits since last tag\"\n            echo \"should_release=true\" >> $GITHUB_OUTPUT\n          fi\n\n      - name: Calculate new version\n        id: version\n        run: |\n          current=\"${{ steps.current.outputs.version }}\"\n          IFS='.' read -r major minor patch <<< \"$current\"\n\n          if [ \"${{ inputs.bump_type }}\" == \"minor\" ]; then\n            new_version=\"${major}.$((minor + 1)).0\"\n          else\n            new_version=\"${major}.${minor}.$((patch + 1))\"\n          fi\n\n          echo \"new_version=$new_version\" >> $GITHUB_OUTPUT\n          echo \"New version will be: $new_version\"\n\n      - name: Check if tag exists\n        id: tag_check\n        run: |\n          if git ls-remote --tags origin | grep -q \"refs/tags/v${{ steps.version.outputs.new_version }}$\"; then\n            echo \"Tag v${{ steps.version.outputs.new_version }} already exists on remote\"\n            echo \"exists=true\" >> $GITHUB_OUTPUT\n          else\n            echo \"exists=false\" >> $GITHUB_OUTPUT\n          fi\n\n      - name: Determine if release should proceed\n        id: should_release\n        run: |\n          # Skip if tag exists\n          if [ \"${{ steps.tag_check.outputs.exists }}\" == \"true\" ]; then\n            echo \"proceed=false\" >> $GITHUB_OUTPUT\n            exit 0\n          fi\n\n          # For patch releases, skip if no changes\n          if [ \"${{ inputs.bump_type }}\" == \"patch\" ] && [ \"${{ steps.current.outputs.has_tags }}\" == \"true\" ]; then\n            if [ \"${{ steps.check_changes.outputs.should_release }}\" == \"false\" ]; then\n              echo \"proceed=false\" >> $GITHUB_OUTPUT\n              exit 0\n            fi\n          fi\n\n          echo \"proceed=true\" >> $GITHUB_OUTPUT\n\n      - name: Create and push tag\n        if: steps.should_release.outputs.proceed == 'true'\n        id: tag\n        run: |\n          git config user.name \"github-actions[bot]\"\n          git config user.email \"github-actions[bot]@users.noreply.github.com\"\n          git tag -a \"v${{ steps.version.outputs.new_version }}\" -m \"Release v${{ steps.version.outputs.new_version }}\"\n          git push origin \"v${{ steps.version.outputs.new_version }}\"\n          echo \"created=true\" >> $GITHUB_OUTPUT\n\n      - name: Install uv\n        if: steps.tag.outputs.created == 'true'\n        uses: astral-sh/setup-uv@v7\n\n      - name: Build package\n        if: steps.tag.outputs.created == 'true'\n        run: uv build\n\n      - name: Publish to PyPI\n        if: steps.tag.outputs.created == 'true'\n        run: |\n          for attempt in 1 2 3; do\n            echo \"Publish attempt $attempt of 3\"\n            if uv publish --trusted-publishing always --check-url https://pypi.org/simple/; then\n              exit 0\n            fi\n            if [ \"$attempt\" -lt 3 ]; then\n              echo \"Retrying in 15 seconds...\"\n              sleep 15\n            fi\n          done\n          exit 1\n\n      - name: Rollback tag on failure\n        if: failure() && steps.tag.outputs.created == 'true'\n        run: git push --delete origin \"v${{ steps.version.outputs.new_version }}\"\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/security.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Security\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/security.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/security.yml'\n\njobs:\n  bandit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Run security scan\n        run: uv run just security\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/test.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Test\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/**'\n      - '.github/workflows/test.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/**'\n      - '.github/workflows/test.yml'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python-version: [\"3.12\", \"3.13\"]\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n        with:\n          python-version: ${{ matrix.python-version }}\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Run tests\n        run: uv run just test-ci\n\n      - name: Upload coverage\n        uses: codecov/codecov-action@v7\n        with:\n          files: coverage.xml\n          fail_ci_if_error: false\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "skillet",
+      "path": ".github/workflows/typecheck.yml",
+      "ref": "63b6e1115d6fd9e3ecda77fc1ae31f89ef79af3b"
+    },
+    "result": "name: Type Check\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/typecheck.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/typecheck.yml'\n\njobs:\n  typecheck:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v7\n\n      - name: Install dependencies\n        run: uv sync --extra dev\n\n      - name: Type check\n        run: uv run just typecheck\n"
   }
 ]

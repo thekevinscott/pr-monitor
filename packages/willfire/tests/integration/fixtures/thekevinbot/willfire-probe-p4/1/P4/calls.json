@@ -814,5 +814,57 @@
       "ref": "4f675da151388f03acf4c49d23d722b471194bba"
     },
     "result": "name: probe-enabled\non: pull_request\njobs:\n  enabled-job:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo enabled\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinbot",
+      "repo": "willfire-probe-p4",
+      "ref": "a4d4c0f4972cd4687f0b008134d47e20da41437f"
+    },
+    "result": [
+      {
+        "name": "probe-disabled.yml",
+        "path": ".github/workflows/probe-disabled.yml",
+        "sha": "76bf6ca4de44bbd93c86e253567fc2e3bc1ac5c5",
+        "size": 125,
+        "url": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/contents/.github/workflows/probe-disabled.yml?ref=a4d4c0f4972cd4687f0b008134d47e20da41437f",
+        "html_url": "https://github.com/thekevinbot/willfire-probe-p4/blob/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-disabled.yml",
+        "git_url": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/git/blobs/76bf6ca4de44bbd93c86e253567fc2e3bc1ac5c5",
+        "download_url": "https://raw.githubusercontent.com/thekevinbot/willfire-probe-p4/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-disabled.yml?token=B3FYCSY4D7HWBHMVRWAEM5DKY7EHRAA",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/contents/.github/workflows/probe-disabled.yml?ref=a4d4c0f4972cd4687f0b008134d47e20da41437f",
+          "git": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/git/blobs/76bf6ca4de44bbd93c86e253567fc2e3bc1ac5c5",
+          "html": "https://github.com/thekevinbot/willfire-probe-p4/blob/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-disabled.yml"
+        }
+      },
+      {
+        "name": "probe-enabled.yml",
+        "path": ".github/workflows/probe-enabled.yml",
+        "sha": "8ae8d230b9ede594a8fc27da60448271e8067bb1",
+        "size": 122,
+        "url": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/contents/.github/workflows/probe-enabled.yml?ref=a4d4c0f4972cd4687f0b008134d47e20da41437f",
+        "html_url": "https://github.com/thekevinbot/willfire-probe-p4/blob/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-enabled.yml",
+        "git_url": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/git/blobs/8ae8d230b9ede594a8fc27da60448271e8067bb1",
+        "download_url": "https://raw.githubusercontent.com/thekevinbot/willfire-probe-p4/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-enabled.yml?token=B3FYCS7UDV2CMSKPPD4CVETKY7EHRAA",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/contents/.github/workflows/probe-enabled.yml?ref=a4d4c0f4972cd4687f0b008134d47e20da41437f",
+          "git": "https://api.github.com/repos/thekevinbot/willfire-probe-p4/git/blobs/8ae8d230b9ede594a8fc27da60448271e8067bb1",
+          "html": "https://github.com/thekevinbot/willfire-probe-p4/blob/a4d4c0f4972cd4687f0b008134d47e20da41437f/.github/workflows/probe-enabled.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinbot",
+      "repo": "willfire-probe-p4",
+      "path": ".github/workflows/probe-enabled.yml",
+      "ref": "a4d4c0f4972cd4687f0b008134d47e20da41437f"
+    },
+    "result": "name: probe-enabled\non: pull_request\njobs:\n  enabled-job:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo enabled\n"
   }
 ]
