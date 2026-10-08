@@ -1,0 +1,1371 @@
+[
+  {
+    "method": "getPull",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "pull_number": 269
+    },
+    "result": {
+      "url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269",
+      "id": 4790346594,
+      "node_id": "PR_kwDOQnAsWM8AAAABHYbjYg",
+      "html_url": "https://github.com/thekevinscott/pr-monitor/pull/269",
+      "diff_url": "https://github.com/thekevinscott/pr-monitor/pull/269.diff",
+      "patch_url": "https://github.com/thekevinscott/pr-monitor/pull/269.patch",
+      "issue_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/269",
+      "number": 269,
+      "state": "open",
+      "locked": false,
+      "title": "probe #266: unparseable target workflow (do not merge)",
+      "user": {
+        "login": "thekevinbot",
+        "id": 248217931,
+        "node_id": "U_kgDODsuBSw",
+        "avatar_url": "https://avatars.githubusercontent.com/u/248217931?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinbot",
+        "html_url": "https://github.com/thekevinbot",
+        "followers_url": "https://api.github.com/users/thekevinbot/followers",
+        "following_url": "https://api.github.com/users/thekevinbot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinbot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinbot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinbot/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinbot/orgs",
+        "repos_url": "https://api.github.com/users/thekevinbot/repos",
+        "events_url": "https://api.github.com/users/thekevinbot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinbot/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "body": "Scratch probe for #266. Makes target-ref-probe.yml unparseable without touching its trigger line. Head is [skip ci], so only the pull_request_target run should fire. Closed unmerged after capture.",
+      "created_at": "2026-10-08T17:15:13Z",
+      "updated_at": "2026-10-08T17:15:13Z",
+      "closed_at": null,
+      "merged_at": null,
+      "merge_commit_sha": "eec90da5210fdc3d314ae464bdfd43036deafe67",
+      "assignees": [],
+      "requested_reviewers": [],
+      "requested_teams": [],
+      "labels": [],
+      "milestone": null,
+      "draft": false,
+      "commits_url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269/commits",
+      "review_comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269/comments",
+      "review_comment_url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/comments{/number}",
+      "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/269/comments",
+      "statuses_url": "https://api.github.com/repos/thekevinscott/pr-monitor/statuses/0774c48615dafb6dee639ad1d250844c5c89b12c",
+      "head": {
+        "label": "thekevinscott:probe/266-unparseable-target",
+        "ref": "probe/266-unparseable-target",
+        "sha": "0774c48615dafb6dee639ad1d250844c5c89b12c",
+        "user": {
+          "login": "thekevinscott",
+          "id": 151596,
+          "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/thekevinscott",
+          "html_url": "https://github.com/thekevinscott",
+          "followers_url": "https://api.github.com/users/thekevinscott/followers",
+          "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+          "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+          "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+          "repos_url": "https://api.github.com/users/thekevinscott/repos",
+          "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "repo": {
+          "id": 1114647640,
+          "node_id": "R_kgDOQnAsWA",
+          "name": "pr-monitor",
+          "full_name": "thekevinscott/pr-monitor",
+          "private": false,
+          "owner": {
+            "login": "thekevinscott",
+            "id": 151596,
+            "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/thekevinscott",
+            "html_url": "https://github.com/thekevinscott",
+            "followers_url": "https://api.github.com/users/thekevinscott/followers",
+            "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+            "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+            "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+            "repos_url": "https://api.github.com/users/thekevinscott/repos",
+            "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/thekevinscott/pr-monitor",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor",
+          "forks_url": "https://api.github.com/repos/thekevinscott/pr-monitor/forks",
+          "keys_url": "https://api.github.com/repos/thekevinscott/pr-monitor/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/thekevinscott/pr-monitor/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/thekevinscott/pr-monitor/teams",
+          "hooks_url": "https://api.github.com/repos/thekevinscott/pr-monitor/hooks",
+          "issue_events_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/thekevinscott/pr-monitor/events",
+          "assignees_url": "https://api.github.com/repos/thekevinscott/pr-monitor/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/thekevinscott/pr-monitor/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/thekevinscott/pr-monitor/tags",
+          "blobs_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/thekevinscott/pr-monitor/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/thekevinscott/pr-monitor/languages",
+          "stargazers_url": "https://api.github.com/repos/thekevinscott/pr-monitor/stargazers",
+          "contributors_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contributors",
+          "subscribers_url": "https://api.github.com/repos/thekevinscott/pr-monitor/subscribers",
+          "subscription_url": "https://api.github.com/repos/thekevinscott/pr-monitor/subscription",
+          "commits_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/thekevinscott/pr-monitor/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/thekevinscott/pr-monitor/merges",
+          "archive_url": "https://api.github.com/repos/thekevinscott/pr-monitor/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/thekevinscott/pr-monitor/downloads",
+          "issues_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/thekevinscott/pr-monitor/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/thekevinscott/pr-monitor/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/thekevinscott/pr-monitor/labels{/name}",
+          "releases_url": "https://api.github.com/repos/thekevinscott/pr-monitor/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/deployments",
+          "created_at": "2025-12-11T17:15:11Z",
+          "updated_at": "2026-10-08T16:55:59Z",
+          "pushed_at": "2026-10-08T17:15:20Z",
+          "git_url": "git://github.com/thekevinscott/pr-monitor.git",
+          "ssh_url": "git@github.com:thekevinscott/pr-monitor.git",
+          "clone_url": "https://github.com/thekevinscott/pr-monitor.git",
+          "svn_url": "https://github.com/thekevinscott/pr-monitor",
+          "homepage": null,
+          "size": 52246,
+          "stargazers_count": 0,
+          "watchers_count": 0,
+          "language": "TypeScript",
+          "has_issues": true,
+          "has_projects": true,
+          "has_downloads": false,
+          "has_wiki": true,
+          "has_pages": false,
+          "has_discussions": false,
+          "forks_count": 0,
+          "mirror_url": null,
+          "archived": false,
+          "disabled": false,
+          "open_issues_count": 7,
+          "license": {
+            "key": "mit",
+            "name": "MIT License",
+            "spdx_id": "MIT",
+            "url": "https://api.github.com/licenses/mit",
+            "node_id": "MDc6TGljZW5zZTEz"
+          },
+          "allow_forking": true,
+          "is_template": false,
+          "web_commit_signoff_required": false,
+          "has_pull_requests": true,
+          "pull_request_creation_policy": "all",
+          "topics": [],
+          "visibility": "public",
+          "forks": 0,
+          "open_issues": 7,
+          "watchers": 0,
+          "default_branch": "main"
+        }
+      },
+      "base": {
+        "label": "thekevinscott:main",
+        "ref": "main",
+        "sha": "15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "user": {
+          "login": "thekevinscott",
+          "id": 151596,
+          "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/thekevinscott",
+          "html_url": "https://github.com/thekevinscott",
+          "followers_url": "https://api.github.com/users/thekevinscott/followers",
+          "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+          "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+          "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+          "repos_url": "https://api.github.com/users/thekevinscott/repos",
+          "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "repo": {
+          "id": 1114647640,
+          "node_id": "R_kgDOQnAsWA",
+          "name": "pr-monitor",
+          "full_name": "thekevinscott/pr-monitor",
+          "private": false,
+          "owner": {
+            "login": "thekevinscott",
+            "id": 151596,
+            "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/thekevinscott",
+            "html_url": "https://github.com/thekevinscott",
+            "followers_url": "https://api.github.com/users/thekevinscott/followers",
+            "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+            "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+            "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+            "repos_url": "https://api.github.com/users/thekevinscott/repos",
+            "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/thekevinscott/pr-monitor",
+          "description": null,
+          "fork": false,
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor",
+          "forks_url": "https://api.github.com/repos/thekevinscott/pr-monitor/forks",
+          "keys_url": "https://api.github.com/repos/thekevinscott/pr-monitor/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/thekevinscott/pr-monitor/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/thekevinscott/pr-monitor/teams",
+          "hooks_url": "https://api.github.com/repos/thekevinscott/pr-monitor/hooks",
+          "issue_events_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/thekevinscott/pr-monitor/events",
+          "assignees_url": "https://api.github.com/repos/thekevinscott/pr-monitor/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/thekevinscott/pr-monitor/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/thekevinscott/pr-monitor/tags",
+          "blobs_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/thekevinscott/pr-monitor/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/thekevinscott/pr-monitor/languages",
+          "stargazers_url": "https://api.github.com/repos/thekevinscott/pr-monitor/stargazers",
+          "contributors_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contributors",
+          "subscribers_url": "https://api.github.com/repos/thekevinscott/pr-monitor/subscribers",
+          "subscription_url": "https://api.github.com/repos/thekevinscott/pr-monitor/subscription",
+          "commits_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/thekevinscott/pr-monitor/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/thekevinscott/pr-monitor/merges",
+          "archive_url": "https://api.github.com/repos/thekevinscott/pr-monitor/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/thekevinscott/pr-monitor/downloads",
+          "issues_url": "https://api.github.com/repos/thekevinscott/pr-monitor/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/thekevinscott/pr-monitor/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/thekevinscott/pr-monitor/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/thekevinscott/pr-monitor/labels{/name}",
+          "releases_url": "https://api.github.com/repos/thekevinscott/pr-monitor/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/deployments",
+          "created_at": "2025-12-11T17:15:11Z",
+          "updated_at": "2026-10-08T16:55:59Z",
+          "pushed_at": "2026-10-08T17:15:20Z",
+          "git_url": "git://github.com/thekevinscott/pr-monitor.git",
+          "ssh_url": "git@github.com:thekevinscott/pr-monitor.git",
+          "clone_url": "https://github.com/thekevinscott/pr-monitor.git",
+          "svn_url": "https://github.com/thekevinscott/pr-monitor",
+          "homepage": null,
+          "size": 52246,
+          "stargazers_count": 0,
+          "watchers_count": 0,
+          "language": "TypeScript",
+          "has_issues": true,
+          "has_projects": true,
+          "has_downloads": false,
+          "has_wiki": true,
+          "has_pages": false,
+          "has_discussions": false,
+          "forks_count": 0,
+          "mirror_url": null,
+          "archived": false,
+          "disabled": false,
+          "open_issues_count": 7,
+          "license": {
+            "key": "mit",
+            "name": "MIT License",
+            "spdx_id": "MIT",
+            "url": "https://api.github.com/licenses/mit",
+            "node_id": "MDc6TGljZW5zZTEz"
+          },
+          "allow_forking": true,
+          "is_template": false,
+          "web_commit_signoff_required": false,
+          "has_pull_requests": true,
+          "pull_request_creation_policy": "all",
+          "topics": [],
+          "visibility": "public",
+          "forks": 0,
+          "open_issues": 7,
+          "watchers": 0,
+          "default_branch": "main"
+        }
+      },
+      "_links": {
+        "self": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269"
+        },
+        "html": {
+          "href": "https://github.com/thekevinscott/pr-monitor/pull/269"
+        },
+        "issue": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/269"
+        },
+        "comments": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/issues/269/comments"
+        },
+        "review_comments": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269/comments"
+        },
+        "review_comment": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/comments{/number}"
+        },
+        "commits": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/pulls/269/commits"
+        },
+        "statuses": {
+          "href": "https://api.github.com/repos/thekevinscott/pr-monitor/statuses/0774c48615dafb6dee639ad1d250844c5c89b12c"
+        }
+      },
+      "author_association": "COLLABORATOR",
+      "auto_merge": null,
+      "assignee": null,
+      "active_lock_reason": null,
+      "merged": false,
+      "mergeable": true,
+      "rebaseable": true,
+      "mergeable_state": "blocked",
+      "merged_by": null,
+      "comments": 0,
+      "review_comments": 0,
+      "maintainer_can_modify": false,
+      "commits": 1,
+      "additions": 1,
+      "deletions": 0,
+      "changed_files": 1
+    }
+  },
+  {
+    "method": "listPullFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "pull_number": 269
+    },
+    "result": [
+      {
+        "sha": "2e2fe070c46beb6241f0da125305ccb8d82e9965",
+        "filename": ".github/workflows/target-ref-probe.yml",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 0,
+        "changes": 1,
+        "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/0774c48615dafb6dee639ad1d250844c5c89b12c/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+        "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/0774c48615dafb6dee639ad1d250844c5c89b12c/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+        "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github%2Fworkflows%2Ftarget-ref-probe.yml?ref=0774c48615dafb6dee639ad1d250844c5c89b12c",
+        "patch": "@@ -11,3 +11,4 @@ jobs:\n     runs-on: ubuntu-latest\n     steps:\n       - run: true\n+  broken: [unclosed"
+      }
+    ]
+  },
+  {
+    "method": "getCommit",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": {
+      "sha": "eec90da5210fdc3d314ae464bdfd43036deafe67",
+      "node_id": "C_kwDOQnAsWNoAKGVlYzkwZGE1MjEwZmRjM2QzMTRhZTQ2NGJkZmQ0MzAzNmRlYWZlNjc",
+      "commit": {
+        "author": {
+          "name": "thekevinbot",
+          "email": "248217931+thekevinbot@users.noreply.github.com",
+          "date": "2026-10-08T17:15:14Z"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "date": "2026-10-08T17:15:14Z"
+        },
+        "message": "Merge 0774c48615dafb6dee639ad1d250844c5c89b12c into 15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "tree": {
+          "sha": "ced0b1e99d996d85c5e561bbfa4b66a8a58833d8",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees/ced0b1e99d996d85c5e561bbfa4b66a8a58833d8"
+        },
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits/eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqx8+iCRC1aQ7uu5UhlAAAzEEQAE1XOkSf4HTneXb7L01mf9nk\nLukQ4lsgZ1KYl0Rs2BOXUcvKmlvHkm0++lJe3KlSshKgRXsLCwpm/uJYu3Hgy6Rh\nYF8atfN4E5iwufzn3xfhZvytHY2ag9XHW9Ysr9qsa7aOmJv1zUhdg5vGrvIYtwXa\nGLc5Fcyj3YgIwuoCIcYR1HRcVI1IqBEJ9sP7aMRGS6fAvzixsriWIhs1U4OTe3XB\n2QwoLires/5wGxMTRVGqiIVTOBY7RU/BaDYfgT+cM8lO3udyIGV0W2rG7Vtdh1yi\nHjjZMfimP51k6nUKhkSVRXmdqy9BgQzg77KitHDZoHm8ln39xCeRn8oPXDt7N1e+\nKkiQy3PyI45+Cwbw3h5oKgR9T2o2kXzrGCGWiM7xwE/+2eThYo0I6BQtrckaHjcs\naWxKdFC9NXIaBpEFoyaoX9VvGiC5FVl7/3HZHKCpRUSb0OXsaOahUoBSoURfkHiU\nBPYULnkWQ2S8wjxcqks/eATWw4Muh1bdaDxlu9zxuKcf8fE9B8DPwsTbuDEtespK\nAiwZ2JxSjj+htQxKP9C0vJf9knPQwgrtwopj6q7lITRAe9io8GE7NkWEPMlJWldG\ngYoKkJzXa+IbhMaVXsLVqQCFiy3Rh6f2Zg1JOAvhwzmUe1TalxEnYbQrhnqJ8f7I\nRiE1gT2R4jc1v3UxAf3R\n=HXvH\n-----END PGP SIGNATURE-----\n",
+          "payload": "tree ced0b1e99d996d85c5e561bbfa4b66a8a58833d8\nparent 15f38b36e53e7b53e93c37253a2077e51247ce89\nparent 0774c48615dafb6dee639ad1d250844c5c89b12c\nauthor thekevinbot <248217931+thekevinbot@users.noreply.github.com> 1791479714 -0400\ncommitter GitHub <noreply@github.com> 1791479714 -0400\n\nMerge 0774c48615dafb6dee639ad1d250844c5c89b12c into 15f38b36e53e7b53e93c37253a2077e51247ce89\n",
+          "verified_at": "2026-10-08T17:15:15Z"
+        }
+      },
+      "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/eec90da5210fdc3d314ae464bdfd43036deafe67",
+      "html_url": "https://github.com/thekevinscott/pr-monitor/commit/eec90da5210fdc3d314ae464bdfd43036deafe67",
+      "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/eec90da5210fdc3d314ae464bdfd43036deafe67/comments",
+      "author": {
+        "login": "thekevinbot",
+        "id": 248217931,
+        "node_id": "U_kgDODsuBSw",
+        "avatar_url": "https://avatars.githubusercontent.com/u/248217931?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinbot",
+        "html_url": "https://github.com/thekevinbot",
+        "followers_url": "https://api.github.com/users/thekevinbot/followers",
+        "following_url": "https://api.github.com/users/thekevinbot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinbot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinbot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinbot/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinbot/orgs",
+        "repos_url": "https://api.github.com/users/thekevinbot/repos",
+        "events_url": "https://api.github.com/users/thekevinbot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinbot/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "web-flow",
+        "id": 19864447,
+        "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/web-flow",
+        "html_url": "https://github.com/web-flow",
+        "followers_url": "https://api.github.com/users/web-flow/followers",
+        "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+        "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+        "organizations_url": "https://api.github.com/users/web-flow/orgs",
+        "repos_url": "https://api.github.com/users/web-flow/repos",
+        "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/web-flow/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/15f38b36e53e7b53e93c37253a2077e51247ce89"
+        },
+        {
+          "sha": "0774c48615dafb6dee639ad1d250844c5c89b12c",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/0774c48615dafb6dee639ad1d250844c5c89b12c",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/0774c48615dafb6dee639ad1d250844c5c89b12c"
+        }
+      ],
+      "stats": {
+        "total": 1,
+        "additions": 1,
+        "deletions": 0
+      },
+      "files": [
+        {
+          "sha": "2e2fe070c46beb6241f0da125305ccb8d82e9965",
+          "filename": ".github/workflows/target-ref-probe.yml",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0,
+          "changes": 1,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/eec90da5210fdc3d314ae464bdfd43036deafe67/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github%2Fworkflows%2Ftarget-ref-probe.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "patch": "@@ -11,3 +11,4 @@ jobs:\n     runs-on: ubuntu-latest\n     steps:\n       - run: true\n+  broken: [unclosed"
+        }
+      ]
+    }
+  },
+  {
+    "method": "getCommit",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "main"
+    },
+    "result": {
+      "sha": "15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "node_id": "C_kwDOQnAsWNoAKDE1ZjM4YjM2ZTUzZTdiNTNlOTNjMzcyNTNhMjA3N2U1MTI0N2NlODk",
+      "commit": {
+        "author": {
+          "name": "Kevin Scott",
+          "email": "151596+thekevinscott@users.noreply.github.com",
+          "date": "2026-10-08T16:55:53Z"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "date": "2026-10-08T16:55:53Z"
+        },
+        "message": "Merge pull request #264 from thekevinscott/renovate/testing-conventions-0.x\n\nUpdate dependency testing-conventions to ^0.0.149",
+        "tree": {
+          "sha": "5f56a971cee1467b03d9be528889747f317460ee",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees/5f56a971cee1467b03d9be528889747f317460ee"
+        },
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqx8sZCRC1aQ7uu5UhlAAAq/gQAGMI7lLmbx04GMQce+X8GNcH\nMIs9s3oo1qzXoSWAqcpud7r3ynb35Nnyzc4aVO+BaKg51RGeJI5apZSyc+utOH8p\nSp7nwu2uCURoHWtzgB2R8MejuiQJ3JXrTmTo2J4KqYojNep9ULvbXcNLpPfX5SEE\nEUSB9hrRXzodxwOSgGFbLR2hQ58kDwc4KhB2SyDlC6J0CVFpo0GmD6KvUzz9OsG8\nUvHLZe4ng5mWA4IECErXsQOgLAz2zxKoE1DLkwFa2T3dDKTLhwsb9tRG5IYUy3wP\ntBObohpG38fNXavTJYvhI1qtP68L9oLyA+DBKwj2gA5X5PgzQOgLCUkJmWjHjTqn\nkjUwPXTPXriY+SI4wc8pKEdTEuYw05qouFNZ8wToq2O4Ze9LP8CBGqJGaP5mpzl8\nHPF9ZcTIa7wPJUL06ry/N9iLBuRlYXOaUX75PzsEAk8/8FcZGFO4ESgfdfpZezeK\nsWyN8SHjbuwsnr0pa9ybRQWk+7kKBPzfUD82E9zo8ia1xQtc3rxax8QAlUtouwfn\nJo7saNSJOfYD7P2HkLRpUrMrVEvtGX0+xhpNteShzzAM4TeSnBixdG/E5Mjg6QkH\n6qO8TmOxkR0/wVxEQie5nFGr+hJG8DFiC/JBDDf+gOUMSQb6smT5Sd0hnSgKI2n6\nsV8aMfI693mvtqDkX48i\n=qxsr\n-----END PGP SIGNATURE-----\n",
+          "payload": "tree 5f56a971cee1467b03d9be528889747f317460ee\nparent 746fb85ed7aca1329373b467ed9bdd6b7c21036c\nparent 80102b589ac64dae969b74f6915574cb5b07fca0\nauthor Kevin Scott <151596+thekevinscott@users.noreply.github.com> 1791478553 -0400\ncommitter GitHub <noreply@github.com> 1791478553 -0400\n\nMerge pull request #264 from thekevinscott/renovate/testing-conventions-0.x\n\nUpdate dependency testing-conventions to ^0.0.149",
+          "verified_at": "2026-10-08T16:55:53Z"
+        }
+      },
+      "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "html_url": "https://github.com/thekevinscott/pr-monitor/commit/15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89/comments",
+      "author": {
+        "login": "thekevinscott",
+        "id": 151596,
+        "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinscott",
+        "html_url": "https://github.com/thekevinscott",
+        "followers_url": "https://api.github.com/users/thekevinscott/followers",
+        "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+        "repos_url": "https://api.github.com/users/thekevinscott/repos",
+        "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "web-flow",
+        "id": 19864447,
+        "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/web-flow",
+        "html_url": "https://github.com/web-flow",
+        "followers_url": "https://api.github.com/users/web-flow/followers",
+        "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+        "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+        "organizations_url": "https://api.github.com/users/web-flow/orgs",
+        "repos_url": "https://api.github.com/users/web-flow/repos",
+        "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/web-flow/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "746fb85ed7aca1329373b467ed9bdd6b7c21036c",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/746fb85ed7aca1329373b467ed9bdd6b7c21036c",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/746fb85ed7aca1329373b467ed9bdd6b7c21036c"
+        },
+        {
+          "sha": "80102b589ac64dae969b74f6915574cb5b07fca0",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/80102b589ac64dae969b74f6915574cb5b07fca0",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/80102b589ac64dae969b74f6915574cb5b07fca0"
+        }
+      ],
+      "stats": {
+        "total": 60,
+        "additions": 30,
+        "deletions": 30
+      },
+      "files": [
+        {
+          "sha": "e82bf052b116795160bb404b4e30811588ccded0",
+          "filename": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "changes": 2,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/package.json",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/package.json",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/package.json?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -24,7 +24,7 @@\n     \"@types/node\": \"^24.0.0\",\n     \"@vitest/coverage-v8\": \"^4.1.11\",\n     \"eslint\": \"^10.0.0\",\n-    \"testing-conventions\": \"^0.0.147\",\n+    \"testing-conventions\": \"^0.0.149\",\n     \"typescript\": \"^6.0.0\",\n     \"typescript-eslint\": \"^8.20.0\",\n     \"vitest\": \"^4.1.11\","
+        },
+        {
+          "sha": "8945917e95f7b8734836bcd34e9402653cdea9fa",
+          "filename": "packages/willfire/package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "changes": 2,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/packages%2Fwillfire%2Fpackage.json",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/packages%2Fwillfire%2Fpackage.json",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/packages%2Fwillfire%2Fpackage.json?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -43,7 +43,7 @@\n     \"@types/node\": \"^24.0.0\",\n     \"@vitest/coverage-v8\": \"^4.1.11\",\n     \"eslint\": \"^10.9.1\",\n-    \"testing-conventions\": \"^0.0.147\",\n+    \"testing-conventions\": \"^0.0.149\",\n     \"tsx\": \"^4.19.0\",\n     \"typescript\": \"^6.0.0\",\n     \"typescript-eslint\": \"^8.68.0\","
+        },
+        {
+          "sha": "be4a3ac3ff14bd6917d85a0798ca1d67ba2e4742",
+          "filename": "pnpm-lock.yaml",
+          "status": "modified",
+          "additions": 28,
+          "deletions": 28,
+          "changes": 56,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/pnpm-lock.yaml",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/pnpm-lock.yaml",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/pnpm-lock.yaml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -198,8 +198,8 @@ importers:\n         specifier: ^10.0.0\n         version: 10.12.0(supports-color@7.2.0)\n       testing-conventions:\n-        specifier: ^0.0.147\n-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n+        specifier: ^0.0.149\n+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n       typescript:\n         specifier: ^6.0.0\n         version: 6.0.3\n@@ -238,8 +238,8 @@ importers:\n         specifier: ^10.9.1\n         version: 10.12.0(supports-color@7.2.0)\n       testing-conventions:\n-        specifier: ^0.0.147\n-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n+        specifier: ^0.0.149\n+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n       tsx:\n         specifier: ^4.19.0\n         version: 4.23.15\n@@ -1208,29 +1208,29 @@ packages:\n       '@stryker-mutator/core': 9.6.1\n       vitest: '>=2.0.0'\n \n-  '@testing-conventions/aarch64-apple-darwin@0.0.147':\n-    resolution: {integrity: sha512-iIz8qF+Vvx8PfjIOIipF+BLTDA3xDReORlDdV8rn8O2Aafl65gC2Nou/Sy3V8/cbP9u7F9+f7N6lP9/mfeHWfQ==}\n+  '@testing-conventions/aarch64-apple-darwin@0.0.149':\n+    resolution: {integrity: sha512-iV/qNM0qONtRcjWjDXIHBjeEqdoV77xz6Ei/cQl9Y60Z8HyNyBoFJtK9jn3J/ytXTimFkr4mxR/UPeXL0ZUXog==}\n     cpu: [arm64]\n     os: [darwin]\n \n-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':\n-    resolution: {integrity: sha512-XQ9yEqQEYHhD/lnA5b3Ek/Cz85XMDYG5cX5leYGtKYfar442DsURgnnuVq9P0NlXGfbVg39qAMhhzBbUepxiUg==}\n+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':\n+    resolution: {integrity: sha512-8dixM9Za5vR2aG7iqmsoORkxJADuVHeGNotydPnPhRRi7wPED0af43GJCj4jUrlPXNTy1prQgOxh5OZ6jrzKPw==}\n     cpu: [arm64]\n     os: [linux]\n     libc: [glibc]\n \n-  '@testing-conventions/x86_64-apple-darwin@0.0.147':\n-    resolution: {integrity: sha512-lUFs9XV2W4e+JwfJPqpFxjPcVe6hBOHDKguXqsSQoTFgwKe1IolzwDxjrBIqQq8B42WW1aw5PLgxPNf1/Sm4ew==}\n+  '@testing-conventions/x86_64-apple-darwin@0.0.149':\n+    resolution: {integrity: sha512-Tcnu3TLqP5dXiCurcPrr3RUrrbEbY5ZCS86XSaLfuNdy8K6iEIUzP7KY/otnY078lVVBE1+WnkQnHKnVPGN7kA==}\n     cpu: [x64]\n     os: [darwin]\n \n-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':\n-    resolution: {integrity: sha512-IvAa9GipByiOeuafqzcVuMud1kAeGdsXUhjyqs4UeSMbQwG5ilvj6vaQfcheP+85XO/ZswneDHhUax/7MUdKaQ==}\n+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':\n+    resolution: {integrity: sha512-eMIs9Ucwjzo+VyTY3uqxEXdHySQo9s05x1brLvKjKEisvHxa2X8mO3kJJd4qmanL2ag9yMHKfyCZ0LJ2e2vIlQ==}\n     cpu: [x64]\n     os: [win32]\n \n-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':\n-    resolution: {integrity: sha512-JGxpgUuOC02YmQl07QpHOTno++8XJof9D5V0dy6QIgm9238odX6VsI/Lu+IHqTcsxGcXlxALDhfBCEhcj2d75g==}\n+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':\n+    resolution: {integrity: sha512-RsgO8jU7RtPEGsAY8iCmxNf0TYemA869qSbmBb9AQn+EnpvMSrTpBZuiZSxd8PpZWIRj4sYqmC8TZrj3NA7QdA==}\n     cpu: [x64]\n     os: [linux]\n     libc: [glibc]\n@@ -2095,8 +2095,8 @@ packages:\n     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}\n     engines: {node: '>=8'}\n \n-  testing-conventions@0.0.147:\n-    resolution: {integrity: sha512-zG6s6Pbi9bo8lOe9e/RCXkXhJ0rqEzpH72rgBkpf5z46WV6i/tFn6udYh7gaxW4XWrFRSCKCVDH95MpASNLqoA==}\n+  testing-conventions@0.0.149:\n+    resolution: {integrity: sha512-QgPwTR1upXovfdpcg+42QJv+lBGlI5gWsFQB/En+01cuhrmKBe6Yk4rjo9mUdoZty7bir5vinoJbuoVtRL7r7Q==}\n     engines: {node: '>=24', pnpm: '>=11'}\n     hasBin: true\n     peerDependencies:\n@@ -3051,7 +3051,7 @@ snapshots:\n \n   '@jridgewell/gen-mapping@0.3.13':\n     dependencies:\n-      '@jridgewell/sourcemap-codec': 1.5.5\n+      '@jridgewell/sourcemap-codec': 1.6.0\n       '@jridgewell/trace-mapping': 0.3.31\n \n   '@jridgewell/gen-mapping@0.4.0-beta.0':\n@@ -3340,19 +3340,19 @@ snapshots:\n       tslib: 2.8.1\n       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))\n \n-  '@testing-conventions/aarch64-apple-darwin@0.0.147':\n+  '@testing-conventions/aarch64-apple-darwin@0.0.149':\n     optional: true\n \n-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':\n+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-apple-darwin@0.0.147':\n+  '@testing-conventions/x86_64-apple-darwin@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':\n+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':\n+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':\n     optional: true\n \n   '@types/chai@5.2.3':\n@@ -4213,17 +4213,17 @@ snapshots:\n     dependencies:\n       has-flag: 4.0.0\n \n-  testing-conventions@0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):\n+  testing-conventions@0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):\n     dependencies:\n       '@stryker-mutator/core': 9.6.1(@types/node@24.19.1)(supports-color@7.2.0)\n       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.19.1)(supports-color@7.2.0))(vitest@4.1.11)\n       bin-shim: 0.2.2\n     optionalDependencies:\n-      '@testing-conventions/aarch64-apple-darwin': 0.0.147\n-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.147\n-      '@testing-conventions/x86_64-apple-darwin': 0.0.147\n-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.147\n-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.147\n+      '@testing-conventions/aarch64-apple-darwin': 0.0.149\n+      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.149\n+      '@testing-conventions/x86_64-apple-darwin': 0.0.149\n+      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.149\n+      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.149\n       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))\n     transitivePeerDependencies:\n       - '@types/node'"
+        }
+      ]
+    }
+  },
+  {
+    "method": "getCommit",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "0774c48615dafb6dee639ad1d250844c5c89b12c"
+    },
+    "result": {
+      "sha": "0774c48615dafb6dee639ad1d250844c5c89b12c",
+      "node_id": "C_kwDOQnAsWNoAKDA3NzRjNDg2MTVkYWZiNmRlZTYzOWFkMWQyNTA4NDRjNWM4OWIxMmM",
+      "commit": {
+        "author": {
+          "name": "thekevinbot",
+          "email": "248217931+thekevinbot@users.noreply.github.com",
+          "date": "2026-10-08T17:15:08Z"
+        },
+        "committer": {
+          "name": "thekevinbot",
+          "email": "248217931+thekevinbot@users.noreply.github.com",
+          "date": "2026-10-08T17:15:08Z"
+        },
+        "message": "probe #266: make target-ref-probe.yml unparseable [skip ci]",
+        "tree": {
+          "sha": "ced0b1e99d996d85c5e561bbfa4b66a8a58833d8",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees/ced0b1e99d996d85c5e561bbfa4b66a8a58833d8"
+        },
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits/0774c48615dafb6dee639ad1d250844c5c89b12c",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\niQIzBAABCgAdFiEEnU3Dh/cnWdmpxUeIBqUoxO3sGUIFAmrHz5wACgkQBqUoxO3s\nGUI1gBAAp6lyLxTFzGG3PpTSOyCfUpGkmxoV9JIPT2YgV65UPzUxemrC/MmQ4HC7\ngAVTwnVZu9FkqbfS5b50EArALSU9asFSk0rHguG1PcE6nHFx9gVZV24+HWXPfdoJ\nUi+f+9qjQngypGnApY8w7QhMvX4XyqwN4jalzyqTDST0KGX8PtavouIWdAc0Ufe8\nPwEK4ITeqiJo6XP+4vtJFKrEmbwc7hvhUd5vzUhe/hGyoo+3iwQL1/SuRngm+W/D\n2aY3KA9P3gr27akG8evFf4XWmXhIS5ERizsITghhKL2OgOeazt80N/kNOrSAYxKh\npHfJ0tNqP54BP0Lqq+FIA4K38GzWJHXSZinjvkdc7imd0CmaQhvPLeaDX9z5nBJO\nTIrsON0pV6EMdKuSPb0dU377ID3vdrwb+E3BrxccWBGmC5ipCWGfUc7wJXCvxDKc\n4ZrdmFwQFtEatrg5fviMkTGIxaw9Jq5FAUZCcTkjXsQCnYd7SAivN4fxTFZN9WE2\nBfeDuRk5XaJk2nQcuJPT8Naqy+/ek9kYZM30WufKJOs8h50ZWTZ5wa6qBKJ1e9DT\nfJeFPkelHSr+tkmjuZX0jQ7XqImN//b8uIsKIgA0Wci+jzt+EbKj11wAdL3h0psH\nKPfNQliDfHpxKsNdz4Ff8Icc+h4bUVOvN5gAUDNTas795m3ZaVs=\n=cg0+\n-----END PGP SIGNATURE-----",
+          "payload": "tree ced0b1e99d996d85c5e561bbfa4b66a8a58833d8\nparent 15f38b36e53e7b53e93c37253a2077e51247ce89\nauthor thekevinbot <248217931+thekevinbot@users.noreply.github.com> 1791479708 -0400\ncommitter thekevinbot <248217931+thekevinbot@users.noreply.github.com> 1791479708 -0400\n\nprobe #266: make target-ref-probe.yml unparseable [skip ci]\n",
+          "verified_at": "2026-10-08T17:15:10Z"
+        }
+      },
+      "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/0774c48615dafb6dee639ad1d250844c5c89b12c",
+      "html_url": "https://github.com/thekevinscott/pr-monitor/commit/0774c48615dafb6dee639ad1d250844c5c89b12c",
+      "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/0774c48615dafb6dee639ad1d250844c5c89b12c/comments",
+      "author": {
+        "login": "thekevinbot",
+        "id": 248217931,
+        "node_id": "U_kgDODsuBSw",
+        "avatar_url": "https://avatars.githubusercontent.com/u/248217931?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinbot",
+        "html_url": "https://github.com/thekevinbot",
+        "followers_url": "https://api.github.com/users/thekevinbot/followers",
+        "following_url": "https://api.github.com/users/thekevinbot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinbot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinbot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinbot/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinbot/orgs",
+        "repos_url": "https://api.github.com/users/thekevinbot/repos",
+        "events_url": "https://api.github.com/users/thekevinbot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinbot/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "thekevinbot",
+        "id": 248217931,
+        "node_id": "U_kgDODsuBSw",
+        "avatar_url": "https://avatars.githubusercontent.com/u/248217931?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinbot",
+        "html_url": "https://github.com/thekevinbot",
+        "followers_url": "https://api.github.com/users/thekevinbot/followers",
+        "following_url": "https://api.github.com/users/thekevinbot/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinbot/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinbot/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinbot/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinbot/orgs",
+        "repos_url": "https://api.github.com/users/thekevinbot/repos",
+        "events_url": "https://api.github.com/users/thekevinbot/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinbot/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/15f38b36e53e7b53e93c37253a2077e51247ce89"
+        }
+      ],
+      "stats": {
+        "total": 1,
+        "additions": 1,
+        "deletions": 0
+      },
+      "files": [
+        {
+          "sha": "2e2fe070c46beb6241f0da125305ccb8d82e9965",
+          "filename": ".github/workflows/target-ref-probe.yml",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0,
+          "changes": 1,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/0774c48615dafb6dee639ad1d250844c5c89b12c/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/0774c48615dafb6dee639ad1d250844c5c89b12c/.github%2Fworkflows%2Ftarget-ref-probe.yml",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github%2Fworkflows%2Ftarget-ref-probe.yml?ref=0774c48615dafb6dee639ad1d250844c5c89b12c",
+          "patch": "@@ -11,3 +11,4 @@ jobs:\n     runs-on: ubuntu-latest\n     steps:\n       - run: true\n+  broken: [unclosed"
+        }
+      ]
+    }
+  },
+  {
+    "method": "listWorkflows",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor"
+    },
+    "result": [
+      {
+        "id": 370549067,
+        "node_id": "W_kwDOQnAsWM4WFiFL",
+        "name": "Testing Conventions (willfire)",
+        "path": ".github/workflows/conventions-willfire.yml",
+        "state": "active",
+        "created_at": "2026-09-29T16:50:31.000-04:00",
+        "updated_at": "2026-09-30T07:31:55.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/370549067",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/conventions-willfire.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/Testing%20Conventions%20(willfire)/badge.svg"
+      },
+      {
+        "id": 302164053,
+        "node_id": "W_kwDOQnAsWM4SAqhV",
+        "name": "Promote v1 tag",
+        "path": ".github/workflows/move-major-tag.yml",
+        "state": "active",
+        "created_at": "2026-06-25T10:01:51.000-04:00",
+        "updated_at": "2026-08-31T19:39:46.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/302164053",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/move-major-tag.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/Promote%20v1%20tag/badge.svg"
+      },
+      {
+        "id": 301723115,
+        "node_id": "W_kwDOQnAsWM4R--3r",
+        "name": "PR Monitor",
+        "path": ".github/workflows/pr-monitor.yml",
+        "state": "active",
+        "created_at": "2026-06-24T16:40:01.000-04:00",
+        "updated_at": "2026-06-24T16:58:16.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/301723115",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/pr-monitor.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/PR%20Monitor/badge.svg"
+      },
+      {
+        "id": 378381283,
+        "node_id": "W_kwDOQnAsWM4WjaPj",
+        "name": "Target ref probe",
+        "path": ".github/workflows/target-ref-probe.yml",
+        "state": "active",
+        "created_at": "2026-10-08T07:23:12.000-04:00",
+        "updated_at": "2026-10-08T07:23:12.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/378381283",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/target-ref-probe.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/Target%20ref%20probe/badge.svg"
+      },
+      {
+        "id": 289976780,
+        "node_id": "W_kwDOQnAsWM4RSLHM",
+        "name": "Tests",
+        "path": ".github/workflows/test.yml",
+        "state": "active",
+        "created_at": "2026-06-05T13:29:18.000-04:00",
+        "updated_at": "2026-06-05T14:13:14.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/289976780",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/test.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/Tests/badge.svg"
+      },
+      {
+        "id": 296663847,
+        "node_id": "W_kwDOQnAsWM4Rrrsn",
+        "name": "Testing Conventions",
+        "path": ".github/workflows/testing-conventions.yml",
+        "state": "active",
+        "created_at": "2026-06-15T22:31:08.000-04:00",
+        "updated_at": "2026-06-15T22:32:23.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/296663847",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/testing-conventions.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/Testing%20Conventions/badge.svg"
+      },
+      {
+        "id": 370549064,
+        "node_id": "W_kwDOQnAsWM4WFiFI",
+        "name": "willfire",
+        "path": ".github/workflows/willfire.yml",
+        "state": "active",
+        "created_at": "2026-09-29T16:50:31.000-04:00",
+        "updated_at": "2026-09-30T07:31:55.000-04:00",
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/actions/workflows/370549064",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/main/.github/workflows/willfire.yml",
+        "badge_url": "https://github.com/thekevinscott/pr-monitor/workflows/willfire/badge.svg"
+      }
+    ]
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": [
+      {
+        "name": "conventions-willfire.yml",
+        "path": ".github/workflows/conventions-willfire.yml",
+        "sha": "27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+        "size": 1198,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/conventions-willfire.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/conventions-willfire.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/conventions-willfire.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/conventions-willfire.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/conventions-willfire.yml"
+        }
+      },
+      {
+        "name": "move-major-tag.yml",
+        "path": ".github/workflows/move-major-tag.yml",
+        "sha": "b881377bcdeb83878a9bc9b291ab40132b73a98b",
+        "size": 1045,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/move-major-tag.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/b881377bcdeb83878a9bc9b291ab40132b73a98b",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/move-major-tag.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/b881377bcdeb83878a9bc9b291ab40132b73a98b",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/move-major-tag.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "8436de406bed24c9780714ca3d933d7d9265f97a",
+        "size": 485,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/8436de406bed24c9780714ca3d933d7d9265f97a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/8436de406bed24c9780714ca3d933d7d9265f97a",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "target-ref-probe.yml",
+        "path": ".github/workflows/target-ref-probe.yml",
+        "sha": "2e2fe070c46beb6241f0da125305ccb8d82e9965",
+        "size": 212,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/target-ref-probe.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/target-ref-probe.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/2e2fe070c46beb6241f0da125305ccb8d82e9965",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/target-ref-probe.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/target-ref-probe.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/2e2fe070c46beb6241f0da125305ccb8d82e9965",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/target-ref-probe.yml"
+        }
+      },
+      {
+        "name": "test.yml",
+        "path": ".github/workflows/test.yml",
+        "sha": "078236a474c9879ce4af485e3419d43f5977c99a",
+        "size": 2572,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/test.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/078236a474c9879ce4af485e3419d43f5977c99a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/test.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/078236a474c9879ce4af485e3419d43f5977c99a",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/test.yml"
+        }
+      },
+      {
+        "name": "testing-conventions.yml",
+        "path": ".github/workflows/testing-conventions.yml",
+        "sha": "d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+        "size": 1135,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/testing-conventions.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/testing-conventions.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/testing-conventions.yml"
+        }
+      },
+      {
+        "name": "willfire.yml",
+        "path": ".github/workflows/willfire.yml",
+        "sha": "fa7d47e013854c3687f390d47ccea6128c8e7c31",
+        "size": 2233,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/willfire.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/willfire.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/fa7d47e013854c3687f390d47ccea6128c8e7c31",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/willfire.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/willfire.yml?ref=eec90da5210fdc3d314ae464bdfd43036deafe67",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/fa7d47e013854c3687f390d47ccea6128c8e7c31",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/eec90da5210fdc3d314ae464bdfd43036deafe67/.github/workflows/willfire.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/conventions-willfire.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: Testing Conventions (willfire)\n\n# A second call over the absorbed package: `source` derives the package root, so\n# the gates read `packages/willfire/package.json` and its `e2e-attestations/`.\n#\n# `gates` allowlists every gate except `unit-coverage` (willfire enforces no\n# coverage floor), and `packaging` and `changelog` (willfire is private and no\n# longer published).\n\non:\n  pull_request:\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/conventions-willfire.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/conventions-willfire.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/willfire/src\n      gates: >-\n        [\"colocated-test\", \"one-function-per-file\", \"unit-lint\",\n        \"integration-lint\", \"e2e-verify\", \"mutation\"]\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/move-major-tag.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: Promote v1 tag\n\non:\n  workflow_run:\n    # Every workflow that runs on push to `main` belongs here, or `v1` never advances.\n    workflows:\n      - Tests\n      - Testing Conventions\n    types: [completed]\n\npermissions:\n  contents: write\n  actions: read\n\nconcurrency:\n  group: promote-v1\n  cancel-in-progress: false\n\njobs:\n  promote:\n    name: Promote v1\n    if: >-\n      github.event.workflow_run.event == 'push' &&\n      github.event.workflow_run.head_branch == 'main'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - name: Promote v1\n        env:\n          GITHUB_TOKEN: ${{ github.token }}\n          PROMOTE_OWNER: ${{ github.repository_owner }}\n          PROMOTE_REPO: ${{ github.event.repository.name }}\n          PROMOTE_SHA: ${{ github.event.workflow_run.head_sha }}\n          PROMOTE_TAG: v1\n        run: pnpm run promote\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own; this is the backstop.\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v7\n      - uses: ./\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/target-ref-probe.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: Target ref probe\n\non: pull_request_target\n\npermissions:\n  contents: read\n\njobs:\n  observe:\n    name: target ref ${{ github.ref }}\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n  broken: [unclosed\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/test.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: Tests\n\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/**'\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/**'\n\njobs:\n  typecheck:\n    name: Typecheck\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run typecheck\n\n  lint:\n    name: Lint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run lint\n\n  test:\n    name: Test (100% coverage)\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run test:coverage\n\n  actionlint:\n    name: Actionlint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      # Pinned release + checksum: a `uses:` on a former owner name runs whoever claims it next.\n      - name: Install actionlint\n        env:\n          VERSION: 1.7.12\n          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8\n        run: |\n          curl -fsSL -o \"$RUNNER_TEMP/actionlint.tar.gz\" \"https://github.com/rhysd/actionlint/releases/download/v$VERSION/actionlint_${VERSION}_linux_amd64.tar.gz\"\n          echo \"$SHA256  $RUNNER_TEMP/actionlint.tar.gz\" | sha256sum -c -\n          tar -xzf \"$RUNNER_TEMP/actionlint.tar.gz\" -C \"$RUNNER_TEMP\" actionlint\n      - name: Lint workflows\n        run: |\n          \"$RUNNER_TEMP/actionlint\" -color\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/testing-conventions.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: Testing Conventions\n\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/testing-conventions.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/testing-conventions.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: src\n      config: testing-conventions.toml\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/willfire.yml",
+      "ref": "eec90da5210fdc3d314ae464bdfd43036deafe67"
+    },
+    "result": "name: willfire\n\n# The absorbed package runs its own suite under its own Vitest major (4.x, where\n# this repo's root is still on 2.x) and its own eslint config, which carries\n# rules the root's does not.\n\non:\n  pull_request:\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/willfire.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/willfire.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  typecheck:\n    name: willfire typecheck\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run typecheck\n\n  lint:\n    name: willfire lint\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run lint\n\n  unit:\n    name: willfire unit\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run test:unit\n\n  integration:\n    name: willfire integration\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run test:integration\n"
+  },
+  {
+    "method": "getCommit",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "main"
+    },
+    "result": {
+      "sha": "15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "node_id": "C_kwDOQnAsWNoAKDE1ZjM4YjM2ZTUzZTdiNTNlOTNjMzcyNTNhMjA3N2U1MTI0N2NlODk",
+      "commit": {
+        "author": {
+          "name": "Kevin Scott",
+          "email": "151596+thekevinscott@users.noreply.github.com",
+          "date": "2026-10-08T16:55:53Z"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "date": "2026-10-08T16:55:53Z"
+        },
+        "message": "Merge pull request #264 from thekevinscott/renovate/testing-conventions-0.x\n\nUpdate dependency testing-conventions to ^0.0.149",
+        "tree": {
+          "sha": "5f56a971cee1467b03d9be528889747f317460ee",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/trees/5f56a971cee1467b03d9be528889747f317460ee"
+        },
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "comment_count": 0,
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqx8sZCRC1aQ7uu5UhlAAAq/gQAGMI7lLmbx04GMQce+X8GNcH\nMIs9s3oo1qzXoSWAqcpud7r3ynb35Nnyzc4aVO+BaKg51RGeJI5apZSyc+utOH8p\nSp7nwu2uCURoHWtzgB2R8MejuiQJ3JXrTmTo2J4KqYojNep9ULvbXcNLpPfX5SEE\nEUSB9hrRXzodxwOSgGFbLR2hQ58kDwc4KhB2SyDlC6J0CVFpo0GmD6KvUzz9OsG8\nUvHLZe4ng5mWA4IECErXsQOgLAz2zxKoE1DLkwFa2T3dDKTLhwsb9tRG5IYUy3wP\ntBObohpG38fNXavTJYvhI1qtP68L9oLyA+DBKwj2gA5X5PgzQOgLCUkJmWjHjTqn\nkjUwPXTPXriY+SI4wc8pKEdTEuYw05qouFNZ8wToq2O4Ze9LP8CBGqJGaP5mpzl8\nHPF9ZcTIa7wPJUL06ry/N9iLBuRlYXOaUX75PzsEAk8/8FcZGFO4ESgfdfpZezeK\nsWyN8SHjbuwsnr0pa9ybRQWk+7kKBPzfUD82E9zo8ia1xQtc3rxax8QAlUtouwfn\nJo7saNSJOfYD7P2HkLRpUrMrVEvtGX0+xhpNteShzzAM4TeSnBixdG/E5Mjg6QkH\n6qO8TmOxkR0/wVxEQie5nFGr+hJG8DFiC/JBDDf+gOUMSQb6smT5Sd0hnSgKI2n6\nsV8aMfI693mvtqDkX48i\n=qxsr\n-----END PGP SIGNATURE-----\n",
+          "payload": "tree 5f56a971cee1467b03d9be528889747f317460ee\nparent 746fb85ed7aca1329373b467ed9bdd6b7c21036c\nparent 80102b589ac64dae969b74f6915574cb5b07fca0\nauthor Kevin Scott <151596+thekevinscott@users.noreply.github.com> 1791478553 -0400\ncommitter GitHub <noreply@github.com> 1791478553 -0400\n\nMerge pull request #264 from thekevinscott/renovate/testing-conventions-0.x\n\nUpdate dependency testing-conventions to ^0.0.149",
+          "verified_at": "2026-10-08T16:55:53Z"
+        }
+      },
+      "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "html_url": "https://github.com/thekevinscott/pr-monitor/commit/15f38b36e53e7b53e93c37253a2077e51247ce89",
+      "comments_url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/15f38b36e53e7b53e93c37253a2077e51247ce89/comments",
+      "author": {
+        "login": "thekevinscott",
+        "id": 151596,
+        "node_id": "MDQ6VXNlcjE1MTU5Ng==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/151596?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/thekevinscott",
+        "html_url": "https://github.com/thekevinscott",
+        "followers_url": "https://api.github.com/users/thekevinscott/followers",
+        "following_url": "https://api.github.com/users/thekevinscott/following{/other_user}",
+        "gists_url": "https://api.github.com/users/thekevinscott/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/thekevinscott/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/thekevinscott/subscriptions",
+        "organizations_url": "https://api.github.com/users/thekevinscott/orgs",
+        "repos_url": "https://api.github.com/users/thekevinscott/repos",
+        "events_url": "https://api.github.com/users/thekevinscott/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/thekevinscott/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "committer": {
+        "login": "web-flow",
+        "id": 19864447,
+        "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/web-flow",
+        "html_url": "https://github.com/web-flow",
+        "followers_url": "https://api.github.com/users/web-flow/followers",
+        "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+        "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+        "organizations_url": "https://api.github.com/users/web-flow/orgs",
+        "repos_url": "https://api.github.com/users/web-flow/repos",
+        "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/web-flow/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "parents": [
+        {
+          "sha": "746fb85ed7aca1329373b467ed9bdd6b7c21036c",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/746fb85ed7aca1329373b467ed9bdd6b7c21036c",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/746fb85ed7aca1329373b467ed9bdd6b7c21036c"
+        },
+        {
+          "sha": "80102b589ac64dae969b74f6915574cb5b07fca0",
+          "url": "https://api.github.com/repos/thekevinscott/pr-monitor/commits/80102b589ac64dae969b74f6915574cb5b07fca0",
+          "html_url": "https://github.com/thekevinscott/pr-monitor/commit/80102b589ac64dae969b74f6915574cb5b07fca0"
+        }
+      ],
+      "stats": {
+        "total": 60,
+        "additions": 30,
+        "deletions": 30
+      },
+      "files": [
+        {
+          "sha": "e82bf052b116795160bb404b4e30811588ccded0",
+          "filename": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "changes": 2,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/package.json",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/package.json",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/package.json?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -24,7 +24,7 @@\n     \"@types/node\": \"^24.0.0\",\n     \"@vitest/coverage-v8\": \"^4.1.11\",\n     \"eslint\": \"^10.0.0\",\n-    \"testing-conventions\": \"^0.0.147\",\n+    \"testing-conventions\": \"^0.0.149\",\n     \"typescript\": \"^6.0.0\",\n     \"typescript-eslint\": \"^8.20.0\",\n     \"vitest\": \"^4.1.11\","
+        },
+        {
+          "sha": "8945917e95f7b8734836bcd34e9402653cdea9fa",
+          "filename": "packages/willfire/package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1,
+          "changes": 2,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/packages%2Fwillfire%2Fpackage.json",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/packages%2Fwillfire%2Fpackage.json",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/packages%2Fwillfire%2Fpackage.json?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -43,7 +43,7 @@\n     \"@types/node\": \"^24.0.0\",\n     \"@vitest/coverage-v8\": \"^4.1.11\",\n     \"eslint\": \"^10.9.1\",\n-    \"testing-conventions\": \"^0.0.147\",\n+    \"testing-conventions\": \"^0.0.149\",\n     \"tsx\": \"^4.19.0\",\n     \"typescript\": \"^6.0.0\",\n     \"typescript-eslint\": \"^8.68.0\","
+        },
+        {
+          "sha": "be4a3ac3ff14bd6917d85a0798ca1d67ba2e4742",
+          "filename": "pnpm-lock.yaml",
+          "status": "modified",
+          "additions": 28,
+          "deletions": 28,
+          "changes": 56,
+          "blob_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/pnpm-lock.yaml",
+          "raw_url": "https://github.com/thekevinscott/pr-monitor/raw/15f38b36e53e7b53e93c37253a2077e51247ce89/pnpm-lock.yaml",
+          "contents_url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/pnpm-lock.yaml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "patch": "@@ -198,8 +198,8 @@ importers:\n         specifier: ^10.0.0\n         version: 10.12.0(supports-color@7.2.0)\n       testing-conventions:\n-        specifier: ^0.0.147\n-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n+        specifier: ^0.0.149\n+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n       typescript:\n         specifier: ^6.0.0\n         version: 6.0.3\n@@ -238,8 +238,8 @@ importers:\n         specifier: ^10.9.1\n         version: 10.12.0(supports-color@7.2.0)\n       testing-conventions:\n-        specifier: ^0.0.147\n-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n+        specifier: ^0.0.149\n+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)\n       tsx:\n         specifier: ^4.19.0\n         version: 4.23.15\n@@ -1208,29 +1208,29 @@ packages:\n       '@stryker-mutator/core': 9.6.1\n       vitest: '>=2.0.0'\n \n-  '@testing-conventions/aarch64-apple-darwin@0.0.147':\n-    resolution: {integrity: sha512-iIz8qF+Vvx8PfjIOIipF+BLTDA3xDReORlDdV8rn8O2Aafl65gC2Nou/Sy3V8/cbP9u7F9+f7N6lP9/mfeHWfQ==}\n+  '@testing-conventions/aarch64-apple-darwin@0.0.149':\n+    resolution: {integrity: sha512-iV/qNM0qONtRcjWjDXIHBjeEqdoV77xz6Ei/cQl9Y60Z8HyNyBoFJtK9jn3J/ytXTimFkr4mxR/UPeXL0ZUXog==}\n     cpu: [arm64]\n     os: [darwin]\n \n-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':\n-    resolution: {integrity: sha512-XQ9yEqQEYHhD/lnA5b3Ek/Cz85XMDYG5cX5leYGtKYfar442DsURgnnuVq9P0NlXGfbVg39qAMhhzBbUepxiUg==}\n+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':\n+    resolution: {integrity: sha512-8dixM9Za5vR2aG7iqmsoORkxJADuVHeGNotydPnPhRRi7wPED0af43GJCj4jUrlPXNTy1prQgOxh5OZ6jrzKPw==}\n     cpu: [arm64]\n     os: [linux]\n     libc: [glibc]\n \n-  '@testing-conventions/x86_64-apple-darwin@0.0.147':\n-    resolution: {integrity: sha512-lUFs9XV2W4e+JwfJPqpFxjPcVe6hBOHDKguXqsSQoTFgwKe1IolzwDxjrBIqQq8B42WW1aw5PLgxPNf1/Sm4ew==}\n+  '@testing-conventions/x86_64-apple-darwin@0.0.149':\n+    resolution: {integrity: sha512-Tcnu3TLqP5dXiCurcPrr3RUrrbEbY5ZCS86XSaLfuNdy8K6iEIUzP7KY/otnY078lVVBE1+WnkQnHKnVPGN7kA==}\n     cpu: [x64]\n     os: [darwin]\n \n-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':\n-    resolution: {integrity: sha512-IvAa9GipByiOeuafqzcVuMud1kAeGdsXUhjyqs4UeSMbQwG5ilvj6vaQfcheP+85XO/ZswneDHhUax/7MUdKaQ==}\n+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':\n+    resolution: {integrity: sha512-eMIs9Ucwjzo+VyTY3uqxEXdHySQo9s05x1brLvKjKEisvHxa2X8mO3kJJd4qmanL2ag9yMHKfyCZ0LJ2e2vIlQ==}\n     cpu: [x64]\n     os: [win32]\n \n-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':\n-    resolution: {integrity: sha512-JGxpgUuOC02YmQl07QpHOTno++8XJof9D5V0dy6QIgm9238odX6VsI/Lu+IHqTcsxGcXlxALDhfBCEhcj2d75g==}\n+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':\n+    resolution: {integrity: sha512-RsgO8jU7RtPEGsAY8iCmxNf0TYemA869qSbmBb9AQn+EnpvMSrTpBZuiZSxd8PpZWIRj4sYqmC8TZrj3NA7QdA==}\n     cpu: [x64]\n     os: [linux]\n     libc: [glibc]\n@@ -2095,8 +2095,8 @@ packages:\n     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}\n     engines: {node: '>=8'}\n \n-  testing-conventions@0.0.147:\n-    resolution: {integrity: sha512-zG6s6Pbi9bo8lOe9e/RCXkXhJ0rqEzpH72rgBkpf5z46WV6i/tFn6udYh7gaxW4XWrFRSCKCVDH95MpASNLqoA==}\n+  testing-conventions@0.0.149:\n+    resolution: {integrity: sha512-QgPwTR1upXovfdpcg+42QJv+lBGlI5gWsFQB/En+01cuhrmKBe6Yk4rjo9mUdoZty7bir5vinoJbuoVtRL7r7Q==}\n     engines: {node: '>=24', pnpm: '>=11'}\n     hasBin: true\n     peerDependencies:\n@@ -3051,7 +3051,7 @@ snapshots:\n \n   '@jridgewell/gen-mapping@0.3.13':\n     dependencies:\n-      '@jridgewell/sourcemap-codec': 1.5.5\n+      '@jridgewell/sourcemap-codec': 1.6.0\n       '@jridgewell/trace-mapping': 0.3.31\n \n   '@jridgewell/gen-mapping@0.4.0-beta.0':\n@@ -3340,19 +3340,19 @@ snapshots:\n       tslib: 2.8.1\n       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))\n \n-  '@testing-conventions/aarch64-apple-darwin@0.0.147':\n+  '@testing-conventions/aarch64-apple-darwin@0.0.149':\n     optional: true\n \n-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':\n+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-apple-darwin@0.0.147':\n+  '@testing-conventions/x86_64-apple-darwin@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':\n+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':\n     optional: true\n \n-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':\n+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':\n     optional: true\n \n   '@types/chai@5.2.3':\n@@ -4213,17 +4213,17 @@ snapshots:\n     dependencies:\n       has-flag: 4.0.0\n \n-  testing-conventions@0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):\n+  testing-conventions@0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):\n     dependencies:\n       '@stryker-mutator/core': 9.6.1(@types/node@24.19.1)(supports-color@7.2.0)\n       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.19.1)(supports-color@7.2.0))(vitest@4.1.11)\n       bin-shim: 0.2.2\n     optionalDependencies:\n-      '@testing-conventions/aarch64-apple-darwin': 0.0.147\n-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.147\n-      '@testing-conventions/x86_64-apple-darwin': 0.0.147\n-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.147\n-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.147\n+      '@testing-conventions/aarch64-apple-darwin': 0.0.149\n+      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.149\n+      '@testing-conventions/x86_64-apple-darwin': 0.0.149\n+      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.149\n+      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.149\n       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))\n     transitivePeerDependencies:\n       - '@types/node'"
+        }
+      ]
+    }
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": [
+      {
+        "name": "conventions-willfire.yml",
+        "path": ".github/workflows/conventions-willfire.yml",
+        "sha": "27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+        "size": 1198,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/conventions-willfire.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/conventions-willfire.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/conventions-willfire.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/conventions-willfire.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/27fc226c9142c514abdc6e2ba8789a63d8c581a2",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/conventions-willfire.yml"
+        }
+      },
+      {
+        "name": "move-major-tag.yml",
+        "path": ".github/workflows/move-major-tag.yml",
+        "sha": "b881377bcdeb83878a9bc9b291ab40132b73a98b",
+        "size": 1045,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/move-major-tag.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/b881377bcdeb83878a9bc9b291ab40132b73a98b",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/move-major-tag.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/b881377bcdeb83878a9bc9b291ab40132b73a98b",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/move-major-tag.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "8436de406bed24c9780714ca3d933d7d9265f97a",
+        "size": 485,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/8436de406bed24c9780714ca3d933d7d9265f97a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/8436de406bed24c9780714ca3d933d7d9265f97a",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "target-ref-probe.yml",
+        "path": ".github/workflows/target-ref-probe.yml",
+        "sha": "6ea35729b3ce1819b4f72248a85684f10a5d9c62",
+        "size": 192,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/target-ref-probe.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/target-ref-probe.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/6ea35729b3ce1819b4f72248a85684f10a5d9c62",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/target-ref-probe.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/target-ref-probe.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/6ea35729b3ce1819b4f72248a85684f10a5d9c62",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/target-ref-probe.yml"
+        }
+      },
+      {
+        "name": "test.yml",
+        "path": ".github/workflows/test.yml",
+        "sha": "078236a474c9879ce4af485e3419d43f5977c99a",
+        "size": 2572,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/test.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/078236a474c9879ce4af485e3419d43f5977c99a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/test.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/078236a474c9879ce4af485e3419d43f5977c99a",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/test.yml"
+        }
+      },
+      {
+        "name": "testing-conventions.yml",
+        "path": ".github/workflows/testing-conventions.yml",
+        "sha": "d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+        "size": 1135,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/testing-conventions.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/testing-conventions.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/d53ba6233ab9e889ffb403b8e80ed8c05e7f2b38",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/testing-conventions.yml"
+        }
+      },
+      {
+        "name": "willfire.yml",
+        "path": ".github/workflows/willfire.yml",
+        "sha": "fa7d47e013854c3687f390d47ccea6128c8e7c31",
+        "size": 2233,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/willfire.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/willfire.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/fa7d47e013854c3687f390d47ccea6128c8e7c31",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/willfire.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/willfire.yml?ref=15f38b36e53e7b53e93c37253a2077e51247ce89",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/fa7d47e013854c3687f390d47ccea6128c8e7c31",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/15f38b36e53e7b53e93c37253a2077e51247ce89/.github/workflows/willfire.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/conventions-willfire.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: Testing Conventions (willfire)\n\n# A second call over the absorbed package: `source` derives the package root, so\n# the gates read `packages/willfire/package.json` and its `e2e-attestations/`.\n#\n# `gates` allowlists every gate except `unit-coverage` (willfire enforces no\n# coverage floor), and `packaging` and `changelog` (willfire is private and no\n# longer published).\n\non:\n  pull_request:\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/conventions-willfire.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/conventions-willfire.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/willfire/src\n      gates: >-\n        [\"colocated-test\", \"one-function-per-file\", \"unit-lint\",\n        \"integration-lint\", \"e2e-verify\", \"mutation\"]\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/move-major-tag.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: Promote v1 tag\n\non:\n  workflow_run:\n    # Every workflow that runs on push to `main` belongs here, or `v1` never advances.\n    workflows:\n      - Tests\n      - Testing Conventions\n    types: [completed]\n\npermissions:\n  contents: write\n  actions: read\n\nconcurrency:\n  group: promote-v1\n  cancel-in-progress: false\n\njobs:\n  promote:\n    name: Promote v1\n    if: >-\n      github.event.workflow_run.event == 'push' &&\n      github.event.workflow_run.head_branch == 'main'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - name: Promote v1\n        env:\n          GITHUB_TOKEN: ${{ github.token }}\n          PROMOTE_OWNER: ${{ github.repository_owner }}\n          PROMOTE_REPO: ${{ github.event.repository.name }}\n          PROMOTE_SHA: ${{ github.event.workflow_run.head_sha }}\n          PROMOTE_TAG: v1\n        run: pnpm run promote\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own; this is the backstop.\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v7\n      - uses: ./\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/target-ref-probe.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: Target ref probe\n\non: pull_request_target\n\npermissions:\n  contents: read\n\njobs:\n  observe:\n    name: target ref ${{ github.ref }}\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/test.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: Tests\n\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/**'\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/**'\n\njobs:\n  typecheck:\n    name: Typecheck\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run typecheck\n\n  lint:\n    name: Lint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run lint\n\n  test:\n    name: Test (100% coverage)\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run test:coverage\n\n  actionlint:\n    name: Actionlint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      # Pinned release + checksum: a `uses:` on a former owner name runs whoever claims it next.\n      - name: Install actionlint\n        env:\n          VERSION: 1.7.12\n          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8\n        run: |\n          curl -fsSL -o \"$RUNNER_TEMP/actionlint.tar.gz\" \"https://github.com/rhysd/actionlint/releases/download/v$VERSION/actionlint_${VERSION}_linux_amd64.tar.gz\"\n          echo \"$SHA256  $RUNNER_TEMP/actionlint.tar.gz\" | sha256sum -c -\n          tar -xzf \"$RUNNER_TEMP/actionlint.tar.gz\" -C \"$RUNNER_TEMP\" actionlint\n      - name: Lint workflows\n        run: |\n          \"$RUNNER_TEMP/actionlint\" -color\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/testing-conventions.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: Testing Conventions\n\non:\n  pull_request:\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/testing-conventions.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'action.yml'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - 'tsconfig.json'\n      - 'eslint.config.mjs'\n      - 'vitest.config.mts'\n      - 'stryker.config.json'\n      - 'testing-conventions.toml'\n      - '.github/workflows/testing-conventions.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: src\n      config: testing-conventions.toml\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/willfire.yml",
+      "ref": "15f38b36e53e7b53e93c37253a2077e51247ce89"
+    },
+    "result": "name: willfire\n\n# The absorbed package runs its own suite under its own Vitest major (4.x, where\n# this repo's root is still on 2.x) and its own eslint config, which carries\n# rules the root's does not.\n\non:\n  pull_request:\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/willfire.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'packages/willfire/**'\n      - '!packages/willfire/*.md'\n      - 'package.json'\n      - 'pnpm-lock.yaml'\n      - 'pnpm-workspace.yaml'\n      - '.github/workflows/willfire.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  typecheck:\n    name: willfire typecheck\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run typecheck\n\n  lint:\n    name: willfire lint\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run lint\n\n  unit:\n    name: willfire unit\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run test:unit\n\n  integration:\n    name: willfire integration\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@v7\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter willfire run test:integration\n"
+  }
+]
