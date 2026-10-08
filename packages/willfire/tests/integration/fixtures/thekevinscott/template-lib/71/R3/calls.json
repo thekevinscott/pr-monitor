@@ -1587,5 +1587,327 @@
       "ref": "e138b4c5f8320e830b0871935416322a6066bee0"
     },
     "result": "name: Rust\n\non:\n  pull_request:\n    paths:\n      - 'packages/rust/**'\n      - '!packages/rust/changelog.d/**'\n      - '!packages/rust/migrations.d/**'\n      - '.github/workflows/rust.yml'\n\npermissions:\n  contents: read\n\njobs:\n  lint:\n    name: Lint (fmt + clippy)\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n        with:\n          components: clippy, rustfmt\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - run: cargo fmt --all -- --check\n      - run: cargo clippy --all-targets -- -D warnings\n\n  unit:\n    name: Unit tests + coverage (95%)\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n        with:\n          components: llvm-tools-preview\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - uses: taiki-e/install-action@cargo-llvm-cov\n      - run: cargo llvm-cov --ignore-filename-regex 'main\\.rs' --fail-under-lines 95\n\n  build:\n    name: Build + smoke\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - run: cargo build --release\n      - name: Smoke (--version)\n        run: ./target/release/mynewproduct --version\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": [
+      {
+        "name": "bootstrap-npm.yml",
+        "path": ".github/workflows/bootstrap-npm.yml",
+        "sha": "2b3b8c005b43ae57fbaaa8fe25668d278c71b796",
+        "size": 2218,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/bootstrap-npm.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/bootstrap-npm.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/2b3b8c005b43ae57fbaaa8fe25668d278c71b796",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/bootstrap-npm.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/bootstrap-npm.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/2b3b8c005b43ae57fbaaa8fe25668d278c71b796",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/bootstrap-npm.yml"
+        }
+      },
+      {
+        "name": "build-check.yml",
+        "path": ".github/workflows/build-check.yml",
+        "sha": "d55598788d6fb13f33b4d2277e7ed2147da1df2a",
+        "size": 1108,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/build-check.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/build-check.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/d55598788d6fb13f33b4d2277e7ed2147da1df2a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/build-check.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/build-check.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/d55598788d6fb13f33b4d2277e7ed2147da1df2a",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/build-check.yml"
+        }
+      },
+      {
+        "name": "changelog.yml",
+        "path": ".github/workflows/changelog.yml",
+        "sha": "e8205adf64183696162e4b6c58d616081f30cdde",
+        "size": 688,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/changelog.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/changelog.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/e8205adf64183696162e4b6c58d616081f30cdde",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/changelog.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/changelog.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/e8205adf64183696162e4b6c58d616081f30cdde",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/changelog.yml"
+        }
+      },
+      {
+        "name": "check.yml",
+        "path": ".github/workflows/check.yml",
+        "sha": "62232f2d165fe297a9b41693226e3941919da43f",
+        "size": 726,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/check.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/check.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/62232f2d165fe297a9b41693226e3941919da43f",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/check.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/check.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/62232f2d165fe297a9b41693226e3941919da43f",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/check.yml"
+        }
+      },
+      {
+        "name": "conventions.yml",
+        "path": ".github/workflows/conventions.yml",
+        "sha": "6b533fd67f8795d8786cf0182444e9a3cf022ee2",
+        "size": 1695,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/conventions.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/conventions.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/6b533fd67f8795d8786cf0182444e9a3cf022ee2",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/conventions.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/conventions.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/6b533fd67f8795d8786cf0182444e9a3cf022ee2",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/conventions.yml"
+        }
+      },
+      {
+        "name": "docs.yml",
+        "path": ".github/workflows/docs.yml",
+        "sha": "0744ce6697449154e8db3913911cb96fd310fce7",
+        "size": 1149,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/docs.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/docs.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/0744ce6697449154e8db3913911cb96fd310fce7",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/docs.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/docs.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/0744ce6697449154e8db3913911cb96fd310fce7",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/docs.yml"
+        }
+      },
+      {
+        "name": "gha-scripts.yml",
+        "path": ".github/workflows/gha-scripts.yml",
+        "sha": "9deb23745f7c8fbcd1757c5e29c1d3bc4a2e19e3",
+        "size": 966,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/gha-scripts.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/gha-scripts.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/9deb23745f7c8fbcd1757c5e29c1d3bc4a2e19e3",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/gha-scripts.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/gha-scripts.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/9deb23745f7c8fbcd1757c5e29c1d3bc4a2e19e3",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/gha-scripts.yml"
+        }
+      },
+      {
+        "name": "node.yml",
+        "path": ".github/workflows/node.yml",
+        "sha": "ac719e6d397ade258fbdbc84cedee83ccd9cbef5",
+        "size": 2609,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/node.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/node.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/ac719e6d397ade258fbdbc84cedee83ccd9cbef5",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/node.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/node.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/ac719e6d397ade258fbdbc84cedee83ccd9cbef5",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/node.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "c97fdc4c6fd7bba360dfcc3a5835087940d0b139",
+        "size": 376,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/pr-monitor.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/c97fdc4c6fd7bba360dfcc3a5835087940d0b139",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/pr-monitor.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/c97fdc4c6fd7bba360dfcc3a5835087940d0b139",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "python.yml",
+        "path": ".github/workflows/python.yml",
+        "sha": "177526f696cbb7ea799ae3de89ca6697dcac4ef1",
+        "size": 1060,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/python.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/python.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/177526f696cbb7ea799ae3de89ca6697dcac4ef1",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/python.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/python.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/177526f696cbb7ea799ae3de89ca6697dcac4ef1",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/python.yml"
+        }
+      },
+      {
+        "name": "release.yml",
+        "path": ".github/workflows/release.yml",
+        "sha": "036f8c0de51064612ceea54bb2f8e8cb9d9c8967",
+        "size": 2896,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/release.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/036f8c0de51064612ceea54bb2f8e8cb9d9c8967",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/release.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/036f8c0de51064612ceea54bb2f8e8cb9d9c8967",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/release.yml"
+        }
+      },
+      {
+        "name": "rust.yml",
+        "path": ".github/workflows/rust.yml",
+        "sha": "26a4d6705c5fa08b6e5a9400036a82c861a1d0e9",
+        "size": 1611,
+        "url": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/rust.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+        "html_url": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/rust.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/26a4d6705c5fa08b6e5a9400036a82c861a1d0e9",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/template-lib/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/rust.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/template-lib/contents/.github/workflows/rust.yml?ref=0a228adfeada71fb08dff48fa43fa5069f235e88",
+          "git": "https://api.github.com/repos/thekevinscott/template-lib/git/blobs/26a4d6705c5fa08b6e5a9400036a82c861a1d0e9",
+          "html": "https://github.com/thekevinscott/template-lib/blob/0a228adfeada71fb08dff48fa43fa5069f235e88/.github/workflows/rust.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/bootstrap-npm.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Bootstrap npm packages (one-shot)\n\n# One-shot helper to publish 0.0.0-bootstrap stubs for new npm package\n# names so the putitoutthere release workflow can publish real versions\n# via OIDC trusted publishing afterwards. npm trusted publishing binds\n# to an already-published package, so the first publish needs a classic\n# token; this workflow is the bootstrap path.\n#\n# Usage:\n#   1. Create an npm automation token and set it as repo secret NPM_TOKEN.\n#      The token MUST bypass 2FA for writes, or `npm publish` here fails\n#      with `EOTP: This operation requires a one-time password`. Two\n#      options:\n#        a. Classic Automation token — bypasses 2FA by definition. Simplest.\n#        b. Granular token (read+write, short expiry) — when creating it,\n#           explicitly enable the \"Bypass 2FA\" option. Granular tokens\n#           default to \"Require 2FA\" and will fail at publish time.\n#   2. gh workflow run bootstrap-npm.yml -f packages=\"name1,name2,...\"\n#   3. Once stubs land, register Trusted Publishers on each package's\n#      npm settings page pointing at this repo + release.yml + the\n#      \"release\" environment (the env the putitoutthere publish job runs\n#      in — its `environment` input defaults to `release`, and the PyPI\n#      job in release.yml uses the same name).\n#   4. Delete the NPM_TOKEN secret.\n#   5. Re-trigger Release; the engine publishes real versions over the\n#      bootstrap stubs via OIDC.\n#\n# This file can be removed once all mynewproduct + @mynewproduct/*\n# npm names exist on the registry — its only job is the first-publish\n# bootstrap.\n\non:\n  workflow_dispatch:\n    inputs:\n      packages:\n        description: 'Comma-separated list of npm package names to bootstrap'\n        required: true\n\njobs:\n  bootstrap:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v6\n        with:\n          node-version: '24'\n          registry-url: 'https://registry.npmjs.org'\n      - uses: astral-sh/setup-uv@v7\n      - name: Publish bootstrap stubs\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}\n          PACKAGES: ${{ inputs.packages }}\n        run: uv run --project ci ci bootstrap-npm\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/build-check.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Build Check\n\n# PR-time build verification via piot's reusable build workflow — the\n# heavier companion to check.yml. Runs the same plan + per-target build\n# matrix as release.yml (every target in putitoutthere.toml), then stops\n# before publish: no id-token, no registry auth, contents: read only.\n# Catches build/staging breakage on the PR instead of during a Release\n# run on main. Pinned to @v0 to match release.yml / check.yml.\n\non:\n  pull_request:\n    # Mirrors the union of the putitoutthere.toml globs. Exclusions must stay\n    # a subset of the toml's carve-outs, or a merge can release something\n    # this never built.\n    paths:\n      - 'packages/rust/**'\n      - 'packages/python/**'\n      - 'packages/node/**'\n      - '!packages/*/testing-conventions.toml'\n      - '!packages/*/changelog.d/**'\n      - '!packages/*/migrations.d/**'\n      - '!packages/*/e2e-attestations/**'\n      - 'putitoutthere.toml'\n      - 'LICENSE'\n      - '.github/workflows/build-check.yml'\n\npermissions:\n  contents: read\n\njobs:\n  build-check:\n    uses: thekevinscott/putitoutthere/.github/workflows/build.yml@v0\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/changelog.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Changelog\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened, edited]\n    paths:\n      - 'packages/**'\n      - 'docs/changelog.d/**'\n      - 'docs/migrations.d/**'\n      - '.github/workflows/changelog.yml'\n\npermissions:\n  contents: read\n  pull-requests: read\n\njobs:\n  enforce:\n    name: Changelog fragment added\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n        with:\n          fetch-depth: 0\n\n      - uses: astral-sh/setup-uv@v7\n\n      - name: Check\n        env:\n          BASE_SHA: ${{ github.event.pull_request.base.sha }}\n          HEAD_SHA: ${{ github.event.pull_request.head.sha }}\n        run: uv run --project ci ci check-changelog\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/check.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Check\n\n# PR-time validation of putitoutthere.toml via piot's reusable check\n# workflow (sibling to the release.yml we already consume). Catches\n# config-level mistakes — TOML/schema errors, duplicate package names,\n# depends_on cycles, dangling refs — so they surface here instead of\n# during a Release run on main. Cheap: a couple of seconds, no per-target\n# build. Pinned to @v0 to match release.yml.\n\non:\n  pull_request:\n    paths:\n      - 'putitoutthere.toml'\n      - '.github/workflows/release.yml'\n      - '.github/workflows/build-check.yml'\n      - '.github/workflows/check.yml'\n\npermissions:\n  contents: read\n\njobs:\n  putitoutthere-check:\n    uses: thekevinscott/putitoutthere/.github/workflows/check.yml@v0\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/conventions.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Testing Conventions\n\n# Enforce the testing-conventions standard on this repo's packages: every\n# source file must have a colocated unit test (Python `foo.py` -> `foo_test.py`;\n# TypeScript `foo.ts` -> `foo.test.ts`; Rust an inline `#[cfg(test)]` module).\n# Calls the upstream reusable workflow, which installs the published\n# `testing-conventions` binary and runs each rule as its own job, failing the\n# build on any violation.\n#   https://github.com/thekevinscott/testing-conventions\n#\n# Pinned to the upstream rolling `v0` tag (same convention as check.yml's\n# putitoutthere pin): v0 tracks the latest backwards-compatible release of the\n# reusable workflow.\n#\n# Per-language `source` because this is a monorepo: Python sources live under\n# packages/python, TypeScript under packages/node/src, Rust under\n# packages/rust/src. The reusable workflow scans a single root, so it is called\n# once per language.\n\non:\n  pull_request:\n    paths:\n      - 'packages/**'\n      - '!packages/*/changelog.d/**'\n      - '!packages/*/migrations.d/**'\n      - '.github/workflows/conventions.yml'\n\npermissions:\n  contents: read\n\njobs:\n  python:\n    name: Python\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"python\"]'\n      source: packages/python\n\n  rust:\n    name: Rust\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"rust\"]'\n      source: packages/rust/src\n\n  typescript:\n    name: TypeScript\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/node/src\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/docs.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Docs\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'docs/**'\n      - '.github/workflows/docs.yml'\n  pull_request:\n    paths:\n      - 'docs/**'\n      - '.github/workflows/docs.yml'\n  workflow_dispatch:\n\npermissions:\n  contents: read\n  pages: write\n  id-token: write\n\nconcurrency:\n  group: pages-${{ github.ref }}\n  cancel-in-progress: false\n\njobs:\n  build:\n    name: Build\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: docs\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: docs/.vitepress/dist\n\n  deploy:\n    name: Deploy\n    needs: build\n    if: github.event_name == 'push' && github.ref == 'refs/heads/main'\n    runs-on: ubuntu-latest\n    environment:\n      name: github-pages\n      url: ${{ steps.deployment.outputs.page_url }}\n    steps:\n      - id: deployment\n        uses: actions/deploy-pages@v5\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/gha-scripts.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Workflow scripts\n\n# Lint + test the repo-internal CI CLI that backs our GitHub Actions\n# workflows. CI logic lives in the `ci` package at ci/ (with colocated\n# tests) instead of inline `run:` blocks, so it is runnable and testable\n# locally — `just gha-lint` runs the inline-script gate, `just gha-test`\n# runs the unit tests. The gate (`ci lint-workflow-scripts`) fails the\n# build if a workflow grows a non-trivial inline script. See\n# docs/internals/repo.md.\n\non:\n  pull_request:\n    paths:\n      - '.github/workflows/**'\n      - '.github/actions/**'\n      - 'ci/**'\n\npermissions:\n  contents: read\n\njobs:\n  scripts:\n    name: Lint + test\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: astral-sh/setup-uv@v7\n      - name: Gate — no inline scripts in workflow YAML\n        run: uv run --project ci ci lint-workflow-scripts\n      - name: Test workflow scripts\n        run: uv run pytest\n        working-directory: ci\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/node.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Node\n\non:\n  pull_request:\n    paths:\n      - 'packages/node/**'\n      - 'packages/rust/**'\n      - '!packages/*/changelog.d/**'\n      - '!packages/*/migrations.d/**'\n      - '.github/workflows/node.yml'\n\npermissions:\n  contents: read\n\njobs:\n  lint:\n    name: Lint\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run lint\n\n  typecheck:\n    name: Typecheck\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run typecheck\n\n  test:\n    name: Test\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run test\n\n  build:\n    name: Build + smoke\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - name: Build rust binary\n        run: cargo build --release\n        working-directory: packages/rust\n      - name: Build node package\n        run: |\n          pnpm install --no-frozen-lockfile\n          pnpm run build\n        working-directory: packages/node\n      - name: Stage rust binary as platform optional dep (flat, as piot publishes it)\n        run: |\n          pkg=@mynewproduct/x86_64-unknown-linux-gnu\n          target=packages/node/node_modules/$pkg\n          mkdir -p \"$target\"\n          printf '{\"name\":\"%s\",\"version\":\"0.0.1\"}\\n' \"$pkg\" > \"$target/package.json\"\n          install -m 755 packages/rust/target/release/mynewproduct \"$target/mynewproduct\"\n      - name: Smoke (--version via node wrapper -> rust binary)\n        run: node packages/node/dist/bin.js --version\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own. If a predicted run never\n    # dispatches, the gate waits until the job is killed.\n    timeout-minutes: 20\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/python.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Python\n\non:\n  pull_request:\n    paths:\n      - 'packages/python/**'\n      - 'packages/rust/**'\n      - '!packages/*/changelog.d/**'\n      - '!packages/*/migrations.d/**'\n      - '.github/workflows/python.yml'\n\npermissions:\n  contents: read\n\njobs:\n  build:\n    name: Build wheel + smoke\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - uses: actions/setup-python@v6\n        with:\n          python-version: ${{ matrix.python-version }}\n      - run: pip install maturin\n      - name: Build wheel\n        run: maturin build --release -o dist\n        working-directory: packages/python\n      - name: Install wheel + smoke (--version)\n        run: |\n          python -m venv .venv\n          .venv/bin/pip install packages/python/dist/*.whl\n          .venv/bin/mynewproduct --version\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/release.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Release\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\njobs:\n  # Preflight gate for first-publish prerequisites. Fails fast with an\n  # actionable error before the reusable workflow runs, so a misconfigured\n  # release does not produce confusing 404s deep in the publish step.\n  preflight:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Repo visibility check\n        env:\n          GH_TOKEN: ${{ github.token }}\n        run: |\n          set -euo pipefail\n          private=$(gh api \"repos/${GITHUB_REPOSITORY}\" --jq .private)\n          if [ \"$private\" = \"true\" ]; then\n            echo \"::error::Repository is private. Trusted Publishing on npm / PyPI / crates.io requires a public repository so the provider can inspect the workflow file at the configured ref. Make the repo public (Settings -> General -> Danger Zone -> Change visibility) before releasing, or remove this preflight step if you have an alternative publish path.\"\n            exit 1\n          fi\n          echo \"Repo is public; OK to proceed.\"\n\n  release:\n    needs: preflight\n    uses: thekevinscott/putitoutthere/.github/workflows/release.yml@v0\n    permissions:\n      contents: write\n      id-token: write\n    secrets:\n      # First publish of a brand-new crate has no Trusted Publishing path\n      # on crates.io (TP binds to an already-published crate). Forward a\n      # long-lived API token; the reusable workflow skips the OIDC\n      # exchange when this secret is set. Once 0.0.1 is on crates.io,\n      # register a Trusted Publisher and unset this.\n      CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}\n      # Same story for npm: Trusted Publishing binds to an\n      # already-published package, so the first publish needs a\n      # long-lived automation token. The reusable workflow exports this\n      # as NODE_AUTH_TOKEN for the npm CLI when set, and skips the OIDC\n      # exchange. Without it, scoped-package PUTs return 404 (npm uses\n      # 404 instead of 401 for unauthenticated writes). Drop once\n      # Trusted Publishers are registered on all npm package names.\n      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}\n\n  # PyPI upload runs in the caller's workflow context. Required because\n  # PyPI Trusted Publishers can't validate OIDC tokens minted from a\n  # cross-repo reusable workflow (pypi/warehouse#11096). The `if:` gate\n  # skips this job for non-PyPI repos.\n  pypi-publish:\n    needs: release\n    if: needs.release.outputs.has_pypi == 'true'\n    runs-on: ubuntu-latest\n    environment: release\n    permissions:\n      id-token: write\n    steps:\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-sdist'\n          path: dist/\n          merge-multiple: true\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-wheel-*'\n          path: dist/\n          merge-multiple: true\n      - uses: pypa/gh-action-pypi-publish@release/v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "template-lib",
+      "path": ".github/workflows/rust.yml",
+      "ref": "0a228adfeada71fb08dff48fa43fa5069f235e88"
+    },
+    "result": "name: Rust\n\non:\n  pull_request:\n    paths:\n      - 'packages/rust/**'\n      - '!packages/rust/changelog.d/**'\n      - '!packages/rust/migrations.d/**'\n      - '.github/workflows/rust.yml'\n\npermissions:\n  contents: read\n\njobs:\n  lint:\n    name: Lint (fmt + clippy)\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n        with:\n          components: clippy, rustfmt\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - run: cargo fmt --all -- --check\n      - run: cargo clippy --all-targets -- -D warnings\n\n  unit:\n    name: Unit tests + coverage (95%)\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n        with:\n          components: llvm-tools-preview\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - uses: taiki-e/install-action@cargo-llvm-cov\n      - run: cargo llvm-cov --ignore-filename-regex 'main\\.rs' --fail-under-lines 95\n\n  build:\n    name: Build + smoke\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/rust\n    steps:\n      - uses: actions/checkout@v6\n      - uses: dtolnay/rust-toolchain@stable\n      - uses: Swatinem/rust-cache@v2\n        with:\n          workspaces: packages/rust\n      - run: cargo build --release\n      - name: Smoke (--version)\n        run: ./target/release/mynewproduct --version\n"
   }
 ]
