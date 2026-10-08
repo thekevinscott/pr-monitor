@@ -8,9 +8,8 @@ export default mergeConfig(
       // Root-relative: the testing-conventions CLI invokes Vitest with `src/` as root.
       include: ['**/*.test.ts'],
       // Untracked agent worktrees under `.claude/` and `.worktrees/` hold stale
-      // copies of this suite. Workspace packages own their own suite, config
-      // and Vitest major — willfire is on 4.x while this root is on 2.x, and
-      // running its tests from here silently changes mock isolation.
+      // copies of this suite. Workspace packages own their own suite and
+      // config; running willfire's tests from here silently changes mock isolation.
       exclude: [
         ...defaultExclude,
         '**/.claude/**',
@@ -23,6 +22,7 @@ export default mergeConfig(
         exclude: [
           '**/*.test.ts',
           '**/types.ts',
+          'packages/**',
         ],
         reporter: ['text', 'json-summary'],
       },
