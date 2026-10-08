@@ -52,7 +52,7 @@ interface Fixture {
   commits?: number;
   baseRef?: string;
   /** A changed path, or a rename spelled as both of its sides. */
-  files?: (string | { filename: string; previous_filename: string })[];
+  files?: (string | { filename: string; previous_filename?: string; patch?: string })[];
   /** Head commit message — the surface the skip instructions are read from. */
   message?: string;
   workflows?: { path: string; state: string }[];
@@ -1953,6 +1953,54 @@ describe("pull_request_target workflows", () => {
       { workflow: WF, job: "label", checkName: "label", status: "run", reason: "trigger matched" },
     ]);
     expect(checkNames).toEqual(["label"]);
+  });
+
+  describe("a PR that edits the trigger out", () => {
+    // pr-monitor#263: the PR's copy no longer names pull_request_target, main's does.
+    const EDITED = "on: workflow_dispatch\njobs:\n  label: {}\n";
+    const REMOVES = "@@ -1,3 +1,3 @@\n-on: pull_request_target\n+on: workflow_dispatch\n jobs:";
+
+    it("predicts the default-branch run when the diff removes the trigger", async () => {
+      const { checkNames } = await run(EDITED, {
+        ...resolved,
+        defaultContents: { [WF]: TARGET },
+        files: [{ filename: WF, patch: REMOVES }],
+      });
+      expect(checkNames).toEqual(["label"]);
+    });
+
+    it("predicts it from a rename's old side", async () => {
+      const { checkNames } = await run(EDITED, {
+        ...resolved,
+        defaultContents: { [WF]: TARGET },
+        files: [{ filename: "docs/w.yml", previous_filename: WF, patch: REMOVES }],
+      });
+      expect(checkNames).toEqual(["label"]);
+    });
+
+    it("predicts it when GitHub withholds the diff", async () => {
+      const { checkNames } = await run(EDITED, {
+        ...resolved,
+        defaultContents: { [WF]: TARGET },
+        files: [{ filename: WF }],
+      });
+      expect(checkNames).toEqual(["label"]);
+    });
+
+    it("leaves the pass off for a diff that removes no trigger", async () => {
+      // Unresolvable main throws if the pass runs, so a clean answer proves it stayed off.
+      const { checkNames } = await run(EDITED, {
+        files: [{ filename: WF, patch: "@@ -1 +1 @@\n-on: push\n+on: workflow_dispatch" }],
+      });
+      expect(checkNames).toEqual([]);
+    });
+
+    it("ignores a removed trigger outside the workflows directory", async () => {
+      const { checkNames } = await run(EDITED, {
+        files: [{ filename: "docs/w.yml", patch: REMOVES }],
+      });
+      expect(checkNames).toEqual([]);
+    });
   });
 
   it("still predicts a pull_request_target workflow under a skip instruction", async () => {
