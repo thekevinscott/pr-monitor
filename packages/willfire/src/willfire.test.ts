@@ -52,7 +52,7 @@ interface Fixture {
   commits?: number;
   baseRef?: string;
   /** A changed path, or a rename spelled as both of its sides. */
-  files?: (string | { filename: string; previous_filename?: string; patch?: string })[];
+  files?: (string | { filename: string; previous_filename?: string })[];
   /** Head commit message — the surface the skip instructions are read from. */
   message?: string;
   workflows?: { path: string; state: string }[];
@@ -89,6 +89,7 @@ interface Fixture {
   /**
    * What a cross-repo ref resolves to, keyed `owner/repo@ref`. A ref that is
    * not listed 404s, which is the answer a deleted tag or a private repo gives.
+   * `o/r@main` resolves to `DEFAULT_SHA` unless overridden.
    */
   refs?: Record<string, string>;
   /**
@@ -231,7 +232,7 @@ function fakeGithub(f: Fixture): GithubClient {
       if (status !== undefined) {
         throw status === null ? new Error(`network failure for ${at}`) : apiError(status, at);
       }
-      const sha = (f.refs ?? {})[at];
+      const sha = ({ "o/r@main": DEFAULT_SHA, ...f.refs } as Record<string, string>)[at];
       if (sha === undefined) {
         throw apiError(404, at);
       }
@@ -874,7 +875,7 @@ describe("willfire", () => {
       entries: [],
       checkNames: [],
       skip: null,
-      sources: [HEAD_SOURCE],
+      sources: [HEAD_SOURCE, DEFAULT_SOURCE],
     });
   });
 
@@ -995,7 +996,7 @@ describe("willfire", () => {
       checkNames: [],
       skip: "head commit message contains a skip instruction",
       // Even a suppressed prediction names the commit it read to decide that.
-      sources: [HEAD_SOURCE],
+      sources: [HEAD_SOURCE, DEFAULT_SOURCE],
     });
   });
 
@@ -1014,7 +1015,7 @@ describe("willfire", () => {
       checkNames: [],
       skip: "head commit message contains a skip instruction",
       // Even a suppressed prediction names the commit it read to decide that.
-      sources: [HEAD_SOURCE],
+      sources: [HEAD_SOURCE, DEFAULT_SOURCE],
     });
   });
 
@@ -1040,7 +1041,7 @@ describe("willfire", () => {
       entries: [],
       checkNames: [],
       skip: null,
-      sources: [HEAD_SOURCE],
+      sources: [HEAD_SOURCE, DEFAULT_SOURCE],
     });
   });
 
@@ -1082,12 +1083,12 @@ describe("the commit workflow files are read at", () => {
 
   it("names the test merge commit among the sources it read", async () => {
     const { sources } = await run(AT_HEAD, { mergeSha: MERGE_SHA });
-    expect(sources).toEqual([HEAD_SOURCE, MERGE_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, MERGE_SOURCE, DEFAULT_SOURCE]);
   });
 
-  it("names only the head when it fell back to the head", async () => {
+  it("names the head, not a merge, when it fell back to the head", async () => {
     const { sources } = await run(AT_HEAD, { mergeSha: null });
-    expect(sources).toEqual([HEAD_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, DEFAULT_SOURCE]);
   });
 
   it("expands each workflow under its own path at the commit it was read from", async () => {
@@ -1119,7 +1120,7 @@ describe("the commit workflow files are read at", () => {
     const f = { mergeSha: MERGE_SHA, message: "chore: docs [skip ci]" };
     const { checkNames, sources } = await run(AT_HEAD, f);
     expect(checkNames).toEqual([]);
-    expect(sources).toEqual([HEAD_SOURCE, MERGE_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, MERGE_SOURCE, DEFAULT_SOURCE]);
   });
 
   it("says which commit a missing workflow file was missing from", async () => {
@@ -1174,16 +1175,16 @@ describe("the commits a prediction was read from", () => {
     ],
   };
 
-  it("names only the head when nothing else is read", async () => {
+  it("names the head and the default branch when nothing else is read", async () => {
     const { sources } = await run("on: pull_request\njobs:\n  a: {}\n");
-    expect(sources).toEqual([HEAD_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, DEFAULT_SOURCE]);
   });
 
   it("does not name a second source for a local `./` call", async () => {
     // A local callee is the same commit as the caller, already named.
     const body = caller("./.github/workflows/sub.yml");
     const { sources } = await run(body, { contents: { [WF]: body, [SUB]: CALLEE } });
-    expect(sources).toEqual([HEAD_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, DEFAULT_SOURCE]);
   });
 
   it("names a cross-repo callee by the commit its ref resolved to", async () => {
@@ -1194,6 +1195,7 @@ describe("the commits a prediction was read from", () => {
     });
     expect(sources).toEqual([
       HEAD_SOURCE,
+      DEFAULT_SOURCE,
       // The ref as written is kept alongside the commit: dropping it would lose
       // what the workflow actually asked for.
       { owner: "octo", repo: "repo", ref: "v1", sha: REMOTE_SHA },
@@ -1205,7 +1207,7 @@ describe("the commits a prediction was read from", () => {
     // claim a commit was read when none was.
     const body = caller("octo/repo/.github/workflows/x.yml@v1");
     const { sources } = await run(body, { contents: { [WF]: body } });
-    expect(sources).toEqual([HEAD_SOURCE]);
+    expect(sources).toEqual([HEAD_SOURCE, DEFAULT_SOURCE]);
   });
 
   it("reads a callee at the resolved commit, never at the ref that named it", async () => {
@@ -1231,10 +1233,10 @@ describe("the commits a prediction was read from", () => {
     });
     const getCommit = vi.spyOn(github, "getCommit");
     const { sources } = await willfire(github, "o/r", 1);
-    // One for the head commit's message, one for `v1`. The second `v1` is the
-    // cache, not a request.
-    expect(getCommit).toHaveBeenCalledTimes(2);
-    expect(sources).toHaveLength(2);
+    // The head commit's message, the default branch, then `v1` once. The
+    // second `v1` is the cache, not a request.
+    expect(getCommit).toHaveBeenCalledTimes(3);
+    expect(sources).toHaveLength(3);
   });
 
   it("remembers a ref that 404s rather than asking again", async () => {
@@ -1243,7 +1245,7 @@ describe("the commits a prediction was read from", () => {
     const github = fakeGithub(TWICE_NAMED);
     const getCommit = vi.spyOn(github, "getCommit");
     const { entries } = await willfire(github, "o/r", 1);
-    expect(getCommit).toHaveBeenCalledTimes(2);
+    expect(getCommit).toHaveBeenCalledTimes(3);
     expect(entries.map((e) => e.job)).toEqual(["*", "*"]);
   });
 
@@ -1256,9 +1258,9 @@ describe("the commits a prediction was read from", () => {
     });
     const getCommit = vi.spyOn(github, "getCommit");
     const { entries } = await willfire(github, "o/r", 1);
-    // The head commit, then `v1` once per workflow: the second is a retry,
-    // not a hit.
-    expect(getCommit).toHaveBeenCalledTimes(3);
+    // The head commit, the default branch, then `v1` once per workflow: the
+    // second is a retry, not a hit.
+    expect(getCommit).toHaveBeenCalledTimes(4);
     expect(entries.map((e) => e.job)).toEqual(["*", "*"]);
   });
 
@@ -1270,7 +1272,7 @@ describe("the commits a prediction was read from", () => {
     });
     const getCommit = vi.spyOn(github, "getCommit");
     const { entries } = await willfire(github, "o/r", 1);
-    expect(getCommit).toHaveBeenCalledTimes(3);
+    expect(getCommit).toHaveBeenCalledTimes(4);
     expect(entries.map((e) => e.job)).toEqual(["*", "*"]);
   });
 
@@ -1955,68 +1957,18 @@ describe("pull_request_target workflows", () => {
     expect(checkNames).toEqual(["label"]);
   });
 
-  describe("a PR that edits the trigger out", () => {
-    // pr-monitor#263: the PR's copy no longer names pull_request_target, main's does.
-    const EDITED = "on: workflow_dispatch\njobs:\n  label: {}\n";
-    const REMOVES = "@@ -1,3 +1,3 @@\n-on: pull_request_target\n+on: workflow_dispatch\n jobs:";
-
-    it("predicts the default-branch run when the diff removes the trigger", async () => {
-      const { checkNames } = await run(EDITED, {
-        ...resolved,
-        defaultContents: { [WF]: TARGET },
-        files: [{ filename: WF, patch: REMOVES }],
-      });
-      expect(checkNames).toEqual(["label"]);
+  // The PR's copy decides nothing, so the pass runs whatever it says:
+  // pr-monitor#263 edited the trigger out, #269 broke the YAML, and #270's
+  // base branch never had the trigger. Each ran main's copy.
+  it.each([
+    ["edits the trigger out of", "on: workflow_dispatch\njobs:\n  label: {}\n"],
+    ["breaks the YAML of", `${TARGET}  broken: [unclosed\n`],
+  ])("predicts the default-branch run when the PR %s its copy", async (_label, copy) => {
+    const { checkNames } = await run(copy, {
+      defaultContents: { [WF]: TARGET },
+      files: ["src/app.ts"],
     });
-
-    it("predicts it from a rename's old side", async () => {
-      const { checkNames } = await run(EDITED, {
-        ...resolved,
-        defaultContents: { [WF]: TARGET },
-        files: [{ filename: "docs/w.yml", previous_filename: WF, patch: REMOVES }],
-      });
-      expect(checkNames).toEqual(["label"]);
-    });
-
-    it("predicts it when GitHub withholds the diff", async () => {
-      const { checkNames } = await run(EDITED, {
-        ...resolved,
-        defaultContents: { [WF]: TARGET },
-        files: [{ filename: WF }],
-      });
-      expect(checkNames).toEqual(["label"]);
-    });
-
-    it("leaves the pass off for a diff that removes no trigger", async () => {
-      // Unresolvable main throws if the pass runs, so a clean answer proves it stayed off.
-      const { checkNames } = await run(EDITED, {
-        files: [{ filename: WF, patch: "@@ -1 +1 @@\n-on: push\n+on: workflow_dispatch" }],
-      });
-      expect(checkNames).toEqual([]);
-    });
-
-    it("leaves the pass off when the trigger is only context or added", async () => {
-      const patch = "@@ -1,2 +1,3 @@\n # pull_request_target\n-on: push\n+on: workflow_dispatch\n+# pull_request_target";
-      const { checkNames } = await run(EDITED, { files: [{ filename: WF, patch }] });
-      expect(checkNames).toEqual([]);
-    });
-
-    it("turns the pass on from any one changed workflow among other files", async () => {
-      const { checkNames } = await run(EDITED, {
-        ...resolved,
-        defaultContents: { [WF]: TARGET },
-        files: ["src/app.ts", { filename: ".github/workflows/other.yaml", patch: REMOVES }],
-      });
-      expect(checkNames).toEqual(["label"]);
-    });
-
-    it.each(["docs/w.yml", "pkg/.github/workflows/w.yml", ".github/workflows/w.yml.orig"])(
-      "ignores a removed trigger in %s, which is not a workflow",
-      async (filename) => {
-        const { checkNames } = await run(EDITED, { files: [{ filename, patch: REMOVES }] });
-        expect(checkNames).toEqual([]);
-      },
-    );
+    expect(checkNames).toEqual(["label"]);
   });
 
   it("still predicts a pull_request_target workflow under a skip instruction", async () => {
