@@ -343,9 +343,17 @@ export async function willfire(
   // Whether the default-branch pass below can find anything. The read ref
   // carries the base branch tip, so a target workflow the PR did not delete is
   // visible there; one it deleted, or one its base predates, is still listed
-  // but absent (pr-monitor#249, #250). Neither seen, the pass stays off and
-  // costs no API calls.
-  let targetTriggered = false;
+  // but absent (pr-monitor#249, #250). One the PR edits the trigger out of
+  // still fires from the default branch (pr-monitor#263); its diff removes a
+  // line naming it, or GitHub withheld the diff. None of these, the pass stays
+  // off and costs no API calls.
+  // A rename's old side is the path the default branch still holds.
+  let targetTriggered = files.some(
+    (f) =>
+      /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(f.previous_filename ?? f.filename) &&
+      (f.patch === undefined ||
+        f.patch.split("\n").some((l) => l.startsWith("-") && l.includes("pull_request_target"))),
+  );
 
   const workflowEntries = async (path: string, state: string): Promise<DraftEntry[]> => {
     if (state !== "active") {

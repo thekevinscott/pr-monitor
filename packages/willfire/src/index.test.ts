@@ -177,7 +177,7 @@ describe("root barrel", () => {
       ): Promise<{ base: { ref: string }; merge_commit_sha: string | null }[]>;
       listPullFiles(
         params: Repo & { pull_number: number },
-      ): Promise<{ filename: string; previous_filename?: string }[]>;
+      ): Promise<{ filename: string; previous_filename?: string; patch?: string }[]>;
       getCommit(
         params: Repo & { ref: string },
       ): Promise<{ sha: string; commit: { message: string }; parents: { sha: string }[] }>;
