@@ -392,6 +392,13 @@ describe('predicted check set', () => {
     expect(failures[0]).toMatch(/failure/);
   });
 
+  test('a failed run superseded on the same sha is not judged', async () => {
+    const { failures } = await gate({
+      polls: [[self, run(TESTS, { id: 1, conclusion: 'failure' }), run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+  });
+
   test('a run nobody predicted -> red naming it', async () => {
     const { failures } = await gate({ polls: [[self, run(TESTS), run(CONVENTIONS)]] });
     expect(failures[0]).toMatch(/conventions\.yml/);

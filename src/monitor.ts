@@ -11,6 +11,7 @@ import { resolveSelfWorkflowPath } from './github/resolveSelfWorkflowPath';
 import { compareObserved } from './checks/compareObserved';
 import { describeDivergence } from './checks/describeDivergence';
 import { isStalled } from './checks/isStalled';
+import { latestRuns } from './checks/latestRuns';
 import { executionDependent } from './predict/executionDependent';
 import { expectedChecks } from './predict/expectedChecks';
 import { reconcile } from './predict/reconcile';
@@ -93,10 +94,12 @@ export async function monitor({
           return;
         }
       }
-      runs = allRuns.filter(
-        (r) =>
-          (r.event === 'pull_request' || r.event === 'pull_request_target') &&
-          r.path !== selfPath,
+      runs = latestRuns(
+        allRuns.filter(
+          (r) =>
+            (r.event === 'pull_request' || r.event === 'pull_request_target') &&
+            r.path !== selfPath,
+        ),
       );
       jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
     } catch (err) {
