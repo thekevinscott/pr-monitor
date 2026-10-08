@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.verifyDepsBeforeRun=false --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791464476,
+  "exit_code": 0,
+  "commit": "bfdc899e6a94ae29afe7e78a6d46a61214cf601f",
+  "branch": "test/173-supplement-recordings"
+}
