@@ -198,8 +198,8 @@ importers:
         specifier: ^10.0.0
         version: 10.12.0(supports-color@7.2.0)
       testing-conventions:
-        specifier: ^0.0.147
-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)
+        specifier: ^0.0.149
+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -238,8 +238,8 @@ importers:
         specifier: ^10.9.1
         version: 10.12.0(supports-color@7.2.0)
       testing-conventions:
-        specifier: ^0.0.147
-        version: 0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)
+        specifier: ^0.0.149
+        version: 0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11)
       tsx:
         specifier: ^4.19.0
         version: 4.23.15
@@ -1208,29 +1208,29 @@ packages:
       '@stryker-mutator/core': 9.6.1
       vitest: '>=2.0.0'
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.147':
-    resolution: {integrity: sha512-iIz8qF+Vvx8PfjIOIipF+BLTDA3xDReORlDdV8rn8O2Aafl65gC2Nou/Sy3V8/cbP9u7F9+f7N6lP9/mfeHWfQ==}
+  '@testing-conventions/aarch64-apple-darwin@0.0.149':
+    resolution: {integrity: sha512-iV/qNM0qONtRcjWjDXIHBjeEqdoV77xz6Ei/cQl9Y60Z8HyNyBoFJtK9jn3J/ytXTimFkr4mxR/UPeXL0ZUXog==}
     cpu: [arm64]
     os: [darwin]
 
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':
-    resolution: {integrity: sha512-XQ9yEqQEYHhD/lnA5b3Ek/Cz85XMDYG5cX5leYGtKYfar442DsURgnnuVq9P0NlXGfbVg39qAMhhzBbUepxiUg==}
+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':
+    resolution: {integrity: sha512-8dixM9Za5vR2aG7iqmsoORkxJADuVHeGNotydPnPhRRi7wPED0af43GJCj4jUrlPXNTy1prQgOxh5OZ6jrzKPw==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@testing-conventions/x86_64-apple-darwin@0.0.147':
-    resolution: {integrity: sha512-lUFs9XV2W4e+JwfJPqpFxjPcVe6hBOHDKguXqsSQoTFgwKe1IolzwDxjrBIqQq8B42WW1aw5PLgxPNf1/Sm4ew==}
+  '@testing-conventions/x86_64-apple-darwin@0.0.149':
+    resolution: {integrity: sha512-Tcnu3TLqP5dXiCurcPrr3RUrrbEbY5ZCS86XSaLfuNdy8K6iEIUzP7KY/otnY078lVVBE1+WnkQnHKnVPGN7kA==}
     cpu: [x64]
     os: [darwin]
 
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':
-    resolution: {integrity: sha512-IvAa9GipByiOeuafqzcVuMud1kAeGdsXUhjyqs4UeSMbQwG5ilvj6vaQfcheP+85XO/ZswneDHhUax/7MUdKaQ==}
+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':
+    resolution: {integrity: sha512-eMIs9Ucwjzo+VyTY3uqxEXdHySQo9s05x1brLvKjKEisvHxa2X8mO3kJJd4qmanL2ag9yMHKfyCZ0LJ2e2vIlQ==}
     cpu: [x64]
     os: [win32]
 
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':
-    resolution: {integrity: sha512-JGxpgUuOC02YmQl07QpHOTno++8XJof9D5V0dy6QIgm9238odX6VsI/Lu+IHqTcsxGcXlxALDhfBCEhcj2d75g==}
+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':
+    resolution: {integrity: sha512-RsgO8jU7RtPEGsAY8iCmxNf0TYemA869qSbmBb9AQn+EnpvMSrTpBZuiZSxd8PpZWIRj4sYqmC8TZrj3NA7QdA==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
@@ -2095,8 +2095,8 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
-  testing-conventions@0.0.147:
-    resolution: {integrity: sha512-zG6s6Pbi9bo8lOe9e/RCXkXhJ0rqEzpH72rgBkpf5z46WV6i/tFn6udYh7gaxW4XWrFRSCKCVDH95MpASNLqoA==}
+  testing-conventions@0.0.149:
+    resolution: {integrity: sha512-QgPwTR1upXovfdpcg+42QJv+lBGlI5gWsFQB/En+01cuhrmKBe6Yk4rjo9mUdoZty7bir5vinoJbuoVtRL7r7Q==}
     engines: {node: '>=24', pnpm: '>=11'}
     hasBin: true
     peerDependencies:
@@ -3051,7 +3051,7 @@ snapshots:
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
-      '@jridgewell/sourcemap-codec': 1.5.5
+      '@jridgewell/sourcemap-codec': 1.6.0
       '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/gen-mapping@0.4.0-beta.0':
@@ -3340,19 +3340,19 @@ snapshots:
       tslib: 2.8.1
       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
 
-  '@testing-conventions/aarch64-apple-darwin@0.0.147':
+  '@testing-conventions/aarch64-apple-darwin@0.0.149':
     optional: true
 
-  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.147':
+  '@testing-conventions/aarch64-unknown-linux-gnu@0.0.149':
     optional: true
 
-  '@testing-conventions/x86_64-apple-darwin@0.0.147':
+  '@testing-conventions/x86_64-apple-darwin@0.0.149':
     optional: true
 
-  '@testing-conventions/x86_64-pc-windows-msvc@0.0.147':
+  '@testing-conventions/x86_64-pc-windows-msvc@0.0.149':
     optional: true
 
-  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.147':
+  '@testing-conventions/x86_64-unknown-linux-gnu@0.0.149':
     optional: true
 
   '@types/chai@5.2.3':
@@ -4213,17 +4213,17 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
-  testing-conventions@0.0.147(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):
+  testing-conventions@0.0.149(@types/node@24.19.1)(supports-color@7.2.0)(vitest@4.1.11):
     dependencies:
       '@stryker-mutator/core': 9.6.1(@types/node@24.19.1)(supports-color@7.2.0)
       '@stryker-mutator/vitest-runner': 9.6.1(@stryker-mutator/core@9.6.1(@types/node@24.19.1)(supports-color@7.2.0))(vitest@4.1.11)
       bin-shim: 0.2.2
     optionalDependencies:
-      '@testing-conventions/aarch64-apple-darwin': 0.0.147
-      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.147
-      '@testing-conventions/x86_64-apple-darwin': 0.0.147
-      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.147
-      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.147
+      '@testing-conventions/aarch64-apple-darwin': 0.0.149
+      '@testing-conventions/aarch64-unknown-linux-gnu': 0.0.149
+      '@testing-conventions/x86_64-apple-darwin': 0.0.149
+      '@testing-conventions/x86_64-pc-windows-msvc': 0.0.149
+      '@testing-conventions/x86_64-unknown-linux-gnu': 0.0.149
       vitest: 4.1.11(@types/node@24.19.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.1(@types/node@24.19.1)(esbuild@0.28.1)(tsx@4.23.15)(yaml@2.9.1))
     transitivePeerDependencies:
       - '@types/node'
