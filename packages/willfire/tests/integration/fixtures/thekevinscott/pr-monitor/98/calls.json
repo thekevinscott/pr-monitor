@@ -1081,5 +1081,119 @@
     "result": {
       "$binary": "tarball-1.bin"
     }
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "ref": "7bb6c0f8c7a371537aaf830b3e700a9907ec2151"
+    },
+    "result": [
+      {
+        "name": "move-major-tag.yml",
+        "path": ".github/workflows/move-major-tag.yml",
+        "sha": "f520fc62af78801291d01ea4906e4fc00b797815",
+        "size": 1045,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/move-major-tag.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/f520fc62af78801291d01ea4906e4fc00b797815",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/move-major-tag.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/move-major-tag.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/f520fc62af78801291d01ea4906e4fc00b797815",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/move-major-tag.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "bc95b347ddce8e8e97a61badbdc382b35e2c90a1",
+        "size": 485,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/bc95b347ddce8e8e97a61badbdc382b35e2c90a1",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/pr-monitor.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/bc95b347ddce8e8e97a61badbdc382b35e2c90a1",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "test.yml",
+        "path": ".github/workflows/test.yml",
+        "sha": "a1b3d17b9627e380a7a9fba493b2bfd663cc22ec",
+        "size": 1798,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/test.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/a1b3d17b9627e380a7a9fba493b2bfd663cc22ec",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/test.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/test.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/a1b3d17b9627e380a7a9fba493b2bfd663cc22ec",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/test.yml"
+        }
+      },
+      {
+        "name": "testing-conventions.yml",
+        "path": ".github/workflows/testing-conventions.yml",
+        "sha": "600908c5c6aa54b91e3c025d32bb2c6b1ccf5bc3",
+        "size": 319,
+        "url": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+        "html_url": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/testing-conventions.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/600908c5c6aa54b91e3c025d32bb2c6b1ccf5bc3",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/pr-monitor/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/testing-conventions.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/pr-monitor/contents/.github/workflows/testing-conventions.yml?ref=7bb6c0f8c7a371537aaf830b3e700a9907ec2151",
+          "git": "https://api.github.com/repos/thekevinscott/pr-monitor/git/blobs/600908c5c6aa54b91e3c025d32bb2c6b1ccf5bc3",
+          "html": "https://github.com/thekevinscott/pr-monitor/blob/7bb6c0f8c7a371537aaf830b3e700a9907ec2151/.github/workflows/testing-conventions.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/move-major-tag.yml",
+      "ref": "7bb6c0f8c7a371537aaf830b3e700a9907ec2151"
+    },
+    "result": "name: Promote v1 tag\n\non:\n  workflow_run:\n    # Every workflow that runs on push to `main` belongs here, or `v1` never advances.\n    workflows:\n      - Tests\n      - Testing Conventions\n    types: [completed]\n\npermissions:\n  contents: write\n  actions: read\n\nconcurrency:\n  group: promote-v1\n  cancel-in-progress: false\n\njobs:\n  promote:\n    name: Promote v1\n    if: >-\n      github.event.workflow_run.event == 'push' &&\n      github.event.workflow_run.head_branch == 'main'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v6\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - name: Promote v1\n        env:\n          GITHUB_TOKEN: ${{ github.token }}\n          PROMOTE_OWNER: ${{ github.repository_owner }}\n          PROMOTE_REPO: ${{ github.event.repository.name }}\n          PROMOTE_SHA: ${{ github.event.workflow_run.head_sha }}\n          PROMOTE_TAG: v1\n        run: pnpm run promote\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "7bb6c0f8c7a371537aaf830b3e700a9907ec2151"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own; this is the backstop.\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@v5\n      - uses: ./\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/test.yml",
+      "ref": "7bb6c0f8c7a371537aaf830b3e700a9907ec2151"
+    },
+    "result": "name: Tests\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\njobs:\n  typecheck:\n    name: Typecheck\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v6\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run typecheck\n\n  lint:\n    name: Lint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v6\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run lint\n\n  test:\n    name: Test (100% coverage)\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      - uses: pnpm/action-setup@v6\n      - uses: actions/setup-node@v6\n        with:\n          node-version: '24'\n          cache: pnpm\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm run test:coverage\n\n  actionlint:\n    name: Actionlint\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v5\n      # Pinned release + checksum: a `uses:` on a former owner name runs whoever claims it next.\n      - name: Install actionlint\n        env:\n          VERSION: 1.7.12\n          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8\n        run: |\n          curl -fsSL -o \"$RUNNER_TEMP/actionlint.tar.gz\" \"https://github.com/rhysd/actionlint/releases/download/v$VERSION/actionlint_${VERSION}_linux_amd64.tar.gz\"\n          echo \"$SHA256  $RUNNER_TEMP/actionlint.tar.gz\" | sha256sum -c -\n          tar -xzf \"$RUNNER_TEMP/actionlint.tar.gz\" -C \"$RUNNER_TEMP\" actionlint\n      - name: Lint workflows\n        run: |\n          \"$RUNNER_TEMP/actionlint\" -color\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "pr-monitor",
+      "path": ".github/workflows/testing-conventions.yml",
+      "ref": "7bb6c0f8c7a371537aaf830b3e700a9907ec2151"
+    },
+    "result": "name: Testing Conventions\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: src\n      config: testing-conventions.toml\n"
   }
 ]

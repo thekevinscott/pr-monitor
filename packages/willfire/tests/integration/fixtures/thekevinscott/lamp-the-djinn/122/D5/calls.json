@@ -1476,5 +1476,291 @@
       "ref": "0f0883cc89e6cbed38b112262d1fa8a20f097238"
     },
     "result": "name: Test Container\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/test-container.yml'\n  pull_request:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/test-container.yml'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Set up Docker Buildx\n        uses: docker/setup-buildx-action@v3\n\n      - name: Build test image\n        uses: docker/build-push-action@v6\n        with:\n          context: .devcontainer\n          file: .devcontainer/Dockerfile\n          load: true\n          tags: lamp-the-djinn-test:latest\n\n      - name: Test - uv is installed\n        run: docker run --rm lamp-the-djinn-test:latest uv --version\n\n      - name: Test - uvx is installed\n        run: docker run --rm lamp-the-djinn-test:latest uvx --version\n\n      - name: Test - pnpm is installed\n        run: docker run --rm lamp-the-djinn-test:latest pnpm --version\n\n      - name: Test - npm is installed\n        run: docker run --rm lamp-the-djinn-test:latest npm --version\n\n      - name: Test - node is installed\n        run: docker run --rm lamp-the-djinn-test:latest node --version\n\n      - name: Test - claude is installed\n        run: docker run --rm lamp-the-djinn-test:latest claude --version\n\n      - name: Test - git is installed\n        run: docker run --rm lamp-the-djinn-test:latest git --version\n\n      - name: Test - firewall scripts exist\n        run: |\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/init-firewall.sh\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/add-domain-to-firewall.sh\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/safe-rm\n\n      - name: Test - GPG setup script exists\n        run: docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/setup-gpg.sh\n\n      - name: Test - whitelisted domains file exists\n        run: docker run --rm lamp-the-djinn-test:latest cat /usr/local/share/whitelisted-domains.txt | head -20\n\n      - name: Test - runs as non-root user\n        run: |\n          USER=$(docker run --rm lamp-the-djinn-test:latest whoami)\n          if [ \"$USER\" != \"node\" ]; then\n            echo \"Expected user 'node', got '$USER'\"\n            exit 1\n          fi\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": [
+      {
+        "name": "conventions.yml",
+        "path": ".github/workflows/conventions.yml",
+        "sha": "c89de8a21fab9da1989c1f09531f85bef8a92e40",
+        "size": 807,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/conventions.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/conventions.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c89de8a21fab9da1989c1f09531f85bef8a92e40",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/conventions.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/conventions.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c89de8a21fab9da1989c1f09531f85bef8a92e40",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/conventions.yml"
+        }
+      },
+      {
+        "name": "docs.yml",
+        "path": ".github/workflows/docs.yml",
+        "sha": "c6e5f09739d3b49ab7fe8abd81e0551d07324f6b",
+        "size": 1131,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/docs.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/docs.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c6e5f09739d3b49ab7fe8abd81e0551d07324f6b",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/docs.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/docs.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c6e5f09739d3b49ab7fe8abd81e0551d07324f6b",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/docs.yml"
+        }
+      },
+      {
+        "name": "lint-dockerfile.yml",
+        "path": ".github/workflows/lint-dockerfile.yml",
+        "sha": "7196b4494b0a83815de97d643ab397e24ef183b1",
+        "size": 1492,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-dockerfile.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-dockerfile.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/7196b4494b0a83815de97d643ab397e24ef183b1",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-dockerfile.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-dockerfile.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/7196b4494b0a83815de97d643ab397e24ef183b1",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-dockerfile.yml"
+        }
+      },
+      {
+        "name": "lint-python.yml",
+        "path": ".github/workflows/lint-python.yml",
+        "sha": "6d509766ac8a31c99a1494b8154d9c03e05a474b",
+        "size": 812,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-python.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-python.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/6d509766ac8a31c99a1494b8154d9c03e05a474b",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-python.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-python.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/6d509766ac8a31c99a1494b8154d9c03e05a474b",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-python.yml"
+        }
+      },
+      {
+        "name": "lint-shell.yml",
+        "path": ".github/workflows/lint-shell.yml",
+        "sha": "c6f89eb9eb18c45211925a86f01f5bc06fc70364",
+        "size": 729,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-shell.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-shell.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c6f89eb9eb18c45211925a86f01f5bc06fc70364",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-shell.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/lint-shell.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/c6f89eb9eb18c45211925a86f01f5bc06fc70364",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/lint-shell.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "0b86d759546f89977710c26b2245483fa1d37744",
+        "size": 434,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/pr-monitor.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/0b86d759546f89977710c26b2245483fa1d37744",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/pr-monitor.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/0b86d759546f89977710c26b2245483fa1d37744",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "publish-cage-image.yml",
+        "path": ".github/workflows/publish-cage-image.yml",
+        "sha": "3325c04eca12de0227b9c7354e3785549a8c12ee",
+        "size": 4961,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/publish-cage-image.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/publish-cage-image.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/3325c04eca12de0227b9c7354e3785549a8c12ee",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/publish-cage-image.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/publish-cage-image.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/3325c04eca12de0227b9c7354e3785549a8c12ee",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/publish-cage-image.yml"
+        }
+      },
+      {
+        "name": "release.yml",
+        "path": ".github/workflows/release.yml",
+        "sha": "08715d25e3e458016de1e8be8d3e4318e19a8dbb",
+        "size": 968,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/release.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/08715d25e3e458016de1e8be8d3e4318e19a8dbb",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/release.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/08715d25e3e458016de1e8be8d3e4318e19a8dbb",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/release.yml"
+        }
+      },
+      {
+        "name": "test-cli.yml",
+        "path": ".github/workflows/test-cli.yml",
+        "sha": "e3c322329e18edc5783bf89d6a19106003b6fb1a",
+        "size": 1550,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/test-cli.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-cli.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/e3c322329e18edc5783bf89d6a19106003b6fb1a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-cli.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/test-cli.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/e3c322329e18edc5783bf89d6a19106003b6fb1a",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-cli.yml"
+        }
+      },
+      {
+        "name": "test-container.yml",
+        "path": ".github/workflows/test-container.yml",
+        "sha": "a5b98a64938294c1125052e545c6ed1688c25223",
+        "size": 2364,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/test-container.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-container.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/a5b98a64938294c1125052e545c6ed1688c25223",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-container.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/test-container.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/a5b98a64938294c1125052e545c6ed1688c25223",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/test-container.yml"
+        }
+      },
+      {
+        "name": "update-base-image-digest.yml",
+        "path": ".github/workflows/update-base-image-digest.yml",
+        "sha": "13ef02d1ad6f77e92584cea72a66450cbfba4186",
+        "size": 2785,
+        "url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/update-base-image-digest.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+        "html_url": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/update-base-image-digest.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/13ef02d1ad6f77e92584cea72a66450cbfba4186",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/lamp-the-djinn/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/update-base-image-digest.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/contents/.github/workflows/update-base-image-digest.yml?ref=cd0c9c3cb82ddb740ad44fdd5abc945f7021268c",
+          "git": "https://api.github.com/repos/thekevinscott/lamp-the-djinn/git/blobs/13ef02d1ad6f77e92584cea72a66450cbfba4186",
+          "html": "https://github.com/thekevinscott/lamp-the-djinn/blob/cd0c9c3cb82ddb740ad44fdd5abc945f7021268c/.github/workflows/update-base-image-digest.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/conventions.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Testing Conventions\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'pyproject.toml'\n      - 'testing-conventions.toml'\n      - 'e2e-attestations/**'\n      - '.github/workflows/conventions.yml'\n  pull_request:\n    branches: [main]\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'pyproject.toml'\n      - 'testing-conventions.toml'\n      - 'e2e-attestations/**'\n      - '.github/workflows/conventions.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"python\"]'\n      source: src\n      gates: '[\"colocated-test\", \"one-function-per-file\", \"unit-lint\", \"unit-coverage\", \"integration-lint\", \"mutation\", \"packaging\", \"e2e-verify\"]'\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/docs.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Docs\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'docs/**'\n      - '.github/workflows/docs.yml'\n  pull_request:\n    paths:\n      - 'docs/**'\n      - '.github/workflows/docs.yml'\n  workflow_dispatch:\n\npermissions:\n  contents: read\n  pages: write\n  id-token: write\n\nconcurrency:\n  group: pages\n  cancel-in-progress: false\n\njobs:\n  build:\n    name: Build\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: docs\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: docs/.vitepress/dist\n\n  deploy:\n    name: Deploy\n    needs: build\n    if: github.event_name == 'push' && github.ref == 'refs/heads/main'\n    runs-on: ubuntu-latest\n    environment:\n      name: github-pages\n      url: ${{ steps.deployment.outputs.page_url }}\n    steps:\n      - id: deployment\n        uses: actions/deploy-pages@v5\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/lint-dockerfile.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Lint Dockerfile\n\n# Scoped out of the old `Lint` workflow. See #102.\n# Lints both cage Dockerfiles: .devcontainer/Dockerfile and\n# src/lamp_the_djinn/devcontainer/Dockerfile (packaged local-build fallback).\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '.devcontainer/Dockerfile'\n      - 'src/lamp_the_djinn/devcontainer/Dockerfile'\n      - '.hadolint.yaml'\n      - '.github/workflows/lint-dockerfile.yml'\n  pull_request:\n    branches: [main]\n    paths:\n      - '.devcontainer/Dockerfile'\n      - 'src/lamp_the_djinn/devcontainer/Dockerfile'\n      - '.hadolint.yaml'\n      - '.github/workflows/lint-dockerfile.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  hadolint:\n    name: Hadolint (Dockerfiles)\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Download hadolint\n        run: |\n          curl -sL -o hadolint \"https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64\"\n          chmod +x hadolint\n\n      # Ignored rules from .hadolint.yaml: DL3008 (pin apt versions) not\n      # practical for either image; DL3059 (multiple RUN) intentional for caching.\n      - name: Run Hadolint on the devcontainer Dockerfile\n        run: ./hadolint .devcontainer/Dockerfile\n\n      - name: Run Hadolint on the packaged cage Dockerfile\n        run: ./hadolint src/lamp_the_djinn/devcontainer/Dockerfile\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/lint-python.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Lint Python\n\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**/*.py'\n      - 'pyproject.toml'\n      - '.github/workflows/lint-python.yml'\n  pull_request:\n    branches: [main]\n    paths:\n      - '**/*.py'\n      - 'pyproject.toml'\n      - '.github/workflows/lint-python.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  python:\n    name: Python (ruff + mypy)\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v5\n\n      - name: Ruff lint\n        run: uvx ruff check .\n\n      - name: Ruff format check\n        run: uvx ruff format --check .\n\n      - name: Mypy\n        run: uvx mypy src/lamp_the_djinn\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/lint-shell.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Lint Shell\n\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**/*.sh'\n      - '.github/workflows/lint-shell.yml'\n  pull_request:\n    branches: [main]\n    paths:\n      - '**/*.sh'\n      - '.github/workflows/lint-shell.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  shellcheck:\n    name: ShellCheck\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Install ShellCheck\n        run: sudo apt-get update && sudo apt-get install -y shellcheck\n\n      - name: Run ShellCheck\n        run: |\n          find . -name '*.sh' -type f | xargs shellcheck --severity=warning\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  pull-requests: read\n\njobs:\n  check_commit_status:\n    name: 'Check Commit Status'\n    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/publish-cage-image.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Build and Push Docker Image\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/publish-cage-image.yml'\n  pull_request:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/publish-cage-image.yml'\n  schedule:\n    # Weekly on Sunday at midnight UTC - keeps GitHub Actions cache warm\n    - cron: '0 0 * * 0'\n  workflow_dispatch:\n    inputs:\n      claude_code_version:\n        description: 'Claude Code version to install'\n        required: false\n        default: 'latest'\n\nenv:\n  REGISTRY: ghcr.io\n  IMAGE_NAME: ${{ github.repository }}\n\njobs:\n  build:\n    strategy:\n      matrix:\n        include:\n          - platform: linux/amd64\n            runner: ubuntu-latest\n          - platform: linux/arm64\n            runner: ubuntu-24.04-arm\n    runs-on: ${{ matrix.runner }}\n    permissions:\n      contents: read\n      packages: write\n\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Set up QEMU (for cross-platform builds)\n        if: matrix.platform != 'linux/arm64' || matrix.runner != 'ubuntu-24.04-arm'\n        uses: docker/setup-qemu-action@v3\n\n      - name: Set up Docker Buildx\n        uses: docker/setup-buildx-action@v3\n\n      - name: Log in to Container Registry\n        if: github.event_name != 'pull_request'\n        uses: docker/login-action@v3\n        with:\n          registry: ${{ env.REGISTRY }}\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n\n      - name: Extract platform name\n        id: platform\n        run: echo \"name=${PLATFORM//\\//-}\" >> $GITHUB_OUTPUT\n        env:\n          PLATFORM: ${{ matrix.platform }}\n\n      - name: Extract metadata (tags, labels)\n        id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\n\n      - name: Calculate Dockerfile hash\n        id: dockerfile-hash\n        run: echo \"hash=$(sha256sum .devcontainer/Dockerfile | cut -c1-8)\" >> $GITHUB_OUTPUT\n\n      - name: Get build timestamp\n        id: timestamp\n        run: echo \"value=$(date -u +'%Y-%m-%dT%H:%M:%SZ')\" >> $GITHUB_OUTPUT\n\n      - name: Build and push by digest\n        id: build\n        uses: docker/build-push-action@v6\n        with:\n          context: .devcontainer\n          file: .devcontainer/Dockerfile\n          platforms: ${{ matrix.platform }}\n          labels: ${{ steps.meta.outputs.labels }}\n          build-args: |\n            CLAUDE_CODE_VERSION=${{ inputs.claude_code_version || 'latest' }}\n            BUILD_TIMESTAMP=${{ steps.timestamp.outputs.value }}\n            BUILD_SOURCE=ghcr.io\n          cache-from: type=gha,scope=${{ steps.platform.outputs.name }}-${{ steps.dockerfile-hash.outputs.hash }}\n          cache-to: type=gha,mode=max,scope=${{ steps.platform.outputs.name }}-${{ steps.dockerfile-hash.outputs.hash }}\n          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}\n\n      - name: Export digest\n        if: github.event_name != 'pull_request'\n        run: |\n          mkdir -p /tmp/digests\n          digest=\"${{ steps.build.outputs.digest }}\"\n          touch \"/tmp/digests/${digest#sha256:}\"\n\n      - name: Upload digest\n        if: github.event_name != 'pull_request'\n        uses: actions/upload-artifact@v4\n        with:\n          name: digests-${{ steps.platform.outputs.name }}\n          path: /tmp/digests/*\n          if-no-files-found: error\n          retention-days: 1\n\n  merge:\n    runs-on: ubuntu-latest\n    if: github.event_name != 'pull_request'\n    needs: build\n    permissions:\n      contents: read\n      packages: write\n\n    steps:\n      - name: Download digests\n        uses: actions/download-artifact@v4\n        with:\n          path: /tmp/digests\n          pattern: digests-*\n          merge-multiple: true\n\n      - name: Set up Docker Buildx\n        uses: docker/setup-buildx-action@v3\n\n      - name: Log in to Container Registry\n        uses: docker/login-action@v3\n        with:\n          registry: ${{ env.REGISTRY }}\n          username: ${{ github.actor }}\n          password: ${{ secrets.GITHUB_TOKEN }}\n\n      - name: Extract metadata (tags, labels)\n        id: meta\n        uses: docker/metadata-action@v5\n        with:\n          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}\n          tags: |\n            type=raw,value=latest,enable={{is_default_branch}}\n            type=sha,prefix=\n\n      - name: Create manifest list and push\n        working-directory: /tmp/digests\n        run: |\n          docker buildx imagetools create $(jq -cr '.tags | map(\"-t \" + .) | join(\" \")' <<< \"$DOCKER_METADATA_OUTPUT_JSON\") \\\n            $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)\n\n      - name: Inspect image\n        run: |\n          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/release.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Release\n\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\njobs:\n  release:\n    uses: thekevinscott/putitoutthere/.github/workflows/release.yml@v0\n    permissions:\n      contents: write\n      id-token: write\n\n  # PyPI upload runs in the caller's workflow context: PyPI Trusted Publishers\n  # can't validate OIDC tokens minted from a cross-repo reusable workflow.\n  # The `if:` gate skips this job when the release job published nothing.\n  pypi-publish:\n    needs: release\n    if: needs.release.outputs.has_pypi == 'true'\n    runs-on: ubuntu-latest\n    environment: release\n    permissions:\n      id-token: write\n    steps:\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-sdist'\n          path: dist/\n          merge-multiple: true\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-wheel-*'\n          path: dist/\n          merge-multiple: true\n      - uses: pypa/gh-action-pypi-publish@release/v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/test-cli.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Test CLI\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      # Deps this lane installs via `uv sync`, plus [tool.pytest.ini_options]\n      # (the unit/integration marker config both jobs select on).\n      - 'pyproject.toml'\n      - '.github/workflows/test-cli.yml'\n  pull_request:\n    branches:\n      - main\n    paths:\n      - 'src/**'\n      - 'tests/**'\n      - 'pyproject.toml'\n      - '.github/workflows/test-cli.yml'\n\njobs:\n  unit-tests:\n    name: Unit Tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v4\n\n      - name: Install project + dev dependencies\n        run: uv sync --python 3.12\n\n      - name: Run unit tests\n        # Unit tier: colocated next to source (src/**/*_test.py), marked `unit`.\n        run: uv run pytest src -m unit\n\n  integration-tests:\n    name: Integration Tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v4\n\n      - name: Install project + dev dependencies\n        run: uv sync --python 3.12\n\n      - name: Run integration tests\n        # Integration tier (tests/integration), marked `integration`: first-party\n        # code runs for real against the host filesystem/env; collaborators\n        # (Docker, subprocess, network) are mocked, so no container is needed.\n        run: uv run pytest tests/integration -m integration\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "lamp-the-djinn",
+      "path": ".github/workflows/test-container.yml",
+      "ref": "cd0c9c3cb82ddb740ad44fdd5abc945f7021268c"
+    },
+    "result": "name: Test Container\n\non:\n  push:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/test-container.yml'\n  pull_request:\n    branches:\n      - main\n    paths:\n      - '.devcontainer/**'\n      - '.github/workflows/test-container.yml'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Set up Docker Buildx\n        uses: docker/setup-buildx-action@v3\n\n      - name: Build test image\n        uses: docker/build-push-action@v6\n        with:\n          context: .devcontainer\n          file: .devcontainer/Dockerfile\n          load: true\n          tags: lamp-the-djinn-test:latest\n\n      - name: Test - uv is installed\n        run: docker run --rm lamp-the-djinn-test:latest uv --version\n\n      - name: Test - uvx is installed\n        run: docker run --rm lamp-the-djinn-test:latest uvx --version\n\n      - name: Test - pnpm is installed\n        run: docker run --rm lamp-the-djinn-test:latest pnpm --version\n\n      - name: Test - npm is installed\n        run: docker run --rm lamp-the-djinn-test:latest npm --version\n\n      - name: Test - node is installed\n        run: docker run --rm lamp-the-djinn-test:latest node --version\n\n      - name: Test - claude is installed\n        run: docker run --rm lamp-the-djinn-test:latest claude --version\n\n      - name: Test - git is installed\n        run: docker run --rm lamp-the-djinn-test:latest git --version\n\n      - name: Test - firewall scripts exist\n        run: |\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/init-firewall.sh\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/add-domain-to-firewall.sh\n          docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/safe-rm\n\n      - name: Test - GPG setup script exists\n        run: docker run --rm lamp-the-djinn-test:latest ls -la /usr/local/bin/setup-gpg.sh\n\n      - name: Test - whitelisted domains file exists\n        run: docker run --rm lamp-the-djinn-test:latest cat /usr/local/share/whitelisted-domains.txt | head -20\n\n      - name: Test - runs as non-root user\n        run: |\n          USER=$(docker run --rm lamp-the-djinn-test:latest whoami)\n          if [ \"$USER\" != \"node\" ]; then\n            echo \"Expected user 'node', got '$USER'\"\n            exit 1\n          fi\n"
   }
 ]

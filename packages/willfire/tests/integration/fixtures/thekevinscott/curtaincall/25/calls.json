@@ -1203,5 +1203,249 @@
       "ref": "e07c5fc088a41b3de835067baeb6d721b5c4cc42"
     },
     "result": "name: Test\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/test.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/test.yml'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python-version: [\"3.12\", \"3.13\"]\n    steps:\n      - uses: actions/checkout@v6\n      - uses: astral-sh/setup-uv@v7\n        with:\n          python-version: ${{ matrix.python-version }}\n      - run: uv sync --extra dev\n      - name: Run tests\n        run: uv run just test-ci\n      - name: Upload coverage\n        uses: codecov/codecov-action@v5\n        with:\n          files: coverage.xml\n          fail_ci_if_error: false\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": [
+      {
+        "name": "build.yml",
+        "path": ".github/workflows/build.yml",
+        "sha": "5e553c75b54cee2416d55df645e8e04868f8d236",
+        "size": 494,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/build.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/build.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/5e553c75b54cee2416d55df645e8e04868f8d236",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/build.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/build.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/5e553c75b54cee2416d55df645e8e04868f8d236",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/build.yml"
+        }
+      },
+      {
+        "name": "changelog.yml",
+        "path": ".github/workflows/changelog.yml",
+        "sha": "10f8adcb7ce3fab75e8de4accfabf33997e0695a",
+        "size": 3755,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/changelog.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/changelog.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/10f8adcb7ce3fab75e8de4accfabf33997e0695a",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/changelog.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/changelog.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/10f8adcb7ce3fab75e8de4accfabf33997e0695a",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/changelog.yml"
+        }
+      },
+      {
+        "name": "docs.yml",
+        "path": ".github/workflows/docs.yml",
+        "sha": "a313acd9348e3202d69fd447343b405a2241abc6",
+        "size": 742,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/docs.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/docs.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/a313acd9348e3202d69fd447343b405a2241abc6",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/docs.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/docs.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/a313acd9348e3202d69fd447343b405a2241abc6",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/docs.yml"
+        }
+      },
+      {
+        "name": "integration.yml",
+        "path": ".github/workflows/integration.yml",
+        "sha": "810531d8eecc9bf3636f7ddab148be1e2e9047ae",
+        "size": 605,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/integration.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/integration.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/810531d8eecc9bf3636f7ddab148be1e2e9047ae",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/integration.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/integration.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/810531d8eecc9bf3636f7ddab148be1e2e9047ae",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/integration.yml"
+        }
+      },
+      {
+        "name": "lint.yml",
+        "path": ".github/workflows/lint.yml",
+        "sha": "5db8594e11c204c003d34e9333c7c2d2ccd3a000",
+        "size": 545,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/lint.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/lint.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/5db8594e11c204c003d34e9333c7c2d2ccd3a000",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/lint.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/lint.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/5db8594e11c204c003d34e9333c7c2d2ccd3a000",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/lint.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "225f22a7eb479eaa26a132d472db766262b0083f",
+        "size": 678,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/pr-monitor.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/225f22a7eb479eaa26a132d472db766262b0083f",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/pr-monitor.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/225f22a7eb479eaa26a132d472db766262b0083f",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "release.yml",
+        "path": ".github/workflows/release.yml",
+        "sha": "39388527059782d61811edc7a52049604c8ca57c",
+        "size": 2996,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/release.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/39388527059782d61811edc7a52049604c8ca57c",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/release.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/39388527059782d61811edc7a52049604c8ca57c",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/release.yml"
+        }
+      },
+      {
+        "name": "security.yml",
+        "path": ".github/workflows/security.yml",
+        "sha": "b5a8ad124a21e4862eb5b74760ed6a9cec5fe24e",
+        "size": 475,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/security.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/security.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/b5a8ad124a21e4862eb5b74760ed6a9cec5fe24e",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/security.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/security.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/b5a8ad124a21e4862eb5b74760ed6a9cec5fe24e",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/security.yml"
+        }
+      },
+      {
+        "name": "test.yml",
+        "path": ".github/workflows/test.yml",
+        "sha": "72b2c31d5cac2b84e1cfff2ee54d42c71d042052",
+        "size": 774,
+        "url": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/test.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+        "html_url": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/test.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/72b2c31d5cac2b84e1cfff2ee54d42c71d042052",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/curtaincall/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/test.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/curtaincall/contents/.github/workflows/test.yml?ref=635c690b70607a2af3534c4b06445fbe079177bf",
+          "git": "https://api.github.com/repos/thekevinscott/curtaincall/git/blobs/72b2c31d5cac2b84e1cfff2ee54d42c71d042052",
+          "html": "https://github.com/thekevinscott/curtaincall/blob/635c690b70607a2af3534c4b06445fbe079177bf/.github/workflows/test.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/build.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Build\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/build.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/build.yml'\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n      - run: uv sync --extra dev\n      - name: Build package\n        run: uv run just build\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/changelog.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Changelog\n\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n\njobs:\n  changelog:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n      - name: Check CHANGELOG.md and MIGRATIONS.md requirements\n        env:\n          BASE_SHA: ${{ github.event.pull_request.base.sha }}\n          HEAD_SHA: ${{ github.event.pull_request.head.sha }}\n          PR_AUTHOR: ${{ github.event.pull_request.user.login }}\n        run: |\n          SKIP_CHANGELOG=0\n          BREAKING=0\n\n          # Dependabot writes its own commits, so it cannot carry a\n          # Skip-Changelog trailer and cannot edit CHANGELOG.md. Without an\n          # exemption every dependency bump fails here permanently, which in\n          # turn reds the CI Gate that aggregates it. Dependency bumps have no\n          # consumer-facing behaviour change, which is exactly what the\n          # Skip-Changelog trailer is for.\n          if [ \"$PR_AUTHOR\" = \"dependabot[bot]\" ]; then\n            SKIP_CHANGELOG=1\n            echo \"Author is dependabot[bot]; bypassing CHANGELOG.md requirement.\"\n          fi\n          for sha in $(git rev-list \"$BASE_SHA\"..\"$HEAD_SHA\"); do\n            trailers=$(git log -1 --format=%B \"$sha\" | git interpret-trailers --parse)\n            if echo \"$trailers\" | grep -qiE '^skip-changelog:[[:space:]]*true[[:space:]]*$'; then\n              SKIP_CHANGELOG=1\n            fi\n            if echo \"$trailers\" | grep -qiE '^breaking-change:[[:space:]]*true[[:space:]]*$'; then\n              BREAKING=1\n            fi\n          done\n\n          CHANGED_FILES=$(git diff --name-only \"$BASE_SHA\" \"$HEAD_SHA\")\n\n          # CHANGELOG.md requirement\n          if [ \"$SKIP_CHANGELOG\" = \"1\" ]; then\n            echo \"Skip-Changelog: true trailer found; bypassing CHANGELOG.md requirement.\"\n          elif echo \"$CHANGED_FILES\" | grep -qx 'CHANGELOG.md'; then\n            echo \"CHANGELOG.md was updated.\"\n          else\n            echo \"::error::CHANGELOG.md was not updated in this PR.\"\n            echo \"\"\n            echo \"Curtaincall is pre-1.0 and does not strictly follow SemVer, so every PR\"\n            echo \"must add an entry under the [Unreleased] heading in CHANGELOG.md.\"\n            echo \"\"\n            echo \"If this PR has no consumer impact (pure CI, internal refactor with no\"\n            echo \"behavior change), add a 'Skip-Changelog: true' trailer to any commit\"\n            echo \"in this PR to bypass the check. Example:\"\n            echo \"\"\n            echo \"    chore: rename internal helper\"\n            echo \"\"\n            echo \"    Skip-Changelog: true\"\n            exit 1\n          fi\n\n          # MIGRATIONS.md requirement, gated on Breaking-Change trailer\n          if [ \"$BREAKING\" = \"1\" ]; then\n            if echo \"$CHANGED_FILES\" | grep -qx 'MIGRATIONS.md'; then\n              echo \"Breaking-Change: true trailer found and MIGRATIONS.md was updated.\"\n            else\n              echo \"::error::A Breaking-Change: true trailer was found but MIGRATIONS.md was not updated.\"\n              echo \"\"\n              echo \"Breaking changes and meaningful deprecations require an entry in\"\n              echo \"MIGRATIONS.md under ## Unreleased, with all five required sections:\"\n              echo \"Summary, Required changes, Deprecations removed, Behavior changes\"\n              echo \"without code changes, Verification. See MIGRATIONS.md for the template.\"\n              echo \"\"\n              echo \"If this change is not actually breaking, remove the Breaking-Change\"\n              echo \"trailer from the commit(s) in this PR.\"\n              exit 1\n            fi\n          else\n            echo \"No Breaking-Change trailer detected; MIGRATIONS.md update not required.\"\n          fi\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/docs.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Deploy docs\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'docs/**'\n      - 'mkdocs.yml'\n      - 'src/curtaincall/**'\n      - 'MIGRATIONS.md'\n      - '.github/workflows/docs.yml'\n\npermissions:\n  contents: read\n  pages: write\n  id-token: write\n\nconcurrency:\n  group: pages\n  cancel-in-progress: true\n\njobs:\n  deploy:\n    environment:\n      name: github-pages\n      url: ${{ steps.deployment.outputs.page_url }}\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n      - run: uv sync --extra docs\n      - run: uv run mkdocs build\n      - uses: actions/upload-pages-artifact@v5\n        with:\n          path: site/\n      - id: deployment\n        uses: actions/deploy-pages@v5\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/integration.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Integration Tests\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/integration/**'\n      - '.github/workflows/integration.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - 'tests/integration/**'\n      - '.github/workflows/integration.yml'\n\njobs:\n  integration:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n      - run: uv sync --extra dev\n      - name: Run integration tests\n        run: uv run just test-integration\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/lint.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Lint\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/lint.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/lint.yml'\n\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n      - run: uv sync --extra dev\n      - name: Lint\n        run: uv run just lint\n      - name: Format check\n        run: uv run just format-check\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n\nconcurrency:\n  # A superseded gate run polls a stale SHA until it finishes. Cancel it.\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  actions: read\n  contents: read\n  # willfire reads the PR and its changed files to predict which workflows dispatch.\n  pull-requests: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    # The action has no timeout of its own (see monitor.ts) -- this is the\n    # backstop. If a predicted run never dispatches, the gate waits here\n    # until the job is killed.\n    timeout-minutes: 20\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/release.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Release\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n    inputs:\n      dry_run:\n        description: 'Dry-run: compute plan, skip publish + tag'\n        type: boolean\n        default: false\n\nconcurrency:\n  group: release\n  cancel-in-progress: false\n\npermissions:\n  contents: read\n  id-token: write\n\njobs:\n  plan:\n    runs-on: ubuntu-latest\n    outputs:\n      matrix: ${{ steps.plan.outputs.matrix }}\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n      - id: plan\n        uses: thekevinscott/put-it-out-there@v0\n        with:\n          command: plan\n\n  build:\n    needs: plan\n    if: fromJSON(needs.plan.outputs.matrix || '[]')[0] != null\n    strategy:\n      fail-fast: false\n      matrix:\n        include: ${{ fromJSON(needs.plan.outputs.matrix) }}\n    runs-on: ${{ matrix.runs_on }}\n    # hatch-vcs derives the version from the nearest git tag at build time, but\n    # piot does not create the tag until the publish job. Without this handoff\n    # the sdist would ship as e.g. 0.5.1.devN. See:\n    # https://github.com/thekevinscott/put-it-out-there/blob/main/docs/guide/dynamic-versions.md\n    env:\n      SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CURTAINCALL: ${{ matrix.version }}\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n      - name: Setup Python\n        if: matrix.kind == 'pypi'\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - name: Build sdist\n        if: matrix.kind == 'pypi' && matrix.build != 'maturin' && matrix.target == 'sdist'\n        run: |\n          cd ${{ matrix.path }}\n          python -m pip install build\n          python -m build --sdist --outdir dist\n      - uses: actions/upload-artifact@v4\n        with:\n          name: ${{ matrix.artifact_name }}\n          path: ${{ matrix.artifact_path }}\n\n  publish:\n    needs: [plan, build]\n    runs-on: ubuntu-latest\n    permissions:\n      contents: write\n      id-token: write\n    steps:\n      - uses: actions/checkout@v7\n        with:\n          fetch-depth: 0\n      # PyPI publish shells out to `twine`. Hosted runners don't ship it;\n      # install it here so the publish job has twine on PATH.\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n      - name: Install twine\n        run: pip install twine\n      # piot cuts an annotated tag per publish (`git tag -a`). Hosted\n      # runners have no committer identity set; configure one before the\n      # piot step or tag creation fails with \"Please tell me who you are.\"\n      - name: Configure git identity\n        run: |\n          git config --global user.name \"github-actions[bot]\"\n          git config --global user.email \"41898282+github-actions[bot]@users.noreply.github.com\"\n      - uses: actions/download-artifact@v8\n        with:\n          path: artifacts\n      - uses: thekevinscott/put-it-out-there@v0\n        with:\n          command: publish\n          dry_run: ${{ inputs.dry_run || 'false' }}\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/security.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Security\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/security.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - '.github/workflows/security.yml'\n\njobs:\n  bandit:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n      - run: uv sync --extra dev\n      - name: Run security scan\n        run: uv run just security\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "curtaincall",
+      "path": ".github/workflows/test.yml",
+      "ref": "635c690b70607a2af3534c4b06445fbe079177bf"
+    },
+    "result": "name: Test\n\non:\n  push:\n    branches: [main]\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/test.yml'\n  pull_request:\n    paths:\n      - '**.py'\n      - 'pyproject.toml'\n      - 'uv.lock'\n      - '.github/workflows/test.yml'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python-version: [\"3.12\", \"3.13\"]\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v7\n        with:\n          python-version: ${{ matrix.python-version }}\n      - run: uv sync --extra dev\n      - name: Run tests\n        run: uv run just test-ci\n      - name: Upload coverage\n        uses: codecov/codecov-action@v7\n        with:\n          files: coverage.xml\n          fail_ci_if_error: false\n"
   }
 ]

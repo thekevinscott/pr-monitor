@@ -1415,5 +1415,249 @@
       "ref": "25d76b93a922325f68476b74076a99a260274497"
     },
     "result": "name: node/telelux-web\n\n# Fragments and the README feed no job here. Attestation receipts stay in\n# scope: the conventions job's e2e-verify gate walks them.\non:\n  pull_request:\n    paths:\n      - 'packages/node/telelux-web/**'\n      - '!packages/node/telelux-web/changelog.d/**'\n      - '!packages/node/telelux-web/migrations.d/**'\n      - '!packages/node/telelux-web/README.md'\n      - '.github/workflows/node-telelux-web.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    name: node/telelux-web\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/node/telelux-web/src\n      base: ${{ github.event.pull_request.base.sha || 'origin/main' }}\n\n  lint:\n    name: 'node/telelux-web: lint'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run lint\n\n  typecheck:\n    name: 'node/telelux-web: typecheck'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run typecheck\n\n  test-unit:\n    name: 'node/telelux-web: unit'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run test_unit\n\n  test-integration:\n    name: 'node/telelux-web: integration'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm run build\n      - run: pnpm run test_integration\n\n  build:\n    name: 'node/telelux-web: build'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n"
+  },
+  {
+    "method": "listWorkflowFiles",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": [
+      {
+        "name": "build-check.yml",
+        "path": ".github/workflows/build-check.yml",
+        "sha": "81d8bb28b372dca82d0e9f6aa0de32d556aa36e0",
+        "size": 1548,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/build-check.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/build-check.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/81d8bb28b372dca82d0e9f6aa0de32d556aa36e0",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/build-check.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/build-check.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/81d8bb28b372dca82d0e9f6aa0de32d556aa36e0",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/build-check.yml"
+        }
+      },
+      {
+        "name": "check.yml",
+        "path": ".github/workflows/check.yml",
+        "sha": "31ce3a4d2a6b85b5b7026a13d1bf854869d3da32",
+        "size": 726,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/check.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/check.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/31ce3a4d2a6b85b5b7026a13d1bf854869d3da32",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/check.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/check.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/31ce3a4d2a6b85b5b7026a13d1bf854869d3da32",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/check.yml"
+        }
+      },
+      {
+        "name": "docs.yml",
+        "path": ".github/workflows/docs.yml",
+        "sha": "eb5e9ed9d9ed81a2892cc356a7f40e088715f3b4",
+        "size": 883,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/docs.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/docs.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/eb5e9ed9d9ed81a2892cc356a7f40e088715f3b4",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/docs.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/docs.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/eb5e9ed9d9ed81a2892cc356a7f40e088715f3b4",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/docs.yml"
+        }
+      },
+      {
+        "name": "node-telelux-element.yml",
+        "path": ".github/workflows/node-telelux-element.yml",
+        "sha": "fedd2adeae7193263b8290d50b9d1bd3659f9ef7",
+        "size": 3088,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux-element.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-element.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/fedd2adeae7193263b8290d50b9d1bd3659f9ef7",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-element.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux-element.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/fedd2adeae7193263b8290d50b9d1bd3659f9ef7",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-element.yml"
+        }
+      },
+      {
+        "name": "node-telelux-web.yml",
+        "path": ".github/workflows/node-telelux-web.yml",
+        "sha": "f00918797c5efb9c58c6a3a43178febe68459025",
+        "size": 3011,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux-web.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-web.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/f00918797c5efb9c58c6a3a43178febe68459025",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-web.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux-web.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/f00918797c5efb9c58c6a3a43178febe68459025",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux-web.yml"
+        }
+      },
+      {
+        "name": "node-telelux.yml",
+        "path": ".github/workflows/node-telelux.yml",
+        "sha": "14eb282059d6037bf7cd2ea986628f18dcca1562",
+        "size": 2271,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/14eb282059d6037bf7cd2ea986628f18dcca1562",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/node-telelux.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/14eb282059d6037bf7cd2ea986628f18dcca1562",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/node-telelux.yml"
+        }
+      },
+      {
+        "name": "pr-monitor.yml",
+        "path": ".github/workflows/pr-monitor.yml",
+        "sha": "f46d83266494e8c4a68dfe783ff742bd4f5b1000",
+        "size": 229,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/pr-monitor.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/pr-monitor.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/f46d83266494e8c4a68dfe783ff742bd4f5b1000",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/pr-monitor.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/pr-monitor.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/f46d83266494e8c4a68dfe783ff742bd4f5b1000",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/pr-monitor.yml"
+        }
+      },
+      {
+        "name": "python-telelux.yml",
+        "path": ".github/workflows/python-telelux.yml",
+        "sha": "b4bdb4361ba363215fa784eb6400028729c306fc",
+        "size": 2122,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/python-telelux.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/python-telelux.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/b4bdb4361ba363215fa784eb6400028729c306fc",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/python-telelux.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/python-telelux.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/b4bdb4361ba363215fa784eb6400028729c306fc",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/python-telelux.yml"
+        }
+      },
+      {
+        "name": "release.yml",
+        "path": ".github/workflows/release.yml",
+        "sha": "5d418780aff9e8c47810b58c40b048a82de1c8f2",
+        "size": 2428,
+        "url": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/release.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+        "html_url": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/release.yml",
+        "git_url": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/5d418780aff9e8c47810b58c40b048a82de1c8f2",
+        "download_url": "https://raw.githubusercontent.com/thekevinscott/telelux/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/release.yml",
+        "type": "file",
+        "_links": {
+          "self": "https://api.github.com/repos/thekevinscott/telelux/contents/.github/workflows/release.yml?ref=bfc749a2b01f19cddac06c03d347b9663ebef86b",
+          "git": "https://api.github.com/repos/thekevinscott/telelux/git/blobs/5d418780aff9e8c47810b58c40b048a82de1c8f2",
+          "html": "https://github.com/thekevinscott/telelux/blob/bfc749a2b01f19cddac06c03d347b9663ebef86b/.github/workflows/release.yml"
+        }
+      }
+    ]
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/build-check.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: Build Check\n\n# PR-time build verification via piot's reusable build workflow — the\n# heavier companion to check.yml. Runs the same plan + per-target build\n# matrix as release.yml (every target in putitoutthere.toml), then stops\n# before publish: no id-token, no registry auth, contents: read only.\n# Catches build/staging breakage on the PR instead of during a Release\n# run on main. Pinned to @v0 to match release.yml / check.yml.\n\non:\n  pull_request:\n    # Mirrors the putitoutthere.toml globs: each published package's\n    # subtree minus what never ships (fragments, attestation receipts,\n    # the gate config), plus the config, LICENSE, and this workflow. The\n    # exclusions must stay a subset of what the globs carve out, or a\n    # merge releases what this never built.\n    paths:\n      - 'packages/python/telelux/**'\n      - '!packages/python/telelux/changelog.d/**'\n      - '!packages/python/telelux/migrations.d/**'\n      - '!packages/python/telelux/e2e-attestations/**'\n      - '!packages/python/telelux/testing-conventions.toml'\n      - 'packages/node/telelux-element/**'\n      - '!packages/node/telelux-element/changelog.d/**'\n      - '!packages/node/telelux-element/migrations.d/**'\n      - '!packages/node/telelux-element/e2e-attestations/**'\n      - '!packages/node/telelux-element/testing-conventions.toml'\n      - 'putitoutthere.toml'\n      - 'LICENSE'\n      - '.github/workflows/build-check.yml'\n\npermissions:\n  contents: read\n\njobs:\n  build-check:\n    uses: thekevinscott/putitoutthere/.github/workflows/build.yml@v0\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/check.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: Check\n\n# PR-time validation of putitoutthere.toml via piot's reusable check\n# workflow (sibling to the release.yml we already consume). Catches\n# config-level mistakes — TOML/schema errors, duplicate package names,\n# depends_on cycles, dangling refs — so they surface here instead of\n# during a Release run on main. Cheap: a couple of seconds, no\n# per-target build. Pinned to @v0 to match release.yml.\n\non:\n  pull_request:\n    paths:\n      - 'putitoutthere.toml'\n      - '.github/workflows/release.yml'\n      - '.github/workflows/build-check.yml'\n      - '.github/workflows/check.yml'\n\npermissions:\n  contents: read\n\njobs:\n  putitoutthere-check:\n    uses: thekevinscott/putitoutthere/.github/workflows/check.yml@v0\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/docs.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: docs\n\non:\n  push:\n    branches: [main]\n    paths:\n      - 'docs/**'\n      - 'packages/node/telelux-element/**'\n      - 'pnpm-workspace.yaml'\n      - 'pnpm-lock.yaml'\n      - 'netlify.toml'\n      - '.github/workflows/docs.yml'\n  pull_request:\n    paths:\n      - 'docs/**'\n      - 'packages/node/telelux-element/**'\n      - 'pnpm-workspace.yaml'\n      - 'pnpm-lock.yaml'\n      - 'netlify.toml'\n      - '.github/workflows/docs.yml'\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  build:\n    name: 'docs: build'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --frozen-lockfile\n      - run: pnpm --filter telelux-element build\n      - run: pnpm --filter docs build\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/node-telelux-element.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: node/telelux-element\n\n# Fragments and the README feed no job here. Attestation receipts stay in\n# scope: the conventions job's e2e-verify gate walks them.\non:\n  pull_request:\n    paths:\n      - 'packages/node/telelux-element/**'\n      - '!packages/node/telelux-element/changelog.d/**'\n      - '!packages/node/telelux-element/migrations.d/**'\n      - '!packages/node/telelux-element/README.md'\n      - '.github/workflows/node-telelux-element.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    name: node/telelux-element\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/node/telelux-element/src\n      base: ${{ github.event.pull_request.base.sha || 'origin/main' }}\n\n  lint:\n    name: 'node/telelux-element: lint'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-element\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run lint\n\n  typecheck:\n    name: 'node/telelux-element: typecheck'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-element\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run typecheck\n\n  test-unit:\n    name: 'node/telelux-element: unit'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-element\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run test_unit\n\n  test-integration:\n    name: 'node/telelux-element: integration'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-element\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm run build_demo\n      - run: pnpm run test_integration\n\n  build:\n    name: 'node/telelux-element: build'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-element\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/node-telelux-web.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: node/telelux-web\n\n# Fragments and the README feed no job here. Attestation receipts stay in\n# scope: the conventions job's e2e-verify gate walks them.\non:\n  pull_request:\n    paths:\n      - 'packages/node/telelux-web/**'\n      - '!packages/node/telelux-web/changelog.d/**'\n      - '!packages/node/telelux-web/migrations.d/**'\n      - '!packages/node/telelux-web/README.md'\n      - '.github/workflows/node-telelux-web.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    name: node/telelux-web\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/node/telelux-web/src\n      base: ${{ github.event.pull_request.base.sha || 'origin/main' }}\n\n  lint:\n    name: 'node/telelux-web: lint'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run lint\n\n  typecheck:\n    name: 'node/telelux-web: typecheck'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run typecheck\n\n  test-unit:\n    name: 'node/telelux-web: unit'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run test_unit\n\n  test-integration:\n    name: 'node/telelux-web: integration'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm exec playwright install --with-deps chromium\n      - run: pnpm run build\n      - run: pnpm run test_integration\n\n  build:\n    name: 'node/telelux-web: build'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux-web\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/node-telelux.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: node/telelux\n\non:\n  pull_request:\n    paths:\n      - 'packages/node/telelux/**'\n      - '!packages/node/telelux/changelog.d/**'\n      - '!packages/node/telelux/migrations.d/**'\n      - '!packages/node/telelux/README.md'\n      - '.github/workflows/node-telelux.yml'\n\npermissions:\n  contents: read\n\njobs:\n  lint:\n    name: 'node/telelux: lint'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run lint\n\n  typecheck:\n    name: 'node/telelux: typecheck'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run typecheck\n\n  test-unit:\n    name: 'node/telelux: unit'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run test_unit\n\n  build:\n    name: 'node/telelux: build'\n    runs-on: ubuntu-latest\n    defaults:\n      run:\n        working-directory: packages/node/telelux\n    steps:\n      - uses: actions/checkout@v6\n      - uses: pnpm/action-setup@v5\n        with:\n          version: 10.33.0\n      - uses: actions/setup-node@v6\n        with:\n          node-version: 24\n      - run: pnpm install --no-frozen-lockfile\n      - run: pnpm run build\n\n  conventions:\n    name: node/telelux\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"typescript\"]'\n      source: packages/node/telelux/src\n      base: ${{ github.event.pull_request.base.sha || 'origin/main' }}\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/pr-monitor.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: PR Monitor\n\non:\n  pull_request:\n\npermissions:\n  checks: read\n\njobs:\n  monitor:\n    name: 'CI Gate'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: thekevinscott/pr-monitor@v1\n        with:\n          job-name: 'CI Gate'\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/python-telelux.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: python/telelux\n\n# Fragments and the README feed no job here. Attestation receipts stay in\n# scope: the conventions job's e2e-verify gate walks them.\non:\n  pull_request:\n    paths:\n      - 'packages/python/telelux/**'\n      - '!packages/python/telelux/changelog.d/**'\n      - '!packages/python/telelux/migrations.d/**'\n      - '!packages/python/telelux/README.md'\n      - '.github/workflows/python-telelux.yml'\n\npermissions:\n  contents: read\n\njobs:\n  conventions:\n    name: python/telelux\n    uses: thekevinscott/testing-conventions/.github/workflows/testing-conventions.yml@v0\n    with:\n      languages: '[\"python\"]'\n      source: packages/python/telelux\n      base: ${{ github.event.pull_request.base.sha || 'origin/main' }}\n\n  test:\n    name: 'python/telelux: unit'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: astral-sh/setup-uv@v7\n      - uses: extractions/setup-just@v3\n      - run: just test_unit\n        working-directory: packages/python/telelux\n\n  test-integration:\n    name: 'python/telelux: integration'\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v6\n      - uses: astral-sh/setup-uv@v7\n      - uses: extractions/setup-just@v3\n      - run: just test_integration\n        working-directory: packages/python/telelux\n\n  build:\n    name: 'python/telelux: build wheel + smoke'\n    runs-on: ubuntu-latest\n    strategy:\n      fail-fast: false\n      matrix:\n        python-version: ['3.10', '3.11', '3.12', '3.13']\n    steps:\n      - uses: actions/checkout@v6\n        with:\n          # hatch-vcs derives the version from the tag; a shallow clone has none.\n          fetch-depth: 0\n      - uses: actions/setup-python@v6\n        with:\n          python-version: ${{ matrix.python-version }}\n      - run: pip install uv\n      - name: Build wheel\n        run: uv build\n        working-directory: packages/python/telelux\n      - name: Install wheel + smoke (import)\n        run: |\n          python -m venv .venv\n          .venv/bin/pip install packages/python/telelux/dist/*.whl\n          .venv/bin/python -c \"import telelux; print(telelux.__version__)\"\n"
+  },
+  {
+    "method": "getContent",
+    "params": {
+      "owner": "thekevinscott",
+      "repo": "telelux",
+      "path": ".github/workflows/release.yml",
+      "ref": "bfc749a2b01f19cddac06c03d347b9663ebef86b"
+    },
+    "result": "name: Release\n\non:\n  push:\n    branches: [main]\n  workflow_dispatch:\n\njobs:\n  # Preflight gate for first-publish prerequisites. Fails fast with an\n  # actionable error before the reusable workflow runs, so a misconfigured\n  # release does not produce confusing 404s deep in the publish step.\n  preflight:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Repo visibility check\n        env:\n          GH_TOKEN: ${{ github.token }}\n        run: |\n          set -euo pipefail\n          private=$(gh api \"repos/${GITHUB_REPOSITORY}\" --jq .private)\n          if [ \"$private\" = \"true\" ]; then\n            echo \"::error::Repository is private. Trusted Publishing on PyPI requires a public repository so the provider can inspect the workflow file at the configured ref. Make the repo public (Settings -> General -> Danger Zone -> Change visibility) before releasing, or remove this preflight step if you have an alternative publish path.\"\n            exit 1\n          fi\n          echo \"Repo is public; OK to proceed.\"\n\n  release:\n    needs: preflight\n    uses: thekevinscott/putitoutthere/.github/workflows/release.yml@v0\n    permissions:\n      contents: write\n      id-token: write\n\n  # PyPI upload runs in the caller's workflow context. Required because\n  # PyPI Trusted Publishers can't validate OIDC tokens minted from a\n  # cross-repo reusable workflow (pypi/warehouse#11096). The `if:` gate\n  # skips this job when no PyPI upload was handed off; `!cancelled()` lets\n  # the upload proceed even if the release job failed on something else.\n  pypi-publish:\n    needs: release\n    if: ${{ !cancelled() && needs.release.outputs.pypi_pending == 'true' }}\n    runs-on: ubuntu-latest\n    environment: release\n    permissions:\n      id-token: write\n    steps:\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-sdist'\n          path: dist/\n          merge-multiple: true\n      - uses: actions/download-artifact@v8\n        with:\n          pattern: '*-wheel-*'\n          path: dist/\n          merge-multiple: true\n      - uses: pypa/gh-action-pypi-publish@release/v1\n\n  # Cuts the git tag for what the job above just uploaded. The release job\n  # deliberately does not tag a PyPI package: a tag records what shipped,\n  # and until the upload lands, nothing has.\n  pypi-tag:\n    needs: pypi-publish\n    uses: thekevinscott/putitoutthere/.github/workflows/pypi-tag.yml@v0\n    permissions:\n      contents: write\n"
   }
 ]
