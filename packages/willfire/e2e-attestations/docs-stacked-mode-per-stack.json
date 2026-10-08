@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.verifyDepsBeforeRun=false --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791472590,
+  "exit_code": 0,
+  "commit": "da4365f9ded3058aeaedf49e57ead454fd8becba",
+  "branch": "docs/stacked-mode-per-stack"
+}
