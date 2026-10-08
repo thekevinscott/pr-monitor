@@ -15,7 +15,6 @@
     },
     {
       "description": "Stryker's vitest runner kills no mutants on Vitest 5 (stryker-js#6210), and testing-conventions refuses the mutation gate there (testing-conventions#700). Lift once both ship a fix.",
-      "matchFileNames": ["packages/willfire/package.json"],
       "matchPackageNames": ["vitest", "@vitest/coverage-v8"],
       "allowedVersions": "<5"
     }
