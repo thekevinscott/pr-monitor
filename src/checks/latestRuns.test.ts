@@ -42,3 +42,8 @@ test('different workflows and events are kept apart', () => {
   const runs = [run(1), run(2, { path: 'b.yml' }), run(3, { event: 'pull_request_target' })];
   expect(latestRuns(runs)).toEqual(runs);
 });
+
+test('a duplicate listing of the same run does not replace the one already held', () => {
+  const first = run(1, { conclusion: 'failure' });
+  expect(latestRuns([first, run(1)])).toEqual([first]);
+});
