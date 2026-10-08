@@ -649,7 +649,7 @@ describe("workflow-level verdicts", () => {
 
   // ---- stacked PRs (#30) ----
 
-  // GitHub's stack-aware dispatch (a per-repo rollout, read off dirsql#1002)
+  // GitHub's stack-aware dispatch (engaged per linked stack, not per repo; D19)
   // evaluates `branches:` against the stack's terminal target; the mode shows
   // in `merge_commit_sha`'s first parent.
 
