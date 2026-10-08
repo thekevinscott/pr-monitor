@@ -179,7 +179,11 @@ describe("the CLI entrypoint", () => {
 
   it("comments out a workflow-level verdict", async () => {
     await invoke(["--repo", "o/r", "--pr", "1"], { contents: {} });
-    expect(out).toEqual([`# ${WF} :: no-dispatch (no workflow file at head)`, HEAD_READ]);
+    expect(out).toEqual([
+      `# ${WF} :: no-dispatch (no workflow file at head)`,
+      HEAD_READ,
+      `# read o/r@main -> ${HEAD_SHA}`,
+    ]);
   });
 
   it("reports a suppressing skip instruction on its own", async () => {

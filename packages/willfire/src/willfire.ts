@@ -340,12 +340,11 @@ export async function willfire(
     }));
   };
 
-  // Whether any workflow at the read ref names `pull_request_target`. The read
-  // ref carries the base branch tip, so a target workflow the PR did not delete
-  // is visible there — which is what lets the default-branch pass below stay
-  // off, costing no API calls, for the repos that have none. It stands in for
-  // the default branch, so a PR that deletes the file, or one based on a branch
-  // that predates it, still misses the run (#321).
+  // Whether the default-branch pass below can find anything. The read ref
+  // carries the base branch tip, so a target workflow the PR did not delete is
+  // visible there; one it deleted, or one its base predates, is still listed
+  // but absent (pr-monitor#249, #250). Neither seen, the pass stays off and
+  // costs no API calls.
   let targetTriggered = false;
 
   const workflowEntries = async (path: string, state: string): Promise<DraftEntry[]> => {
@@ -359,6 +358,7 @@ export async function willfire(
       // The Actions API keeps listing a workflow as `active` after its file is
       // deleted. There is no file to evaluate, so there is nothing to dispatch —
       // the same verdict as the disabled case above, reached a different way.
+      targetTriggered = true;
       return [
         {
           workflow: path,

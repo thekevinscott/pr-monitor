@@ -492,7 +492,7 @@ describe("workflow-level verdicts", () => {
     // The Actions API keeps listing a workflow as `active` after its file is
     // deleted on the branch. Nothing can dispatch from a file that is not there.
     const { entries } = await willfire(
-      fakeGithub({ contents: {} }),
+      fakeGithub({ contents: {}, refs: { "o/r@main": DEFAULT_SHA } }),
       "o/r",
       1,
     );
@@ -1123,7 +1123,12 @@ describe("the commit workflow files are read at", () => {
   });
 
   it("says which commit a missing workflow file was missing from", async () => {
-    const github = fakeGithub({ contents: { [WF]: AT_HEAD }, mergeContents: {}, mergeSha: MERGE_SHA });
+    const github = fakeGithub({
+      contents: { [WF]: AT_HEAD },
+      mergeContents: {},
+      mergeSha: MERGE_SHA,
+      refs: { "o/r@main": DEFAULT_SHA },
+    });
     const { entries } = await willfire(github, "o/r", 1);
     expect(entries).toEqual([
       {
@@ -1137,7 +1142,11 @@ describe("the commit workflow files are read at", () => {
   });
 
   it("still says `head` when that is the commit it read", async () => {
-    const { entries } = await willfire(fakeGithub({ contents: {}, mergeSha: null }), "o/r", 1);
+    const { entries } = await willfire(
+      fakeGithub({ contents: {}, mergeSha: null, refs: { "o/r@main": DEFAULT_SHA } }),
+      "o/r",
+      1,
+    );
     expect(entries).toMatchObject([{ reason: "no workflow file at head" }]);
   });
 });
@@ -1860,7 +1869,7 @@ describe("the executor seam through willfire", () => {
 describe("a workflow file that cannot be read", () => {
   /** A client whose every content read fails with `err`. */
   const rejecting = (err: Error): GithubClient => {
-    const github = fakeGithub({});
+    const github = fakeGithub({ refs: { "o/r@main": DEFAULT_SHA } });
     vi.spyOn(github, "getContent").mockRejectedValue(err);
     return github;
   };
@@ -1927,6 +1936,20 @@ describe("pull_request_target workflows", () => {
     });
     expect(entries).toEqual([
       HEAD_DECLINE,
+      { workflow: WF, job: "label", checkName: "label", status: "run", reason: "trigger matched" },
+    ]);
+    expect(checkNames).toEqual(["label"]);
+  });
+
+  it("predicts a pull_request_target workflow the PR deletes or its base predates", async () => {
+    // pr-monitor#249 and #250: listed for the repo, absent at the read ref.
+    const { entries, checkNames } = await willfire(
+      fakeGithub({ ...resolved, contents: {}, defaultContents: { [WF]: TARGET } }),
+      "o/r",
+      1,
+    );
+    expect(entries).toEqual([
+      { workflow: WF, job: "*", checkName: null, status: "no-dispatch", reason: "no workflow file at head" },
       { workflow: WF, job: "label", checkName: "label", status: "run", reason: "trigger matched" },
     ]);
     expect(checkNames).toEqual(["label"]);
