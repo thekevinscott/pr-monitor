@@ -340,21 +340,6 @@ export async function willfire(
     }));
   };
 
-  // Whether the default-branch pass below can find anything. The read ref
-  // carries the base branch tip, so a target workflow the PR did not delete is
-  // visible there; one it deleted, or one its base predates, is still listed
-  // but absent (pr-monitor#249, #250). One the PR edits the trigger out of
-  // still fires from the default branch (pr-monitor#263); its diff removes a
-  // line naming it, or GitHub withheld the diff. None of these, the pass stays
-  // off and costs no API calls.
-  // A rename's old side is the path the default branch still holds.
-  let targetTriggered = files.some(
-    (f) =>
-      /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(f.previous_filename ?? f.filename) &&
-      (f.patch === undefined ||
-        f.patch.split("\n").some((l) => l.startsWith("-") && l.includes("pull_request_target"))),
-  );
-
   const workflowEntries = async (path: string, state: string): Promise<DraftEntry[]> => {
     if (state !== "active") {
       return [
@@ -366,7 +351,6 @@ export async function willfire(
       // The Actions API keeps listing a workflow as `active` after its file is
       // deleted. There is no file to evaluate, so there is nothing to dispatch —
       // the same verdict as the disabled case above, reached a different way.
-      targetTriggered = true;
       return [
         {
           workflow: path,
@@ -388,9 +372,6 @@ export async function willfire(
       // workflow-level "it dispatches" with nothing to expand.
       return [{ workflow: path, job: "*", status: "run", reason: `YAML parse error: ${e}` }];
     }
-    if (getPrTrigger(wf, "pull_request_target") !== MISSING) {
-      targetTriggered = true;
-    }
     if (noPullRequestRun !== null) {
       return [{ workflow: path, job: "*", status: "no-dispatch", reason: noPullRequestRun }];
     }
@@ -404,6 +385,9 @@ export async function willfire(
   // GitHub reads a `pull_request_target` workflow from the default branch tip
   // (GITHUB_SHA is its last commit), never from the PR, so the default branch
   // is a second source and the PR's own copy of the file decides nothing.
+  // Deleted, trigger edited out, unparseable, or missing the trigger on the
+  // base branch, main's copy still ran (pr-monitor#249, #263, #269, #270), so
+  // the pass always runs.
   let targetExecutor: JobExecutor | undefined;
   const targetEntries = async (): Promise<DraftEntry[]> => {
     const defaultBranch = pr.base.repo.default_branch;
@@ -474,9 +458,7 @@ export async function willfire(
         entries.push(...(await workflowEntries(w.path, w.state)));
       }
     }
-    if (targetTriggered) {
-      entries.push(...(await targetEntries()));
-    }
+    entries.push(...(await targetEntries()));
   } finally {
     // The two passes share one executor when the caller injected it, so the set
     // is what keeps that one from being cleaned up twice.

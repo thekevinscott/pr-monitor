@@ -138,14 +138,6 @@ describe("makeGithubClient", () => {
     );
   });
 
-  it("keeps each changed file's patch, the target pass's diff signal (#258)", async () => {
-    stage(json([{ filename: "w.yml", patch: "@@ -1 +1 @@\n-a\n+b" }, { filename: "big.bin" }]));
-    expect(await client().listPullFiles({ ...REPO, pull_number: 5 })).toEqual([
-      { filename: "w.yml", patch: "@@ -1 +1 @@\n-a\n+b" },
-      { filename: "big.bin" },
-    ]);
-  });
-
   it("gets a commit", async () => {
     const commit = { sha: "abc", commit: { message: "m" }, parents: [] };
     stage(json(commit));

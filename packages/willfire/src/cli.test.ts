@@ -132,6 +132,7 @@ describe("the CLI entrypoint", () => {
 
   /** Provenance trails every plain-text run: one line, the head commit. */
   const HEAD_READ = `# read o/r@${HEAD_SHA} -> ${HEAD_SHA}`;
+  const MAIN_READ = `# read o/r@main -> ${HEAD_SHA}`;
 
   it("stays quiet when the module is imported rather than run", async () => {
     process.argv = ["node"];
@@ -156,7 +157,7 @@ describe("the CLI entrypoint", () => {
     process.argv = ["node", "/usr/local/bin/willfire", "--repo", "o/r", "--pr", "1"];
     vi.resetModules();
     await import("./cli.js");
-    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ, MAIN_READ]);
   });
 
   it("runs when node is pointed at the compiled cli.js", async () => {
@@ -164,7 +165,7 @@ describe("the CLI entrypoint", () => {
     process.argv = ["node", "/somewhere/dist/cli.js", "--repo", "o/r", "--pr", "1"];
     vi.resetModules();
     await import("./cli.js");
-    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ, MAIN_READ]);
   });
 
   it("predicts through willfire", async () => {
@@ -174,7 +175,7 @@ describe("the CLI entrypoint", () => {
 
   it("prints one line per entry", async () => {
     await invoke(["--repo", "o/r", "--pr", "1"], { contents: { [WF]: WORKFLOW } });
-    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ, MAIN_READ]);
   });
 
   it("comments out a workflow-level verdict", async () => {
@@ -182,7 +183,7 @@ describe("the CLI entrypoint", () => {
     expect(out).toEqual([
       `# ${WF} :: no-dispatch (no workflow file at head)`,
       HEAD_READ,
-      `# read o/r@main -> ${HEAD_SHA}`,
+      MAIN_READ,
     ]);
   });
 
@@ -194,6 +195,7 @@ describe("the CLI entrypoint", () => {
     expect(out).toEqual([
       "# head commit message contains a skip instruction -> nothing dispatches",
       HEAD_READ,
+      MAIN_READ,
     ]);
   });
 
@@ -201,7 +203,7 @@ describe("the CLI entrypoint", () => {
     await invoke(["--repo", "o/r", "--pr", "1"], {
       contents: { [WF]: "on: pull_request\njobs:\n  a:\n    name: on ${{ inputs.x }}\n" },
     });
-    expect(out).toEqual([`${WF} :: on \${{ inputs.x }} (name unresolved) :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: on \${{ inputs.x }} (name unresolved) :: run`, HEAD_READ, MAIN_READ]);
   });
 
   it("emits JSON under --json", async () => {
@@ -212,7 +214,7 @@ describe("the CLI entrypoint", () => {
       entries: [
         { workflow: WF, job: "a", checkName: "a", status: "run", reason: "trigger matched" },
       ],
-      sources: [HEAD_SOURCE],
+      sources: [HEAD_SOURCE, { ...HEAD_SOURCE, ref: "main" }],
     });
   });
 
@@ -222,7 +224,7 @@ describe("the CLI entrypoint", () => {
     await invoke(["--repo", "o/r", "--pr", "1", "--action", "synchronize"], {
       contents: { [WF]: "on:\n  pull_request:\n    types: [synchronize]\njobs:\n  a: {}\n" },
     });
-    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ, MAIN_READ]);
   });
 
   it("hands every --callback command to the prediction, in order", async () => {
@@ -231,6 +233,6 @@ describe("the CLI entrypoint", () => {
       { contents: { [WF]: WORKFLOW } },
     );
     expect(hoisted.resolved).toEqual([["npx resolver a", "other b"]]);
-    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ]);
+    expect(out).toEqual([`${WF} :: a :: run`, HEAD_READ, MAIN_READ]);
   });
 });
