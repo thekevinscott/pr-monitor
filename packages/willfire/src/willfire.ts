@@ -347,11 +347,10 @@ export async function willfire(
   // still fires from the default branch (pr-monitor#263); its diff removes a
   // line naming it, or GitHub withheld the diff. None of these, the pass stays
   // off and costs no API calls.
-  const isWorkflow = (p: string | undefined): boolean =>
-    p !== undefined && /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(p);
+  // A rename's old side is the path the default branch still holds.
   let targetTriggered = files.some(
     (f) =>
-      (isWorkflow(f.filename) || isWorkflow(f.previous_filename)) &&
+      /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(f.previous_filename ?? f.filename) &&
       (f.patch === undefined ||
         f.patch.split("\n").some((l) => l.startsWith("-") && l.includes("pull_request_target"))),
   );

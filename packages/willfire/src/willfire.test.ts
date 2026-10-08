@@ -1995,12 +1995,28 @@ describe("pull_request_target workflows", () => {
       expect(checkNames).toEqual([]);
     });
 
-    it("ignores a removed trigger outside the workflows directory", async () => {
-      const { checkNames } = await run(EDITED, {
-        files: [{ filename: "docs/w.yml", patch: REMOVES }],
-      });
+    it("leaves the pass off when the trigger is only context or added", async () => {
+      const patch = "@@ -1,2 +1,3 @@\n # pull_request_target\n-on: push\n+on: workflow_dispatch\n+# pull_request_target";
+      const { checkNames } = await run(EDITED, { files: [{ filename: WF, patch }] });
       expect(checkNames).toEqual([]);
     });
+
+    it("turns the pass on from any one changed workflow among other files", async () => {
+      const { checkNames } = await run(EDITED, {
+        ...resolved,
+        defaultContents: { [WF]: TARGET },
+        files: ["src/app.ts", { filename: ".github/workflows/other.yaml", patch: REMOVES }],
+      });
+      expect(checkNames).toEqual(["label"]);
+    });
+
+    it.each(["docs/w.yml", "pkg/.github/workflows/w.yml", ".github/workflows/w.yml.orig"])(
+      "ignores a removed trigger in %s, which is not a workflow",
+      async (filename) => {
+        const { checkNames } = await run(EDITED, { files: [{ filename, patch: REMOVES }] });
+        expect(checkNames).toEqual([]);
+      },
+    );
   });
 
   it("still predicts a pull_request_target workflow under a skip instruction", async () => {
