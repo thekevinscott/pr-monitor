@@ -1,0 +1,7 @@
+{
+  "command": "pnpm --config.verifyDepsBeforeRun=false --filter willfire run test:e2e --testTimeout=1800000",
+  "ran_at": 1791490076,
+  "exit_code": 0,
+  "commit": "fef58379e832468a5f314fb721a8f4ac490a94ab",
+  "branch": "fix/266-always-target"
+}
