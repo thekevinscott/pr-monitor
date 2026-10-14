@@ -19,7 +19,7 @@
   "bin": {
     "willfire": "./src/cli.ts"
   },
-  "packageManager": "pnpm@12.10.1",
+  "packageManager": "pnpm@12.11.2",
   "engines": {
     "node": ">=20"
   },
