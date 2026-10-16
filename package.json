@@ -9,7 +9,7 @@
     "src",
     "!src/**/*.test.ts"
   ],
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.13.0",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
