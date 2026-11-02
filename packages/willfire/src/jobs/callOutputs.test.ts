@@ -123,6 +123,22 @@ describe("callOutputs", () => {
     });
   });
 
+  it("counts the callee's own calls a level deeper", async () => {
+    const files: Record<string, string> = {
+      ".github/workflows/sub.yml": callee({ x: "${{ jobs.mid.outputs.y }}" }, { mid: { uses: "./.github/workflows/leaf.yml" } }),
+      ".github/workflows/leaf.yml": callee({ y: "plain" }, {}),
+    };
+    const reader = { fetchWorkflow: async (path: string) => files[path] ?? null, resolveRef: async () => null };
+    expect(await callOutputs({ uses: USES }, {}, { ...args(null), reader, depth: 8 })).toEqual({
+      ok: true,
+      outputs: { x: "plain" },
+    });
+    expect(await callOutputs({ uses: USES }, {}, { ...args(null), reader, depth: 9 })).toEqual({
+      ok: false,
+      reason: `output 'x' of ${USES} is undecided`,
+    });
+  });
+
   it("reads the callee's jobs relative to the callee, a level deeper", async () => {
     const { executed, executor } = recording({ leaf: { y: "2" } });
     const files: Record<string, string> = {

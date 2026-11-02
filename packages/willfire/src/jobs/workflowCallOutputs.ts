@@ -12,7 +12,7 @@ export function workflowCallOutputs(wf: Workflow): Record<string, string> {
   const out: Record<string, string> = {};
   if (outputs !== null && typeof outputs === "object") {
     for (const [name, decl] of Object.entries(outputs as YamlMap)) {
-      const value = decl !== null && typeof decl === "object" ? (decl as YamlMap)["value"] : undefined;
+      const value = (decl as YamlMap | null)?.["value"];
       out[name] = value === undefined || value === null ? "" : String(value);
     }
   }

@@ -26,7 +26,7 @@ export async function callOutputs(job: Workflow, scope: Scope, args: ExpandJobsA
   }
   const declared = workflowCallOutputs(callee.wf);
   const reads = new Set(
-    [...JSON.stringify(declared).matchAll(/jobs\s*\.\s*([A-Za-z_][A-Za-z0-9_-]*)\s*\.\s*outputs\b/g)].map((m) => m[1]),
+    [...JSON.stringify(declared).matchAll(/jobs\.([A-Za-z_][\w-]*)\.outputs/g)].map((m) => m[1]),
   );
   const { scoped } = await settleScope(
     {

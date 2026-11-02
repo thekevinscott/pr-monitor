@@ -264,7 +264,7 @@ export async function willfire(
         ? {}
         : { "event.pull_request.head.repo.full_name": pr.head.repo.full_name }),
       ...(mergeSha === null ? {} : { sha: mergeSha }),
-      ...(pr.base.sha === undefined ? {} : { "event.pull_request.base.sha": pr.base.sha }),
+      ...(pr.base.sha && { "event.pull_request.base.sha": pr.base.sha }),
       "event.pull_request.head.sha": pr.head.sha,
       ...(ctx.action === "opened" ? { actor: pr.user.login } : {}),
     },
