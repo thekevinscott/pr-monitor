@@ -39,7 +39,7 @@ afterEach(() => {
   vi.mocked(sleep).mockReset();
 });
 
-async function gate(pollErrors: Error[] = []): Promise<string[]> {
+async function gate(pollErrors: Error[] = [], jobErrors: Error[] = []): Promise<string[]> {
   const failures: string[] = [];
   await monitor({
     github: {
@@ -52,9 +52,13 @@ async function gate(pollErrors: Error[] = []): Promise<string[]> {
               { id: 1, name: 'Tests', path: TESTS, event: 'pull_request', status: 'completed', conclusion: 'success' },
             ] } };
           }),
-          listJobsForWorkflowRun: vi.fn(async () => ({ data: { jobs: [
-            { id: 1, name: 'Unit', status: 'completed', conclusion: 'success' },
-          ] } })),
+          listJobsForWorkflowRun: vi.fn(async () => {
+            const error = jobErrors.shift();
+            if (error) throw error;
+            return { data: { jobs: [
+              { id: 1, name: 'Unit', status: 'completed', conclusion: 'success' },
+            ] } };
+          }),
         },
       },
     },
@@ -76,6 +80,11 @@ test('two 502s during polling recover on the existing tick', async () => {
   expect(vi.mocked(sleep).mock.calls).toEqual([[30_000], [30_000]]);
 });
 
+test('a 504 fetching workflow jobs retries the complete poll read', async () => {
+  expect(await gate([], [serverError(504, '/repos/o/r/actions/runs/1/jobs')])).toEqual([]);
+  expect(vi.mocked(sleep).mock.calls).toEqual([[30_000]]);
+});
+
 test('a 503 during prediction retries before the first poll', async () => {
   vi.mocked(willfire)
     .mockRejectedValueOnce(Object.assign(new Error('GitHub API 503 for /repos/o/r/pulls/5'), {
@@ -85,4 +94,29 @@ test('a 503 during prediction retries before the first poll', async () => {
   expect(await gate()).toEqual([]);
   expect(vi.mocked(willfire)).toHaveBeenCalledTimes(2);
   expect(vi.mocked(sleep).mock.calls).toEqual([[30_000]]);
+});
+
+test('a sustained poll error fails after four ticks with status and endpoint', async () => {
+  const failures = await gate(Array.from({ length: 5 }, () =>
+    serverError(504, '/repos/o/r/actions/runs'),
+  ));
+  expect(failures).toEqual([
+    'GitHub API 504 for /repos/o/r/actions/runs remained unavailable after 120s of retries',
+  ]);
+  expect(vi.mocked(sleep)).toHaveBeenCalledTimes(4);
+});
+
+test('a sustained prediction error fails before polling starts', async () => {
+  vi.mocked(willfire).mockRejectedValue(serverError(500, '/repos/o/r/pulls/5'));
+  expect(await gate()).toEqual([
+    'GitHub API 500 for /repos/o/r/pulls/5 remained unavailable after 120s of retries',
+  ]);
+  expect(vi.mocked(willfire)).toHaveBeenCalledTimes(5);
+  expect(vi.mocked(sleep)).toHaveBeenCalledTimes(4);
+});
+
+test('a 403 without quota headers remains fatal immediately', async () => {
+  await expect(gate([serverError(403, '/repos/o/r/actions/runs')]))
+    .rejects.toThrow('Server Error');
+  expect(vi.mocked(sleep)).not.toHaveBeenCalled();
 });
