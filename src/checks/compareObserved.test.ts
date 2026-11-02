@@ -108,6 +108,25 @@ test('a skipped name with no predicted matrix cells remains unexpected', () => {
   expect(result.unexpectedNames).toEqual(['a.yml :: Other (${{ matrix.python-version }})']);
 });
 
+test('a skipped ordinary name remains unexpected', () => {
+  const result = compareObserved(
+    [run('a.yml')],
+    [job('a.yml', 'Other', { conclusion: 'skipped' })],
+    expected({ workflows: ['a.yml'], names: ['Unit (3.12)'] }),
+  );
+  expect(result.unexpectedNames).toEqual(['a.yml :: Other']);
+});
+
+test('an incomplete job cannot satisfy matrix cells even if marked skipped', () => {
+  const name = 'Unit (${{ matrix.python-version }})';
+  const result = compareObserved(
+    [run('a.yml')],
+    [job('a.yml', name, { status: 'in_progress', conclusion: 'skipped' })],
+    expected({ workflows: ['a.yml'], names: ['Unit (3.12)'] }),
+  );
+  expect(result.unexpectedNames).toEqual([`a.yml :: ${name}`]);
+});
+
 test('a renamed job shows as both a missing name and an unexpected one', () => {
   const result = compareObserved(
     [run('a.yml')],
