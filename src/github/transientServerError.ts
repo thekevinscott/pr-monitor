@@ -11,9 +11,10 @@ export function transientServerError(err: unknown): TransientServerError | null 
     request?: { url?: string };
     response?: { url?: string };
   } | null;
-  const status = error?.status;
+  if (error == null) return null;
+  const status = error.status;
   if (status !== 500 && status !== 502 && status !== 503 && status !== 504) return null;
-  const endpoint = error?.request?.url ?? error?.response?.url ??
-    /^GitHub API \d+ for (.+)$/.exec(error?.message ?? '')?.[1] ?? 'unknown endpoint';
+  const endpoint = error.request?.url ?? error.response?.url ??
+    /^GitHub API \d+ for (.+)$/.exec(String(error.message))?.[1] ?? 'unknown endpoint';
   return { status, endpoint };
 }

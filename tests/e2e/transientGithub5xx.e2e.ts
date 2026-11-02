@@ -1,7 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
 import { monitor } from '../../src/monitor';
 import { makeGithubClient } from '../../packages/willfire/src/predict/makeGithubClient';
-import { sleep } from '../../src/timing/sleep';
 import type { MonitorParams } from '../../src/types';
 
 vi.mock('willfire', () => ({
@@ -18,16 +17,16 @@ vi.mock('willfire', () => ({
     };
   }),
 }));
-vi.mock('../../src/timing/sleep', () => ({ sleep: vi.fn(async () => {}) }));
-
 afterEach(() => {
+  vi.useRealTimers();
   delete process.env.GH_TOKEN;
   delete process.env.GITHUB_WORKFLOW_REF;
   vi.restoreAllMocks();
-  vi.mocked(sleep).mockReset();
 });
 
 test('the real willfire HTTP client recovers after a 502 response during prediction', async () => {
+  vi.useFakeTimers();
+  const timer = vi.spyOn(globalThis, 'setTimeout');
   process.env.GH_TOKEN = 'test-token';
   process.env.GITHUB_WORKFLOW_REF = 'o/r/.github/workflows/pr-monitor.yml@refs/pull/5/merge';
   vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -39,7 +38,7 @@ test('the real willfire HTTP client recovers after a 502 response during predict
     });
   });
   const failures: string[] = [];
-  await monitor({
+  const pending = monitor({
     github: { rest: { actions: {
       listWorkflowRunsForRepo: async () => ({ data: { workflow_runs: [
         { id: 1, name: 'Tests', path: '.github/workflows/tests.yml', event: 'pull_request', status: 'completed', conclusion: 'success' },
@@ -55,7 +54,9 @@ test('the real willfire HTTP client recovers after a 502 response during predict
     },
     core: { setFailed: (message: string) => failures.push(message) },
   } as unknown as MonitorParams);
+  await vi.runAllTimersAsync();
+  await pending;
   expect(failures).toEqual([]);
   expect(requests).toBe(2);
-  expect(vi.mocked(sleep).mock.calls).toEqual([[30_000]]);
+  expect(timer.mock.calls.map((call) => call[1])).toEqual([30_000]);
 });

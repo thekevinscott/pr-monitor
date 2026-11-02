@@ -12,6 +12,10 @@ test('reads the endpoint from willfire errors and response URLs', () => {
   expect(transientServerError({ status: 500, response: { url: '/actions/runs' } }))
     .toEqual({ status: 500, endpoint: '/actions/runs' });
   expect(transientServerError({ status: 500 })).toEqual({ status: 500, endpoint: 'unknown endpoint' });
+  expect(transientServerError({ status: 503, message: 'prefix GitHub API 503 for /x' }))
+    .toEqual({ status: 503, endpoint: 'unknown endpoint' });
+  expect(transientServerError({ status: 503, message: 'GitHub API 503 for /x\nextra' }))
+    .toEqual({ status: 503, endpoint: 'unknown endpoint' });
 });
 
 test.each([403, 404, 429, 501, undefined])('does not retry status %s', (status) => {
