@@ -17,6 +17,13 @@ test('matches multiple matrix expressions in one skipped name', () => {
   ]);
 });
 
+test('matches matrix expressions without surrounding whitespace', () => {
+  expect(matchSkippedMatrix('Test (${{matrix.os}})', new Set(['Test (linux)']))).toEqual([
+    'Test (linux)',
+  ]);
+});
+
 test('an ordinary name supplies no matrix cells', () => {
   expect(matchSkippedMatrix('Unit', new Set(['Unit (3.12)']))).toEqual([]);
+  expect(matchSkippedMatrix('Unit', new Set(['Unit']))).toEqual([]);
 });
