@@ -76,6 +76,38 @@ test('a predicted check name that has not reported is missing by name', () => {
   expect(result.missing).toEqual([]);
 });
 
+test('a skipped matrix check satisfies every expanded cell', () => {
+  const result = compareObserved(
+    [run('a.yml')],
+    [job('a.yml', 'Unit (${{ matrix.python-version }})', { conclusion: 'skipped' })],
+    expected({ workflows: ['a.yml'], names: ['Unit (3.12)', 'Unit (3.13)'] }),
+  );
+  expect(result.unexpectedNames).toEqual([]);
+  expect(result.missingNames).toEqual([]);
+  expect(result.matchedNames).toEqual(['Unit (3.12)', 'Unit (3.13)']);
+});
+
+test('a running or successful literal matrix name remains unexpected', () => {
+  const name = 'Unit (${{ matrix.python-version }})';
+  for (const conclusion of ['success', null]) {
+    const result = compareObserved(
+      [run('a.yml')],
+      [job('a.yml', name, { conclusion })],
+      expected({ workflows: ['a.yml'], names: ['Unit (3.12)', 'Unit (3.13)'] }),
+    );
+    expect(result.unexpectedNames).toEqual([`a.yml :: ${name}`]);
+  }
+});
+
+test('a skipped name with no predicted matrix cells remains unexpected', () => {
+  const result = compareObserved(
+    [run('a.yml')],
+    [job('a.yml', 'Other (${{ matrix.python-version }})', { conclusion: 'skipped' })],
+    expected({ workflows: ['a.yml'], names: ['Unit (3.12)'] }),
+  );
+  expect(result.unexpectedNames).toEqual(['a.yml :: Other (${{ matrix.python-version }})']);
+});
+
 test('a renamed job shows as both a missing name and an unexpected one', () => {
   const result = compareObserved(
     [run('a.yml')],

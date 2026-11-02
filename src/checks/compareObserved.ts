@@ -5,6 +5,7 @@ import type {
   GateComparison,
 } from '../types';
 import { isPassingConclusion } from './isPassingConclusion';
+import { matchSkippedMatrix } from './matchSkippedMatrix';
 
 /**
  * Membership is judged on check names; whether one passed is judged on the run, because a
@@ -42,12 +43,19 @@ export function compareObserved(
   const unexpectedNames = new Set<string>();
   const seenNames = new Set<string>();
 
-  for (const { name, workflowPath } of jobs) {
+  for (const { name, workflowPath, status, conclusion } of jobs) {
     if (expectedNames.has(name)) {
       seenNames.add(name);
       continue;
     }
     if (!expectedRuns.has(workflowPath) || runLevel.has(workflowPath)) continue;
+    if (status === 'completed' && conclusion === 'skipped') {
+      const matched = matchSkippedMatrix(name, expectedNames);
+      if (matched.length > 0) {
+        for (const expectedName of matched) seenNames.add(expectedName);
+        continue;
+      }
+    }
     unexpectedNames.add(`${workflowPath} :: ${name}`);
   }
 
