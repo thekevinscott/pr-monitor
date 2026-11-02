@@ -62,6 +62,16 @@ describe("lookup", () => {
     expect(lookup({ needs: {} }, "needs.detect.outputs.x")).toEqual({ kind: "unknown" });
   });
 
+  it("reads a called workflow's jobs.<job>.outputs.<name> from its own map, not needs", () => {
+    const scope: Scope = { jobs: { inner: { outputs: { x: "y" } } }, needs: { other: { outputs: { x: "n" } } } };
+    expect(lookup(scope, "jobs.inner.outputs.x")).toEqual({ kind: "value", v: "y" });
+    expect(lookup(scope, "jobs.inner.outputs.missing")).toEqual({ kind: "value", v: "" });
+    expect(lookup(scope, "jobs.other.outputs.x")).toEqual({ kind: "unknown" });
+    expect(lookup(scope, "needs.inner.outputs.x")).toEqual({ kind: "unknown" });
+    expect(lookup(scope, "jobs.inner.result")).toEqual({ kind: "unknown" });
+    expect(lookup({}, "jobs.inner.outputs.x")).toEqual({ kind: "unknown" });
+  });
+
   it("models steps the same way", () => {
     expect(lookup(SCOPE, "steps.scan.outputs.x")).toEqual({ kind: "value", v: "y" });
     expect(lookup(SCOPE, "steps.scan.outputs.missing")).toEqual({ kind: "value", v: "" });

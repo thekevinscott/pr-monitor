@@ -18,15 +18,16 @@ export function lookup(scope: Scope, path: string): Val {
     }
     return Array.isArray(v) ? { kind: "json", v } : { kind: "value", v };
   }
-  if (head === "needs") {
+  if (head === "needs" || head === "jobs") {
     // Only `needs.<job>.outputs.<name>` is modelled. `needs.<job>.result`
     // is a verdict on a run that has not happened; anything else is not a
-    // shape the context has.
+    // shape the context has. `jobs.*` is the same shape, read by a
+    // `workflow_call` output.
     const parts = rest.split(".");
     if (parts.length !== 3 || parts[1] !== "outputs") {
       return UNKNOWN;
     }
-    const job = scope.needs?.[parts[0]];
+    const job = (head === "jobs" ? scope.jobs : scope.needs)?.[parts[0]];
     if (job === undefined) {
       return UNKNOWN;
     }

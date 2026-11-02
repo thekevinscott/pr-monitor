@@ -786,10 +786,33 @@ describe("derived execution", () => {
     ]);
   });
 
-  it("never executes a reusable-call job, even when a sibling reads its outputs", async () => {
-    // A call job has no steps of its own; its outputs come from the callee's
-    // jobs, which execution does not model. The read stays unresolved.
-    const { executed, executor } = recording({});
+  it("lifts a reusable call's outputs from the callee jobs its workflow_call outputs read", async () => {
+    const { executed, executor } = recording({ x: "y" });
+    const entries = await expandWith(
+      {
+        plan: { uses: "./.github/workflows/sub.yml" },
+        build: { needs: "plan", if: "needs.plan.outputs.x == 'y'" },
+        lint: { needs: "plan", if: "needs.plan.outputs.x == 'z'" },
+      },
+      executor,
+      readerFor({
+        ".github/workflows/sub.yml": JSON.stringify({
+          on: { workflow_call: { outputs: { x: { value: "${{ jobs.inner.outputs.x }}" } } } },
+          jobs: { inner: { steps: [] }, other: { steps: [] } },
+        }),
+      }),
+    );
+    expect(executed).toEqual(["inner"]);
+    expect(entries.map((e) => [e.job, e.status])).toEqual([
+      ["plan / inner", "run"],
+      ["plan / other", "run"],
+      ["build", "run"],
+      ["lint", "skipped"],
+    ]);
+  });
+
+  it("leaves a sibling unknown when the callee's output cannot be decided", async () => {
+    const executor: JobExecutor = { executeJob: async () => ({ ok: false, reason: "boom" }) };
     const entries = await expandWith(
       {
         plan: { uses: "./.github/workflows/sub.yml" },
@@ -798,12 +821,11 @@ describe("derived execution", () => {
       executor,
       readerFor({
         ".github/workflows/sub.yml": JSON.stringify({
-          on: { workflow_call: null },
-          jobs: { inner: {} },
+          on: { workflow_call: { outputs: { x: { value: "${{ jobs.inner.outputs.x }}" } } } },
+          jobs: { inner: { steps: [] } },
         }),
       }),
     );
-    expect(executed).toEqual([]);
     expect(entries.map((e) => [e.job, e.status])).toEqual([
       ["plan / inner", "run"],
       ["build", "unknown"],

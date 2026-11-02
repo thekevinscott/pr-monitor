@@ -54,6 +54,11 @@ describe("the value lattice", () => {
     expect(scope.needsSettled).toBe("some-skipped");
   });
 
+  it("admits a called workflow's jobs map, shaped like needs", () => {
+    const scope: Scope = { jobs: { inner: { outputs: { x: "y" } } } };
+    expect(scope.jobs?.["inner"]?.outputs).toEqual({ x: "y" });
+  });
+
   it("admits a scope with no matrix, which is every scope but a name's", () => {
     const scope: Scope = { github: { event_name: "pull_request" } };
     expect(scope.matrix).toBeUndefined();

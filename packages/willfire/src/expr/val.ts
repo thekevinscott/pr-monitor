@@ -74,6 +74,8 @@ export interface Scope {
    * thing that turns one into a structure, at the point the workflow asks.
    */
   needs?: Record<string, { outputs: Record<string, string> }>;
+  /** A called workflow's own jobs, as its `on.workflow_call.outputs` read them. Same contract as `needs`. */
+  jobs?: Record<string, { outputs: Record<string, string> }>;
   /**
    * Outputs of steps that already ran, keyed by step id. Only one caller can
    * fill this honestly: the executor's step walk (see ../execute/runSteps.ts),

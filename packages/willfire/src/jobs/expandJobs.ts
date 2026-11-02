@@ -1,7 +1,3 @@
-import { parse as parseYaml } from "yaml";
-import { decidedInputs } from "../callback/decidedInputs.js";
-import { jobKey } from "../callback/jobKey.js";
-import { matchOutputs } from "../callback/matchOutputs.js";
 import type { CallbackMap } from "../callback/parseCallbackMap.js";
 import type { Scope } from "../expr/val.js";
 import type { JobExecutor } from "../execute/types.js";
@@ -9,31 +5,15 @@ import { expandMatrixDetailed } from "../matrix/expandMatrixDetailed.js";
 import { capDisplayName } from "../names/capDisplayName.js";
 import { jobDisplayName } from "../names/jobDisplayName.js";
 import { skippedDisplayName } from "../names/skippedDisplayName.js";
-import { parseUses } from "../uses/parseUses.js";
-import { absentInputs } from "./absentInputs.js";
 import { calleeInputs } from "./calleeInputs.js";
-import { evalIf } from "./evalIf.js";
-import { neededJobIds } from "./neededJobIds.js";
-import { readsVars } from "./readsVars.js";
 import { jobScope } from "./jobScope.js";
+import { MAX_REUSABLE_DEPTH } from "./maxReusableDepth.js";
 import { prScope } from "./prScope.js";
+import { resolveCallee } from "./resolveCallee.js";
 import { resolveStatuses } from "./resolveStatuses.js";
+import { settleScope } from "./settleScope.js";
 import { startupFailure } from "./startupFailure.js";
-import type {
-  ExpandedJob,
-  JobSite,
-  Workflow,
-  WorkflowReader,
-  WorkflowSource,
-} from "../types.js";
-
-/**
- * GitHub.com connects the top-level caller plus ten reusable levels below it.
- * The docs say nine; measured live, ten ran and eleven failed (willfire#342,
- * runs 36417316158 / 36417315398). A cross-repo hop costs the same one level
- * as a local one, and this bound is also what stops a `uses:` cycle.
- */
-const MAX_REUSABLE_DEPTH = 10;
+import type { ExpandedJob, JobSite, Workflow, WorkflowReader } from "../types.js";
 
 /**
  * Exceeding the limit anywhere fails the whole run at validation: zero jobs,
@@ -72,52 +52,10 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
     depth = 0,
     prefix = "",
     prefixResolved = true,
-    scope = {},
-    executor,
-    callbacks,
   } = args;
   const entries: ExpandedJob[] = [];
   const jobs = (wf["jobs"] ?? {}) as Record<string, Workflow>;
-
-  // Nothing dispatched or called this run, so an input this workflow declares
-  // and nothing supplied reads as the empty string (#125) — laid under, never
-  // over, whatever the caller bound.
-  let scoped: Scope = { ...scope, inputs: { ...absentInputs(wf), ...scope.inputs } };
-  if (scoped.vars === undefined && args.vars !== undefined && readsVars(jobs)) {
-    scoped = { ...scoped, ...(await args.vars()) };
-  }
-
-  // Selection is derived, never configured: execute exactly the jobs some
-  // sibling's `needs.*.outputs` read depends on, under the same `evalIf`
-  // verdict the main loop applies.
-  const execFailures: Record<string, string> = {};
-  const needed = neededJobIds(jobs);
-  for (const [jobId, jobRaw] of Object.entries(jobs)) {
-    const job = jobRaw ?? {};
-    // A reusable-call job has no steps of its own to run.
-    const runnable =
-      needed.has(jobId) && !("uses" in job) && evalIf(job.if, jobScope(job, scoped)) === "run";
-    if (runnable) {
-      const answer = matchOutputs(callbacks ?? {}, jobKey(site, jobId), decidedInputs(scoped));
-      if (answer.kind === "ambiguous") {
-        // Two recorded answers claiming one invocation: either pick would be a
-        // guess wearing a recorded answer's face, so the whole prediction aborts.
-        throw new Error(answer.reason);
-      }
-      if (answer.kind === "hit") {
-        scoped = { ...scoped, needs: { ...scoped.needs, [jobId]: { outputs: answer.outputs } } };
-      } else if (answer.kind === "no-match") {
-        execFailures[jobId] = answer.reason;
-      } else if (executor !== undefined) {
-        const res = await executor.executeJob(jobId, job, wf, jobScope(job, scoped));
-        if (res.ok) {
-          scoped = { ...scoped, needs: { ...scoped.needs, [jobId]: { outputs: res.outputs } } };
-        } else {
-          execFailures[jobId] = `executing '${jobId}' failed: ${res.reason}`;
-        }
-      }
-    }
-  }
+  const { scoped, execFailures } = await settleScope(args);
   const execNote = (needs: string[]): string => {
     const failed = needs.find((n) => n in execFailures);
     return failed === undefined ? "" : `; ${execFailures[failed]}`;
@@ -174,50 +112,13 @@ export async function expandJobs(args: ExpandJobsArgs): Promise<ExpandedJob[]> {
         });
       } else {
         // Resolve the called workflow once, not once per matrix combination.
-        let subWf: Workflow | null = null;
-        let failure: string | null = null;
-        // Where the callee is defined, and where its own `./` calls will
-        // resolve. A remote `uses:` moves the source to the callee's repo and
-        // pinned ref; a local one keeps the caller's.
-        let subSite: JobSite = site;
-        const target = parseUses(uses);
-        if (target === null) {
-          failure = `unresolvable reusable reference: ${uses}`;
-        } else {
-          // A local `./` call stays on the caller's source, which is already
-          // pinned to a commit. A cross-repo one arrives as whatever the
-          // `uses:` string spelled — `@v0` — and has to be resolved before
-          // anything is read from it, so the file that gets read and the
-          // commit the prediction names are the same one.
-          let resolved: WorkflowSource | null = site.source;
-          if (target.source !== null) {
-            const { ref } = target.source;
-            // A ref that is already a commit id needs no lookup.
-            const sha = /^[0-9a-f]{40}$/i.test(ref) ? ref : await reader.resolveRef(target.source);
-            resolved = sha === null ? null : { ...target.source, sha };
-          }
-          if (resolved === null) {
-            failure = `cannot resolve ref for ${uses}`;
-          } else {
-            subSite = { path: target.path, source: resolved };
-            const content = await reader.fetchWorkflow(target.path, resolved);
-            if (content === null) {
-              failure = `cannot fetch ${uses}`;
-            } else {
-              try {
-                subWf = parseYaml(content);
-              } catch (e) {
-                failure = `YAML parse error in ${uses}: ${e}`;
-              }
-            }
-          }
-        }
-
         // A callee GitHub cannot read fails the whole run before any job is
         // scheduled, so this cannot stay a verdict on the calling job alone.
-        if (subWf === null) {
-          throw startupFailure(failure ?? `cannot resolve ${uses}`);
+        const callee = await resolveCallee(uses, site, reader);
+        if (!callee.ok) {
+          throw startupFailure(callee.reason);
         }
+        const { wf: subWf, site: subSite } = callee;
 
         for (const combo of combos) {
           const disp = jobDisplayName(jobId, job, combo, scoped.github);

@@ -51,6 +51,7 @@ interface Fixture {
   /** >1 makes the inferred event action `synchronize` rather than `opened`. */
   commits?: number;
   baseRef?: string;
+  baseSha?: string;
   /** A changed path, or a rename spelled as both of its sides. */
   files?: (string | { filename: string; previous_filename?: string })[];
   /** Head commit message — the surface the skip instructions are read from. */
@@ -192,6 +193,7 @@ function fakeGithub(f: Fixture): GithubClient {
         commits: f.commits ?? 1,
         base: {
           ref: f.baseRef ?? "main",
+          ...(f.baseSha === undefined ? {} : { sha: f.baseSha }),
           repo: {
             default_branch: f.defaultBranch ?? "main",
             owner: { type: f.ownerType ?? "Organization" },
@@ -1560,6 +1562,21 @@ describe("PR facts seeded into the expression scope (#322)", () => {
       },
     };
     expect(await statuses({ jobs }, { headRepo: null })).toEqual([["trusted", "unknown"]]);
+  });
+
+  it("seeds the pull request's base and head shas", async () => {
+    const jobs = {
+      base: { if: "github.event.pull_request.base.sha == 'cafe'" },
+      head: { if: `github.event.pull_request.head.sha == '${HEAD_SHA}'` },
+    };
+    expect(await statuses({ jobs }, { baseSha: "cafe" })).toEqual([
+      ["base", "run"],
+      ["head", "run"],
+    ]);
+    expect(await statuses({ jobs })).toEqual([
+      ["base", "unknown"],
+      ["head", "run"],
+    ]);
   });
 
   it("seeds sha from the test merge, and only from a real one", async () => {
