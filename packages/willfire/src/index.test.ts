@@ -163,7 +163,7 @@ describe("root barrel", () => {
       getPull(
         params: Repo & { pull_number: number },
       ): Promise<{
-        base: { ref: string; repo: { default_branch: string; owner: { type: string } } };
+        base: { ref: string; sha?: string; repo: { default_branch: string; owner: { type: string } } };
         merge_commit_sha: string | null;
         mergeable: boolean | null;
         commits: number;
