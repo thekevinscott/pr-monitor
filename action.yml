@@ -39,7 +39,7 @@ runs:
       with:
         version: ${{ steps.pnpm-version.outputs.version }}
 
-    - name: Setup Node 24
+    - name: Setup Node 26
       uses: actions/setup-node@v7
       with:
         node-version: '26'
