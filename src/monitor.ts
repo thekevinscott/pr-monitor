@@ -4,6 +4,7 @@ import { sleep } from './timing/sleep';
 import { fetchWorkflowRunJobs } from './github/fetchWorkflowRunJobs';
 import { fetchWorkflowRuns } from './github/fetchWorkflowRuns';
 import { isRateLimited } from './github/isRateLimited';
+import { transientServerError } from './github/transientServerError';
 import { resolveCommitSha } from './github/resolveCommitSha';
 import { resolveEventAction } from './github/resolveEventAction';
 import { resolvePullNumber } from './github/resolvePullNumber';
@@ -24,6 +25,7 @@ import { reportFinalResult } from './messages/reportFinalResult';
 const POLL_INTERVAL_MS = 30_000;
 // Rate-limited reads don't cost quota to retry, so a fixed wait is cheap and needs no header math.
 const RATE_LIMIT_RETRY_MS = 60_000;
+const SERVER_ERROR_RETRY_TICKS = 4;
 // GitHub creates every run an event matches in the same second, so an absent run is not a slow
 // one — this only covers the API being briefly inconsistent about a run it already created.
 const STALL_GRACE_MS = 60_000;
@@ -58,7 +60,35 @@ export async function monitor({
     action: resolveEventAction(context),
     callbacks,
   };
-  const prediction = await willfire(predictClient, slug, pullNumber, options);
+  let serverErrorTicks = 0;
+  const exhausted = Symbol('server error retry budget exhausted');
+  const retryServerErrors = async <T>(read: () => Promise<T>): Promise<T | typeof exhausted> => {
+    while (true) {
+      try {
+        const value = await read();
+        serverErrorTicks = 0;
+        return value;
+      } catch (err) {
+        const serverError = transientServerError(err);
+        if (serverError === null) throw err;
+        if (serverErrorTicks >= SERVER_ERROR_RETRY_TICKS) {
+          core.setFailed(
+            `GitHub API ${serverError.status} for ${serverError.endpoint} remained unavailable ` +
+              `after ${SERVER_ERROR_RETRY_TICKS * POLL_INTERVAL_MS / 1000}s of retries`,
+          );
+          return exhausted;
+        }
+        serverErrorTicks++;
+        console.log(
+          `GitHub API ${serverError.status} for ${serverError.endpoint}; ` +
+            `retrying in ${POLL_INTERVAL_MS / 1000}s`,
+        );
+        await sleep(POLL_INTERVAL_MS);
+      }
+    }
+  };
+  const prediction = await retryServerErrors(() => willfire(predictClient, slug, pullNumber, options));
+  if (prediction === exhausted) return;
   let expected = expectedChecks(prediction, selfPath);
   const sha = resolveCommitSha(context);
 
@@ -83,7 +113,20 @@ export async function monitor({
     try {
       // Both events attach to the PR. A `push` run shares the head SHA without attaching, and
       // `merge_group` runs carry the queue's own commit, so neither reaches the comparison.
-      const allRuns = await fetchWorkflowRuns(github, owner, repo, sha);
+      const snapshot = await retryServerErrors(async () => {
+        const allRuns = await fetchWorkflowRuns(github, owner, repo, sha);
+        const currentRuns = latestRuns(
+          allRuns.filter(
+            (r) =>
+              (r.event === 'pull_request' || r.event === 'pull_request_target') &&
+              r.path !== selfPath,
+          ),
+        );
+        const currentJobs = await fetchWorkflowRunJobs(github, owner, repo, currentRuns);
+        return { allRuns, currentRuns, currentJobs };
+      });
+      if (snapshot === exhausted) return;
+      const { allRuns } = snapshot;
       if (expected.names.length === 0) {
         const pushRuns = allRuns.filter((r) => r.event === 'push' && r.path !== selfPath);
         if (pushRuns.length > 0) {
@@ -94,14 +137,8 @@ export async function monitor({
           return;
         }
       }
-      runs = latestRuns(
-        allRuns.filter(
-          (r) =>
-            (r.event === 'pull_request' || r.event === 'pull_request_target') &&
-            r.path !== selfPath,
-        ),
-      );
-      jobs = await fetchWorkflowRunJobs(github, owner, repo, runs);
+      runs = snapshot.currentRuns;
+      jobs = snapshot.currentJobs;
     } catch (err) {
       if (!isRateLimited(err)) throw err;
       console.log(`GitHub API rate limited; retrying in ${RATE_LIMIT_RETRY_MS / 1000}s`);

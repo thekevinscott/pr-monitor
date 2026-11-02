@@ -122,6 +122,8 @@ const CHECKS: Record<string, string[]> = {
 };
 
 interface Scenario {
+  predictionErrors?: Error[];
+  pollErrors?: Error[];
   workflows?: string[];
   files?: string[];
   message?: string;
@@ -157,6 +159,8 @@ function makeGithub(
   const refShas = scenario.refShas ?? ['callee-a'];
   let refReads = 0;
   const list = async () => {
+    const error = scenario.pollErrors?.shift();
+    if (error) throw error;
     // The last `polls` entry repeats forever, so a gate that never terminates would spin
     // here rather than fail. Cap it: not terminating is the bug class under test.
     if (counter.polls >= POLL_CAP) throw new Error('poll cap exceeded; the gate did not settle');
@@ -176,7 +180,11 @@ function makeGithub(
   };
   const rest = {
     pulls: {
-      get: async () => ({ data: pull }),
+      get: async () => {
+        const error = scenario.predictionErrors?.shift();
+        if (error) throw error;
+        return { data: pull };
+      },
       listFiles: async () => ({
         data: (scenario.files ?? ['src/index.ts']).map((filename) => ({ filename })),
       }),
@@ -807,6 +815,77 @@ describe('a rate-limited read', () => {
         core: { setFailed: vi.fn() } as unknown as MonitorParams['core'],
       }),
     ).rejects.toThrow('socket hang up');
+    expect(vi.mocked(sleep)).not.toHaveBeenCalled();
+  });
+});
+
+describe('transient GitHub server errors', () => {
+  const errorAt = (status: number, url: string) => Object.assign(new Error('Server Error'), {
+    status,
+    request: { url },
+  });
+  const endpoint = '/repos/o/r/actions/runs';
+
+  test('two failed poll ticks recover with the 30-second cadence', async () => {
+    const { failures, polls, log } = await gate({
+      pollErrors: [errorAt(502, endpoint), errorAt(502, endpoint)],
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+    expect(vi.mocked(sleep).mock.calls).toEqual([[30_000], [30_000]]);
+    expect(log.match(/GitHub API 502 for \/repos\/o\/r\/actions\/runs; retrying in 30s/g))
+      .toHaveLength(2);
+  });
+
+  test('a sustained poll burst fails after four waits with its endpoint', async () => {
+    const { failures, polls } = await gate({
+      pollErrors: Array.from({ length: 5 }, () => errorAt(504, endpoint)),
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([
+      'GitHub API 504 for /repos/o/r/actions/runs remained unavailable after 120s of retries',
+    ]);
+    expect(polls).toBe(0);
+    expect(vi.mocked(sleep).mock.calls).toEqual([
+      [30_000], [30_000], [30_000], [30_000],
+    ]);
+  });
+
+  test('a prediction read retries on a 503 and reaches the gate verdict', async () => {
+    willfireSpy.mockClear();
+    const { failures, polls, log } = await gate({
+      predictionErrors: [errorAt(503, '/repos/o/r/pulls/5')],
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([]);
+    expect(polls).toBe(1);
+    expect(willfireSpy).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(sleep).mock.calls).toEqual([[30_000]]);
+    expect(log).toContain('GitHub API 503 for /repos/o/r/pulls/5; retrying in 30s');
+  });
+
+  test('a sustained prediction burst fails with status and endpoint before polling', async () => {
+    willfireSpy.mockClear();
+    const { failures, polls } = await gate({
+      predictionErrors: Array.from({ length: 5 }, () => errorAt(500, '/repos/o/r/pulls/5')),
+      polls: [[self, run(TESTS)]],
+    });
+    expect(failures).toEqual([
+      'GitHub API 500 for /repos/o/r/pulls/5 remained unavailable after 120s of retries',
+    ]);
+    expect(polls).toBe(0);
+    expect(willfireSpy).toHaveBeenCalledTimes(5);
+    expect(vi.mocked(sleep).mock.calls).toEqual([
+      [30_000], [30_000], [30_000], [30_000],
+    ]);
+  });
+
+  test('a 403 without quota headers still fails immediately', async () => {
+    await expect(gate({
+      pollErrors: [errorAt(403, endpoint)],
+      polls: [[self, run(TESTS)]],
+    })).rejects.toThrow('Server Error');
     expect(vi.mocked(sleep)).not.toHaveBeenCalled();
   });
 });
