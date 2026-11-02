@@ -1,0 +1,7 @@
+{
+  "command": "node_modules/.bin/vitest run --config tests/e2e/vitest.config.mts",
+  "ran_at": 1793622824,
+  "exit_code": 0,
+  "commit": "6c10bff174c0dcfb6617ab48a4327d0070374c18",
+  "branch": "fix/290-external-reusable-nested"
+}
